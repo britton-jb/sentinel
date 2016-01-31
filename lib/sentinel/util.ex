@@ -13,7 +13,7 @@ defmodule Sentinel.Util do
   def send_error(conn, error, status \\ 422) do
     conn
     |> put_status(status)
-    |> json %{errors: error}
+    |> json(%{errors: error})
   end
 
   def presence_validator(field, nil), do: [{field, "can't be blank"}]

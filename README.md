@@ -20,7 +20,12 @@ setup:
 
 ```
 # mix.exs
-{:sentinel, "~> 0.0.1"}
+{:sentinel, "~> 0.0.2"},
+
+# Add mailman as a peer dependency
+#{:mailman, "~> 0.2.1"}
+# OR
+#{:mailman, github: "Joe-noh/mailman"}
 ```
 
 ### The User Model
