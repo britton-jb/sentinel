@@ -18,6 +18,11 @@ or the code isn't written in "idiomatic Elixir" or whatever see the
 Here's how to add it to your phoenix project, and things you need to
 setup:
 
+```
+# mix.exs
+{:sentinel, "~> 0.0.1"}
+```
+
 ### The User Model
 Your user model must have at least the following fields, email needs to
 be required, and you need to define a permissions function, which
@@ -76,6 +81,33 @@ config :guardian, Guardian,
 config :guardian_db, GuardianDb,
   repo: MyApp.Repo
 ```
+
+The database backing for your tokens:
+
+```elixir
+defmodule MyApp.Repo.Migrations.GuardianDb do
+  use Ecto.Migration
+
+  def up do
+    create table(:guardian_tokens, primary_key: false) do
+      add :jti, :string, primary_key: true
+      add :typ, :string
+      add :aud, :string
+      add :iss, :string
+      add :sub, :string
+      add :exp, :bigint
+      add :jwt, :text
+      add :claims, :map
+      timestamps
+    end
+  end
+
+  def down do
+    drop table(:guardian_tokens)
+  end
+end
+```
+
 
 [More info](https://github.com/hassox/guardian_db)
 
