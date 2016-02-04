@@ -20,7 +20,7 @@ setup:
 
 ```
 # mix.exs
-{:sentinel, "~> 0.0.2"},
+{:sentinel, "~> 0.0.3"},
 
 # Add mailman as a peer dependency
 #{:mailman, "~> 0.2.1"}
@@ -70,13 +70,12 @@ Example config:
 config :guardian, Guardian,
   allowed_algos: ["HS512"], # optional
   verify_module: Guardian.JWT,  # optional
-  issuer: "MyAPp",
+  issuer: "MyApp",
   ttl: { 30, :days },
   verify_issuer: true, # optional
   secret_key: "guardian_sekret",
   serializer: Sentinel.GuardianSerializer,
-  hooks: GuardianDb,
-  permissions: Application.get_env(:sentinel, :permissions)
+  hooks: GuardianDb
 ```
 
 [More info](https://github.com/ueberauth/guardian#installation)
@@ -133,18 +132,18 @@ config :sentinel,
 ### Configure Mailman
 ```
 # Local server example
-config :mailman
+config :mailman,
   port: 1234
 
 # Mailgun Example
-config :mailman
+config :mailman,
   port: 587,
   address: "smtp.mailgun.org",
   user_name: System.get_env("MAILGUN_USERNAME"),
   password: System.get_env("MAILGUN_PASSWORD")
 
 # Mandrill Example
-config :mailman
+config :mailman,
   port: 587,
   address: "smtp.mandrillapp.com",
   user_name: System.get_env("MANDRILL_USERNAME"),
@@ -159,20 +158,13 @@ with protection
 
 ```elixir
 defmodule MyApp.Router do
-  use Phoenix.Router
+  use MyApp.Web, :router
   require Sentinel
 
   scope "/api" do
     pipe_through :api
 
     Sentinel.mount
-  end
-
-  scope "/api" do
-    pipe_through :authenticated
-    pipe_through :api
-
-    resources "/messages", MessagesController
   end
 end
 ```

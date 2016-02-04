@@ -38,8 +38,8 @@ defmodule Sentinel.Mailer do
       to: [user.email],
       data: [user: user, password_reset_token: password_reset_token],
       subject: "Reset Your Password",
-      html: "/#{Atom.to_string(language)}/password_reset.html.eex",
-      text: "/#{Atom.to_string(language)}/password_reset.txt.eex",
+      html: "/#{language_string}/password_reset.html.eex",
+      text: "/#{language_string}/password_reset.txt.eex",
     }
 
     deliver(email, config)
@@ -54,8 +54,8 @@ defmodule Sentinel.Mailer do
       to: [user.email],
       data: [user: user, confirmation_token: confirmation_token],
       subject: "Hello #{user.email}",
-      html: "/#{Atom.to_string(language)}/welcome.html.eex",
-      text: "/#{Atom.to_string(language)}/welcome.txt.eex",
+      html: "/#{language_string}/welcome.html.eex",
+      text: "/#{language_string}/welcome.txt.eex",
     }
 
     deliver(email, config)
@@ -76,8 +76,8 @@ defmodule Sentinel.Mailer do
       composer: %Mailman.EexComposeConfig{
         html_file: true,
         text_file: true,
-        html_file_path: Application.get_env(:mailman, :html_email_templates) || "lib/sentinel/templates/",
-        text_file_path: Application.get_env(:mailman, :text_email_templates) || "lib/sentinel/templates/",
+        html_file_path: Application.get_env(:mailman, :html_email_templates) || Path.expand("templates/", __DIR__),
+        text_file_path: Application.get_env(:mailman, :text_email_templates) || Path.expand("templates/", __DIR__),
       }
     }
   end
