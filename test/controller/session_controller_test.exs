@@ -7,6 +7,7 @@ defmodule SessionControllerTest do
   alias Sentinel.Confirmator
   alias Sentinel.UserHelper
   import Sentinel.Util
+  alias Mix.Config
 
   @email "user@example.com"
   @username "user@example.com"
@@ -29,7 +30,37 @@ defmodule SessionControllerTest do
     assert conn.resp_body == Poison.encode!(%{errors: %{base: "Unknown email or password"}})
   end
 
-  test "sign in as unconfirmed user" do
+  test "sign in as unconfirmed user - confirmable default/optional" do
+    Config.persist([sentinel: [confirmable: :optional]])
+
+    {_, changeset} = Registrator.changeset(%{"email" => @email, "password" => @password, "role" => @role})
+                      |> Confirmator.confirmation_needed_changeset
+    repo.insert!(changeset)
+
+    conn = call(TestRouter, :post, "/api/sessions", %{password: @password, email: @email}, @headers)
+    assert conn.status == 200
+    %{"token" => token} = Poison.decode!(conn.resp_body)
+
+    assert repo.one(GuardianDb.Token).jwt == token
+  end
+
+  test "sign in as unconfirmed user - confirmable false" do
+    Config.persist([sentinel: [confirmable: :false]])
+
+    {_, changeset} = Registrator.changeset(%{"email" => @email, "password" => @password, "role" => @role})
+                      |> Confirmator.confirmation_needed_changeset
+    repo.insert!(changeset)
+
+    conn = call(TestRouter, :post, "/api/sessions", %{password: @password, email: @email}, @headers)
+    assert conn.status == 200
+    %{"token" => token} = Poison.decode!(conn.resp_body)
+
+    assert repo.one(GuardianDb.Token).jwt == token
+  end
+
+  test "sign in as unconfirmed user - confirmable required" do
+    Config.persist([sentinel: [confirmable: :required]])
+
     {_, changeset} = Registrator.changeset(%{"email" => @email, "password" => @password, "role" => @role})
                       |> Confirmator.confirmation_needed_changeset
     repo.insert!(changeset)

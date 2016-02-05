@@ -19,7 +19,7 @@ setup:
 
 ```
 # mix.exs
-{:sentinel, "~> 0.0.3"},
+{:sentinel, "~> 0.0.4"},
 
 # Add mailman as a peer dependency
 #{:mailman, "~> 0.2.1"}
@@ -28,8 +28,11 @@ setup:
 ```
 
 ### The User Model
-Your user model must have at least the following fields, email needs to
-be included.
+Your user model must have at least the following fields, and the
+`permissions/1` function must be defined, in order to encode permissions
+into your token, currently even if the function is empty, and you don't
+plan on using [Guardian
+permissions](https://github.com/ueberauth/guardian/#permissions).
 
 ```elixir
 defmodule MyApp.User do
@@ -51,6 +54,9 @@ defmodule MyApp.User do
   def changeset(model, params \\ :empty) do
     model
     |> cast(params, @required_fields, @optional_fields)
+  end
+
+  def permissions(role) do
   end
 end
 ```
@@ -167,8 +173,8 @@ method | path | description
 -------|------|------------
 POST | /api/users | register
 POST | /api/users/:id/confirm | confirm account
-POST | /api/session | login, will return a token as JSON
-DELETE |  /api/session | logout, invalidated the users current authentication token
+POST | /api/sessions | login, will return a token as JSON
+DELETE |  /api/sessions | logout, invalidated the users current authentication token
 POST | /api/password_resets | request a reset-password-email
 POST | /api/password_resets/reset | reset a password
 GET  | /api/account               | get information about the current user. at the moment this includes only the email address

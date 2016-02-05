@@ -19,8 +19,9 @@ defmodule Sentinel.Authenticator do
   end
 
   def authenticate(user, password) do
+
     case check_password(user, password) do
-      {:ok, %{confirmed_at: nil}} -> {:error, %{base: @unconfirmed_account_error_message}}
+      {:ok, %{confirmed_at: nil}} -> user |> confirmation_required?
       {:ok, _} -> {:ok, user}
       error -> error
     end
@@ -36,6 +37,15 @@ defmodule Sentinel.Authenticator do
       {:ok, user}
     else
       {:error, %{base: @unknown_password_error_message}}
+    end
+  end
+
+  defp confirmation_required?(user) do
+    case Application.get_env(:sentinel, :confirmable) do
+      :required ->
+        {:error, %{base: @unconfirmed_account_error_message}}
+      _ ->
+        {:ok, user}
     end
   end
 end

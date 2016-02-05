@@ -24,7 +24,8 @@ defmodule Sentinel.Controllers.Sessions do
           { :error, :token_storage_failure } -> Util.send_error(conn, %{error: "Failed to store session, please try to login again using your new password"})
           { :error, reason } -> Util.send_error(conn, %{error: reason})
         end
-        {:error, errors} -> Util.send_error(conn, errors, 401)
+      {:error, errors} ->
+        Util.send_error(conn, errors, 401)
     end
   end
 

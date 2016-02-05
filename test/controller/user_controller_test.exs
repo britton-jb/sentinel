@@ -80,6 +80,7 @@ defmodule UserControllerTest do
     assert !is_nil(user.hashed_confirmation_token)
 
     assert length(Mailman.TestServer.deliveries) == 0
+    #FIXME needs redirect
   end
 
   test "sign up with missing email" do
