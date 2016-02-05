@@ -1,7 +1,6 @@
 # Sentinel
 Things I wish [Guardian](https://github.com/ueberauth/guardian) included
-out of the box. Rather than make it so
-everyone has to redo this everytime, I created this package for it.
+out of the box. Routing, confirmation emails, password reset emails.
 It's really just a thin wrapper on Guardian, and some ground work, but
 really, everybody shouldn't have to repeat this themselves when they
 build stuff.
@@ -30,11 +29,7 @@ setup:
 
 ### The User Model
 Your user model must have at least the following fields, email needs to
-be required, and you need to define a permissions function, which
-returns a map of permissions for the user when given a user as the input
-See the [permissions
-section](https://github.com/ueberauth/guardian#permissions) of guardian
-for more info.
+be included.
 
 ```elixir
 defmodule MyApp.User do
@@ -56,9 +51,6 @@ defmodule MyApp.User do
   def changeset(model, params \\ :empty) do
     model
     |> cast(params, @required_fields, @optional_fields)
-  end
-
-  def permissions(role) do
   end
 end
 ```
@@ -181,6 +173,9 @@ POST | /api/password_resets | request a reset-password-email
 POST | /api/password_resets/reset | reset a password
 GET  | /api/account               | get information about the current user. at the moment this includes only the email address
 PUT  | /api/account               | update the current users email or password
+
+You may run into an issue here if you set the scope to `scope "/api",
+MyApp.Router do`. Something to be aware of.
 
 ## Overriding the Defaults
 
