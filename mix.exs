@@ -59,8 +59,7 @@ defmodule Sentinel.Mixfile do
   # Type `mix help deps` for more examples and options
   defp deps do
     [
-      {:guardian, "~> 0.9.0"},
-      {:guardian_db, "~> 0.4.0"},
+      {:guardian, "> 0.9.0"},
       {:ueberauth, "~> 0.2"},
       {:secure_random, "~> 0.2"},
       {:comeonin, "~> 2.0"},
