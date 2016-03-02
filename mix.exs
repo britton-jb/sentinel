@@ -60,6 +60,7 @@ defmodule Sentinel.Mixfile do
   defp deps do
     [
       {:guardian, "> 0.9.0"},
+      {:guardian_db, "~> 0.4.0", optional: true},
       {:ueberauth, "~> 0.2"},
       {:secure_random, "~> 0.2"},
       {:comeonin, "~> 2.0"},
