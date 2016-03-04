@@ -19,7 +19,10 @@ setup:
 
 ```
 # mix.exs
-{:sentinel, "~> 0.0.4"},
+{:sentinel, "~> 0.0.5"},
+
+# If you'd like to database back your tokens, and prevent replayability
+{:guardian_db, "~> 0.4.0"},
 
 # Add mailman as a peer dependency
 #{:mailman, "~> 0.2.1"}
@@ -124,7 +127,8 @@ config :sentinel,
   repo: MyApp.Repo,
   confirmable: :required, # possible options {:false, :required, :optional},optional config
   endpoint: MyApp.Endpoint,
-  router: MyApp.Router
+  router: MyApp.Router,
+  user_view: MyApp.UserModel.View
 ```
 
 ### Configure Mailman
@@ -245,10 +249,6 @@ Ueberauth integration
 Add a mix tasks that does all the configuration? and one that includes
 the user model and router stuff for a fresh, fresh project.
 
-Status 201 instead of 200 in created?
-
-Username based confirmation issue?
-
 Mailer subject I18n
 
 ## Still on the Roadmap
@@ -263,3 +263,6 @@ trackable](http://rubydoc.info/github/plataformatec/devise/master/Devise/Models/
 
 [Devise
 timeout-able](http://rubydoc.info/github/plataformatec/devise/master/Devise/Models/Timeoutable) equivalent
+
+[Devise enterprise security
+addon](https://github.com/phatworx/devise_security_extension) equivalent

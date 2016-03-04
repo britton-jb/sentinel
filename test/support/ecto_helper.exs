@@ -87,7 +87,7 @@ defmodule Sentinel.User do
     |> cast(params, @required_fields, @optional_fields)
   end
 
-  def permissions(role \\ "user") do
-    permissions_env = Application.get_env(:sentinel, :permissions)
+  def permissions(_role) do
+    Application.get_env(:sentinel, :permissions)
   end
 end

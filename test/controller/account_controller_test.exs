@@ -40,6 +40,12 @@ defmodule AccountControllerTest do
     {:ok, %{user: user, headers: headers}}
   end
 
+  test "get current user account info", context do
+    conn = call(TestRouter, :get, "/api/account", %{}, context.headers)
+    assert conn.status == 200
+    assert Poison.decode!(conn.resp_body) |> Map.get("email") == @old_email
+  end
+
   test "update password", context do
     conn = call(TestRouter, :put, "/api/account", %{account: %{password: @new_password}}, context.headers)
     assert conn.status == 200

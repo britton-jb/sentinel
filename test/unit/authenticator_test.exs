@@ -1,8 +1,6 @@
 defmodule AuthenticatorTest do
   use Sentinel.Case
-  alias Sentinel.TestRepo
   alias Sentinel.Authenticator
-  alias Sentinel.User
   alias Mix.Config
 
   @email "user@example.com"

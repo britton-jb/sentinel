@@ -2,7 +2,9 @@ defmodule Sentinel.Mailer do
   alias Mailman.Email
 
   def deliver(email, config) do
-    Mailman.deliver(email, config)
+    if email do
+      Mailman.deliver(email, config)
+    end
   end
 
   def email_sender do

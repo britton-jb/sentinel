@@ -2,7 +2,6 @@ defmodule Sentinel.Controllers.Users do
   use Phoenix.Controller
   alias Sentinel.Registrator
   alias Sentinel.Confirmator
-  alias Sentinel.Authenticator
   alias Sentinel.Mailer
   alias Sentinel.Util
   alias Sentinel.UserHelper
@@ -12,7 +11,7 @@ defmodule Sentinel.Controllers.Users do
   Params should be:
   {user: {email: "user@example.com", password: "secret"}}
   If successfull, sends a welcome email.
-  Responds with status 200 and body "ok" if successfull.
+  Responds with status 201 and body "ok" if successfull.
   Responds with status 422 and body {errors: {field: "message"}} otherwise.
   """
   def create(conn, params = %{"user" => %{"email" => email}}) when email != "" and email != nil do
@@ -21,7 +20,7 @@ defmodule Sentinel.Controllers.Users do
 
     if changeset.valid? do
       case Util.repo.transaction fn ->
-        user = Util.repo.insert!(changeset)
+        Util.repo.insert!(changeset)
       end do
         {:ok, user} ->
           confirmable(conn, user, confirmation_token)
@@ -68,7 +67,7 @@ defmodule Sentinel.Controllers.Users do
       permissions = UserHelper.model.permissions(user.role)
 
       case Guardian.encode_and_sign(user, :token, permissions) do
-        { :ok, token, encoded_claims } -> json conn, %{token: token}
+        { :ok, token, _encoded_claims } -> json conn, %{token: token}
         { :error, :token_storage_failure } -> Util.send_error(conn, %{errors: "Failed to store session, please try to login again using your new password"})
         { :error, reason } -> Util.send_error(conn, %{errors: reason})
       end
@@ -83,12 +82,16 @@ defmodule Sentinel.Controllers.Users do
     case is_confirmable do
       :required ->
         Mailer.send_welcome_email(user, confirmation_token)
-        json conn, :ok
+        conn
+        |> put_status(201)
+        |> json :ok
       :false ->
         permissions = UserHelper.model.permissions(user.role)
 
         case Guardian.encode_and_sign(user, :token, permissions) do
-          { :ok, token, encoded_claims } -> json conn, %{token: token}
+          { :ok, token, _encoded_claims } -> conn
+            |> put_status(201)
+            |> json %{token: token}
           { :error, :token_storage_failure } -> Util.send_error(conn, %{error: "Failed to store session, please try to login again using your new password"})
           { :error, reason } -> Util.send_error(conn, %{error: reason})
         end
@@ -97,7 +100,9 @@ defmodule Sentinel.Controllers.Users do
         permissions = UserHelper.model.permissions(user.role)
 
         case Guardian.encode_and_sign(user, :token, permissions) do
-          { :ok, token, encoded_claims } -> json conn, %{token: token}
+          { :ok, token, _encoded_claims } -> conn
+            |> put_status(201)
+            |> json %{token: token}
           { :error, :token_storage_failure } -> Util.send_error(conn, %{error: "Failed to store session, please try to login again using your new password"})
           { :error, reason } -> Util.send_error(conn, %{error: reason})
         end

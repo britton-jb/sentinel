@@ -1,6 +1,5 @@
 defmodule Blacksmith.Config do
   alias Sentinel.Util
-  alias Sentinel.UserHelper
 
   def save(map) do
     Util.repo.insert!(map)

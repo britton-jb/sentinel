@@ -30,7 +30,7 @@ defmodule UserControllerTest do
     Config.persist([sentinel: [confirmable: :optional]])
 
     conn = call(TestRouter, :post, "/api/users", %{user: %{password: @password, email: @email}}, @headers)
-    assert conn.status == 200
+    assert conn.status == 201
     %{"token" => token} = Poison.decode!(conn.resp_body)
 
     assert repo.one(GuardianDb.Token).jwt == token
@@ -51,7 +51,7 @@ defmodule UserControllerTest do
     Config.persist([sentinel: [confirmable: :required]])
 
     conn = call(TestRouter, :post, "/api/users", %{user: %{password: @password, email: @email}}, @headers)
-    assert conn.status == 200
+    assert conn.status == 201
     assert conn.resp_body == Poison.encode!("ok")
 
     user = TestRepo.one User
@@ -70,7 +70,7 @@ defmodule UserControllerTest do
     Config.persist([sentinel: [confirmable: :false]])
 
     conn = call(TestRouter, :post, "/api/users", %{user: %{password: @password, email: @email}}, @headers)
-    assert conn.status == 200
+    assert conn.status == 201
     %{"token" => token} = Poison.decode!(conn.resp_body)
 
     assert repo.one(GuardianDb.Token).jwt == token
@@ -80,7 +80,6 @@ defmodule UserControllerTest do
     assert !is_nil(user.hashed_confirmation_token)
 
     assert length(Mailman.TestServer.deliveries) == 0
-    #FIXME needs redirect
   end
 
   test "sign up with missing email" do

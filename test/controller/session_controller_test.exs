@@ -5,7 +5,6 @@ defmodule SessionControllerTest do
   alias Sentinel.TestRouter
   alias Sentinel.Registrator
   alias Sentinel.Confirmator
-  alias Sentinel.UserHelper
   import Sentinel.Util
   alias Mix.Config
 
@@ -119,7 +118,7 @@ defmodule SessionControllerTest do
     { :ok, token, _} = Guardian.encode_and_sign(user, :token, permissions)
 
     count = length(repo.all(GuardianDb.Token))
-    conn = call(TestRouter, :delete, "/api/sessions", %{password: @password, username: @username}, headers = [{"authorization", token} | @headers])
+    conn = call(TestRouter, :delete, "/api/sessions", %{password: @password, username: @username}, [{"authorization", token} | @headers])
     assert conn.status == 200
     assert (count - 1) == length(repo.all(GuardianDb.Token))
   end

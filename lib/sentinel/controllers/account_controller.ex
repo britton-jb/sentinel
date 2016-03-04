@@ -2,6 +2,9 @@ defmodule Sentinel.Controllers.Account do
   use Phoenix.Controller
   use Guardian.Phoenix.Controller
 
+  alias Sentinel.AccountView
+  alias Sentinel.UserHelper
+  alias Sentinel.ViewHelper
   alias Sentinel.Mailer
   alias Sentinel.Util
   alias Sentinel.AccountUpdater
@@ -11,11 +14,11 @@ defmodule Sentinel.Controllers.Account do
   plug Guardian.Plug.EnsureAuthenticated, handler: Application.get_env(:sentinel, :auth_handler) || Sentinel.Authandler
 
   @doc """
-  Get the account data for the current user. Currently this only returns the email address.
-  Responds with status 200 and body {account: {email: "user@example.com"}}.
+  Get the account data for the current user
+  Responds with status 200 and body view show JSON
   """
-  def show(conn, _params, user) do
-    json conn, %{account: %{email: user.email}}
+  def show(conn, _params, current_user, claims \\ %{}) do
+    json conn, ViewHelper.user_view.render("show.json", %{user: current_user})
   end
 
   @doc """
@@ -24,14 +27,14 @@ defmodule Sentinel.Controllers.Account do
   The stored email address will only be updated after clicking the link in that message.
   Responds with status 200 and body "ok" if successfull.
   """
-  def update(conn, %{"account" => params}, user, session) do
-    {confirmation_token, changeset} = user
+  def update(conn, %{"account" => params}, current_user, claims) do
+    {confirmation_token, changeset} = current_user
                                       |> AccountUpdater.changeset(params)
     if changeset.valid? do
       case Util.repo.transaction fn ->
-        user = Util.repo.update!(changeset)
+        current_user = Util.repo.update!(changeset)
         if (confirmation_token != nil) do
-          Mailer.send_new_email_address_email(user, confirmation_token)
+          Mailer.send_new_email_address_email(current_user, confirmation_token)
         end
       end do
         {:ok, _} -> json conn, :ok

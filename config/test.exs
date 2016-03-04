@@ -23,7 +23,8 @@ config :sentinel,
   email_sender: "test@example.com",
   crypto_provider: Comeonin.Bcrypt,
   unauthorized_handler: Sentinel.AuthHandler,
-  repo: Sentinel.TestRepo
+  repo: Sentinel.TestRepo,
+  user_view: Sentinel.UserView
 
 config :sentinel, Sentinel.TestRepo,
   username: "postgres",

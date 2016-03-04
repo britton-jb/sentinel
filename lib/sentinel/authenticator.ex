@@ -19,7 +19,6 @@ defmodule Sentinel.Authenticator do
   end
 
   def authenticate(user, password) do
-
     case check_password(user, password) do
       {:ok, %{confirmed_at: nil}} -> user |> confirmation_required?
       {:ok, _} -> {:ok, user}
