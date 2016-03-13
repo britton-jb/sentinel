@@ -15,7 +15,7 @@ defmodule Sentinel.Controllers.PasswordResets do
   Responds with status 200 and body "ok" if successfull.
   Responds with status 422 and body {errors: [messages]} otherwise.
   """
-  def create(conn, %{"email" => email}, headers \\ %{}, session \\ %{}) do
+  def create(conn, %{"email" => email}, _headers \\ %{}, _session \\ %{}) do
     user = UserHelper.find_by_email(email)
     {password_reset_token, changeset} = PasswordResetter.create_changeset(user)
 
@@ -38,7 +38,7 @@ defmodule Sentinel.Controllers.PasswordResets do
   Responds with status 200 and body {token: token} if successfull. Use this token in subsequent requests as authentication.
   Responds with status 422 and body {errors: [messages]} otherwise.
   """
-  def reset(conn, params = %{"user_id" => user_id}, headers \\%{}, session \\ %{}) do
+  def reset(conn, params = %{"user_id" => user_id}, _headers \\%{}, _session \\ %{}) do
     user = Util.repo.get(UserHelper.model, user_id)
     changeset = PasswordResetter.reset_changeset(user, params)
 
@@ -47,7 +47,7 @@ defmodule Sentinel.Controllers.PasswordResets do
       permissions = UserHelper.model.permissions(user.role)
 
       case Guardian.encode_and_sign(user, :token, permissions) do
-        { :ok, token, encoded_claims } -> json conn, %{token: token}
+        { :ok, token, _encoded_claims } -> json conn, %{token: token}
         { :error, :token_storage_failure } -> Util.send_error(conn, %{errors: "Failed to store session, please try to login again using your new password"})
         { :error, reason } -> Util.send_error(conn, %{errors: reason})
       end

@@ -20,7 +20,7 @@ defmodule Sentinel.Controllers.Sessions do
         permissions = UserHelper.model.permissions(user.role)
 
         case Guardian.encode_and_sign(user, :token, permissions) do
-          { :ok, token, encoded_claims } -> json conn, %{token: token}
+          { :ok, token, _encoded_claims } -> json conn, %{token: token}
           { :error, :token_storage_failure } -> Util.send_error(conn, %{error: "Failed to store session, please try to login again using your new password"})
           { :error, reason } -> Util.send_error(conn, %{error: reason})
         end
@@ -35,7 +35,7 @@ defmodule Sentinel.Controllers.Sessions do
         permissions = UserHelper.model.permissions(user.role)
 
         case Guardian.encode_and_sign(user, :token, permissions) do
-          { :ok, token, encoded_claims } ->
+          { :ok, token, _encoded_claims } ->
             json conn, %{token: token}
           { :error, :token_storage_failure } -> Util.send_error(conn, %{error: "Failed to store session, please try to login again using your new password"})
           { :error, reason } -> Util.send_error(conn, %{error: reason})

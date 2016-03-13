@@ -84,14 +84,14 @@ defmodule Sentinel.Controllers.Users do
         Mailer.send_welcome_email(user, confirmation_token)
         conn
         |> put_status(201)
-        |> json :ok
+        |> json(:ok)
       :false ->
         permissions = UserHelper.model.permissions(user.role)
 
         case Guardian.encode_and_sign(user, :token, permissions) do
           { :ok, token, _encoded_claims } -> conn
             |> put_status(201)
-            |> json %{token: token}
+            |> json(%{token: token})
           { :error, :token_storage_failure } -> Util.send_error(conn, %{error: "Failed to store session, please try to login again using your new password"})
           { :error, reason } -> Util.send_error(conn, %{error: reason})
         end
@@ -102,7 +102,7 @@ defmodule Sentinel.Controllers.Users do
         case Guardian.encode_and_sign(user, :token, permissions) do
           { :ok, token, _encoded_claims } -> conn
             |> put_status(201)
-            |> json %{token: token}
+            |> json(%{token: token})
           { :error, :token_storage_failure } -> Util.send_error(conn, %{error: "Failed to store session, please try to login again using your new password"})
           { :error, reason } -> Util.send_error(conn, %{error: reason})
         end
