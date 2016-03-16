@@ -2,8 +2,6 @@ defmodule Sentinel.Controllers.Account do
   use Phoenix.Controller
   use Guardian.Phoenix.Controller
 
-  alias Sentinel.AccountView
-  alias Sentinel.UserHelper
   alias Sentinel.ViewHelper
   alias Sentinel.Mailer
   alias Sentinel.Util
@@ -17,7 +15,7 @@ defmodule Sentinel.Controllers.Account do
   Get the account data for the current user
   Responds with status 200 and body view show JSON
   """
-  def show(conn, _params, current_user, claims \\ %{}) do
+  def show(conn, _params, current_user, _claims \\ %{}) do
     json conn, ViewHelper.user_view.render("show.json", %{user: current_user})
   end
 
@@ -27,7 +25,7 @@ defmodule Sentinel.Controllers.Account do
   The stored email address will only be updated after clicking the link in that message.
   Responds with status 200 and body "ok" if successfull.
   """
-  def update(conn, %{"account" => params}, current_user, claims) do
+  def update(conn, %{"account" => params}, current_user, _claims) do
     {confirmation_token, changeset} = current_user
                                       |> AccountUpdater.changeset(params)
     if changeset.valid? do
