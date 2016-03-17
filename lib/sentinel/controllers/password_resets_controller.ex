@@ -12,23 +12,18 @@ defmodule Sentinel.Controllers.PasswordResets do
   Params should be:
   {email: "user@example.com"}
   If successfull, sends an email with instructions on how to reset the password.
-  Responds with status 200 and body "ok" if successfull.
-  Responds with status 422 and body {errors: [messages]} otherwise.
+  Responds with status 200 and body "ok" if successful or not, for security.
   """
   def create(conn, %{"email" => email}, _headers \\ %{}, _session \\ %{}) do
     user = UserHelper.find_by_email(email)
     {password_reset_token, changeset} = PasswordResetter.create_changeset(user)
 
     if changeset.valid? do
-      case Util.repo.transaction fn ->
-        user = Util.repo.update!(changeset)
-        Mailer.send_password_reset_email(user, password_reset_token)
-      end do
-        {:ok, _} -> json conn, :ok
-      end
-    else
-      Util.send_error(conn, Enum.into(changeset.errors, %{}))
+      user = Util.repo.update!(changeset)
+      Mailer.send_password_reset_email(user, password_reset_token)
     end
+
+    json conn, :ok
   end
 
   @doc """

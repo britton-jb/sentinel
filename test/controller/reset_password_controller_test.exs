@@ -18,8 +18,8 @@ defmodule ResetPasswordControllerTest do
 
   test "request a reset token for an unknown email" do
     conn = call(TestRouter, :post, "/api/password_resets", %{email: @email}, @headers)
-    assert conn.status == 422
-    assert conn.resp_body == Poison.encode!(%{errors: %{email: "not known"}})
+    assert conn.status == 200
+    assert Poison.decode!(conn.resp_body) == "ok"
   end
 
   test "request a reset token" do
