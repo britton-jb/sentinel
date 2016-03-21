@@ -1,4 +1,7 @@
 # Sentinel
+[![Build
+Status](https://travis-ci.org/britton-jb/sentinel.svg?branch=master)](https://travis-ci.org/britton-jb/sentinel)
+
 Things I wish [Guardian](https://github.com/ueberauth/guardian) included
 out of the box. Routing, confirmation emails, password reset emails.
 It's really just a thin wrapper on Guardian, and some ground work, but
