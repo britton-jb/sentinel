@@ -3,6 +3,7 @@ defmodule RegistratorTest do
   import Sentinel.Util
   alias Sentinel.Registrator
   alias Sentinel.TestRepo
+  alias Mix.Config
 
   setup do
     on_exit fn ->
@@ -24,7 +25,9 @@ defmodule RegistratorTest do
     assert changeset.errors[:email] == "can't be blank"
   end
 
-  test "changeset validates presence of password" do
+  test "changeset validates presence of password when invitable is false" do
+    Config.persist([sentinel: [invitable: false]])
+
     changeset = Registrator.changeset(%{"email" => "user@example.com"})
     assert changeset.errors[:password] == "can't be blank"
 
@@ -33,6 +36,19 @@ defmodule RegistratorTest do
 
     changeset = Registrator.changeset(%{"email" => "user@example.com", "password" => nil})
     assert changeset.errors[:password] == "can't be blank"
+  end
+
+  test "changeset does not validates presence of password when invitable is true" do
+    Config.persist([sentinel: [invitable: true]])
+
+    changeset = Registrator.changeset(%{"email" => "user@example.com"})
+    assert Enum.empty?(changeset.errors)
+
+    changeset = Registrator.changeset(%{"email" => "user@example.com", "password" => ""})
+    assert Enum.empty?(changeset.errors)
+
+    changeset = Registrator.changeset(%{"email" => "user@example.com", "password" => nil})
+    assert Enum.empty?(changeset.errors)
   end
 
   test "changeset validates uniqueness of email" do

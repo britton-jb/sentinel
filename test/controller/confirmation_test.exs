@@ -36,7 +36,7 @@ defmodule ConfirmationTest do
     user = repo.insert!(changeset)
 
     conn = call(TestRouter, :post, "/api/users/#{user.id}/confirm", %{confirmation_token: token}, @headers)
-    assert conn.status == 200
+    assert conn.status == 201
     {:ok, session_token} = Poison.decode!(conn.resp_body) |> Dict.fetch("token")
 
     updated_user = repo.get! UserHelper.model, user.id
@@ -59,7 +59,7 @@ defmodule ConfirmationTest do
     user = TestRepo.update!(changeset)
 
     conn = call(TestRouter, :post, "/api/users/#{user.id}/confirm", %{confirmation_token: token}, @headers)
-    assert conn.status == 200
+    assert conn.status == 201
 
     session_token = Poison.decode!(conn.resp_body)
             |> Dict.fetch!("token")

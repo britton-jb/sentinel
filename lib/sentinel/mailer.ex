@@ -7,12 +7,16 @@ defmodule Sentinel.Mailer do
     end
   end
 
-  def email_sender do
+  defp email_sender do
     Application.get_env(:sentinel, :email_sender)
   end
 
-  def reply_to do
+  defp reply_to do
     Application.get_env(:sentinel, :reply_to) || email_sender
+  end
+
+  defp app_name do
+    Application.get_env(:sentinel, :app_name)
   end
 
   def send_new_email_address_email(user, confirmation_token, language \\ :en) do
@@ -58,6 +62,22 @@ defmodule Sentinel.Mailer do
       subject: "Hello #{user.email}",
       html: "/#{language_string}/welcome.html.eex",
       text: "/#{language_string}/welcome.txt.eex",
+    }
+
+    deliver(email, config)
+  end
+
+  def send_invite_email(user, {confirmation_token, password_reset_token}, language \\ :en) do
+    language_string = Atom.to_string(language)
+
+    email =  %Email{
+      from: email_sender,
+      reply_to: reply_to,
+      to: [user.email],
+      data: [user: user, confirmation_token: confirmation_token, password_reset_token: password_reset_token],
+      subject: "You've been invited to #{app_name} #{user.email}",
+      html: "/#{language_string}/invite.html.eex",
+      text: "/#{language_string}/invite.txt.eex",
     }
 
     deliver(email, config)

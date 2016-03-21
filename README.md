@@ -19,7 +19,7 @@ setup:
 
 ```
 # mix.exs
-{:sentinel, "~> 0.0.5"},
+{:sentinel, "~> 0.1.0"},
 
 # If you'd like to database back your tokens, and prevent replayability
 {:guardian_db, "~> 0.4.0"},
@@ -125,7 +125,8 @@ config :sentinel,
   crypto_provider: Comeonin.Bcrypt,
   auth_handler: Sentinel.AuthHandler, #optional
   repo: MyApp.Repo,
-  confirmable: :required, # possible options {:false, :required, :optional},optional config
+  confirmable: :required, # possible options {:false, :required, :optional}, optional config, defaulting to :optional
+  invitable: :required, # possible options {:false, :true}, optional config, defaulting to false
   endpoint: MyApp.Endpoint,
   router: MyApp.Router,
   user_view: MyApp.UserModel.View
@@ -177,6 +178,7 @@ method | path | description
 -------|------|------------
 POST | /api/users | register
 POST | /api/users/:id/confirm | confirm account
+POST | /api/users/:id/invited | set password on invited account
 POST | /api/sessions | login, will return a token as JSON
 DELETE |  /api/sessions | logout, invalidated the users current authentication token
 POST | /api/password_resets | request a reset-password-email
@@ -195,6 +197,28 @@ you'd like to require confirmation set the `confirmable` configuration
 field to `:required`. If you don't want confirmation emails sent, set
 the field to `:false`. The default is `:optional`.
 
+### Invitable
+By default, users are required to have a password upon creation. If
+you'd like to enable users to create accounts on behalf of other users
+without a password you can set the `invitable` configuration field to
+`true`. This will result in the user being sent an email with a link to
+`GET users/:id/invited`, which you can complete by posting to the same
+URL, with the following params:
+
+json
+```
+{
+  confirmation_token: confirmation_token_from_email_provided_as_url_param,
+  password_reset_token: password_reset_token_from_email_provided_as_url_param,
+  password: newly_defined_user_password
+}
+```
+
+Note that the `invitable` module requires you to provide your own setup
+your password form at `GET UserController :invited`. In the future when
+Sentinel ships with views it's something I'd like to include. I would
+gladly take PRs for some basic server rendered html forms.
+
 ### Custom Routes
 If you want to customize the routes, or use your own controller
 endpoints you can do that by overriding the individual routes shown
@@ -203,6 +227,7 @@ below:
 ```elixir
 post  "users",                 Sentinel.Controllers.Users, :create
 post  "users/:id/confirm",     Sentinel.Controllers.Users, :confirm
+post  "users/:id/invited",     Sentinel.Controllers.Users, :invited
 post  "sessions", Sentinel.Controllers.Sessions, :create
 delete  "sessions", Sentinel.Controllers.Sessions, :delete
 post  "password_resets", Sentinel.Controllers.PasswordResets, :create

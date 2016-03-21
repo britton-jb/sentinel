@@ -5,6 +5,7 @@ defmodule Sentinel.Controllers.Users do
   alias Sentinel.Mailer
   alias Sentinel.Util
   alias Sentinel.UserHelper
+  alias Sentinel.PasswordResetter
 
   @doc """
   Sign up as a new user.
@@ -23,7 +24,7 @@ defmodule Sentinel.Controllers.Users do
         Util.repo.insert!(changeset)
       end do
         {:ok, user} ->
-          confirmable(conn, user, confirmation_token)
+          confirmable_and_invitable(conn, user, confirmation_token)
       end
     else
       Util.send_error(conn, Enum.into(changeset.errors, %{}))
@@ -38,7 +39,7 @@ defmodule Sentinel.Controllers.Users do
         Util.repo.insert(changeset)
       end do
         {:ok, user} ->
-          confirmable(conn, user, "")
+          confirmable_and_invitable(conn, user, "")
       end
     else
       Util.send_error(conn, Enum.into(changeset.errors, %{}))
@@ -55,7 +56,7 @@ defmodule Sentinel.Controllers.Users do
   Parameter "id" should be the user's id.
   Parameter "confirmation" should be the user's confirmation token.
   If the confirmation matches, the user will be confirmed and signed in.
-  Responds with status 200 and body {token: token} if successfull. Use this token in subsequent requests as authentication.
+  Responds with status 201 and body {token: token} if successfull. Use this token in subsequent requests as authentication.
   Responds with status 422 and body {errors: {field: "message"}} otherwise.
   """
   def confirm(conn, params = %{"id" => user_id, "confirmation_token" => _}) do
@@ -64,48 +65,81 @@ defmodule Sentinel.Controllers.Users do
 
     if changeset.valid? do
       user = Util.repo.update!(changeset)
-      permissions = UserHelper.model.permissions(user.role)
-
-      case Guardian.encode_and_sign(user, :token, permissions) do
-        { :ok, token, _encoded_claims } -> json conn, %{token: token}
-        { :error, :token_storage_failure } -> Util.send_error(conn, %{errors: "Failed to store session, please try to login again using your new password"})
-        { :error, reason } -> Util.send_error(conn, %{errors: reason})
-      end
+      encode_and_sign(conn, user)
     else
       Util.send_error(conn, Enum.into(changeset.errors, %{}))
     end
   end
 
-  defp confirmable(conn, user, confirmation_token) do
-    is_confirmable = Application.get_env(:sentinel, :confirmable)
+  def invited(conn, params) do
+    user_id = params["id"]
 
-    case is_confirmable do
-      :required ->
-        Mailer.send_welcome_email(user, confirmation_token)
+    user = Util.repo.get!(UserHelper.model, user_id)
+    user_params = Map.merge(params, %{
+      "id" => user.id,
+      "email" => user.email
+    })
+    changeset = PasswordResetter.reset_changeset(user, params)
+
+    if changeset.valid? do
+      user = Util.repo.update!(changeset)
+
+      changeset = Confirmator.confirmation_changeset(user, params)
+      user = Util.repo.update!(changeset)
+      encode_and_sign(conn, user)
+    else
+      Util.send_error(conn, Enum.into(changeset.errors, %{}))
+    end
+  end
+
+  defp confirmable_and_invitable(conn, user, confirmation_token) do
+    case {is_confirmable, is_invitable} do
+      {false, false} -> encode_and_sign(conn, user) # not confirmable or invitable - just log them in
+      {_confirmable, :true} -> # must be invited
+        {password_reset_token, changeset} = PasswordResetter.create_changeset(user)
+
+        if changeset.valid? do
+          user = Util.repo.update!(changeset)
+        end
+
+        Mailer.send_invite_email(user, {confirmation_token, password_reset_token})
+
         conn
         |> put_status(201)
         |> json(:ok)
-      :false ->
-        permissions = UserHelper.model.permissions(user.role)
-
-        case Guardian.encode_and_sign(user, :token, permissions) do
-          { :ok, token, _encoded_claims } -> conn
-            |> put_status(201)
-            |> json(%{token: token})
-          { :error, :token_storage_failure } -> Util.send_error(conn, %{error: "Failed to store session, please try to login again using your new password"})
-          { :error, reason } -> Util.send_error(conn, %{error: reason})
-        end
-      _ ->
+      {:required, _invitable} -> # must be confirmed
         Mailer.send_welcome_email(user, confirmation_token)
-        permissions = UserHelper.model.permissions(user.role)
 
-        case Guardian.encode_and_sign(user, :token, permissions) do
-          { :ok, token, _encoded_claims } -> conn
-            |> put_status(201)
-            |> json(%{token: token})
-          { :error, :token_storage_failure } -> Util.send_error(conn, %{error: "Failed to store session, please try to login again using your new password"})
-          { :error, reason } -> Util.send_error(conn, %{error: reason})
-        end
+        conn
+        |> put_status(201)
+        |> json(:ok)
+      {_confirmable_default, _invitable} -> # default behavior, optional confirmable, not invitable
+        Mailer.send_welcome_email(user, confirmation_token)
+        encode_and_sign(conn, user)
     end
+  end
+
+  defp encode_and_sign(conn, user) do
+    permissions = UserHelper.model.permissions(user.role)
+
+    case Guardian.encode_and_sign(user, :token, permissions) do
+      { :ok, token, _encoded_claims } -> conn
+        |> put_status(201)
+        |> json %{token: token}
+      { :error, :token_storage_failure } -> Util.send_error(conn, %{errors: "Failed to store session, please try to login again using your new password"})
+      { :error, reason } -> Util.send_error(conn, %{errors: reason})
+    end
+  end
+
+  defp is_confirmable do
+    case Application.get_env(:sentinel, :confirmable) do
+      :required -> :required
+      :false -> :false
+      _ -> :optional
+    end
+  end
+
+  defp is_invitable do
+    Application.get_env(:sentinel, :invitable) || :false
   end
 end

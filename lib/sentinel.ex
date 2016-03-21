@@ -2,6 +2,7 @@ defmodule Sentinel do
   defmacro mount do
     quote do
       post    "users",                 Sentinel.Controllers.Users, :create
+      post    "users/:id/invited",     Sentinel.Controllers.Users, :invited
       if Application.get_env(:sentinel, :confirmable) != :false do
         post    "users/:id/confirm",     Sentinel.Controllers.Users, :confirm
       end
