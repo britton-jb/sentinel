@@ -1,4 +1,8 @@
 # Changelog
+## 1.0.0
+`Sentinel.AuthHandler` returns `401` instead of `403` - because I forgot
+how to HTTP when writing this library initially
+
 ## 0.1.0
 Merges in @termoose's changes that declutter compilation output
 

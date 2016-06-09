@@ -4,6 +4,6 @@ defmodule Sentinel.AuthHandler do
   end
 
   def unauthenticated(conn, _) do
-    Sentinel.Util.send_error(conn, %{base: "Forbidden"}, 403)
+    Sentinel.Util.send_error(conn, %{base: "Failed to authenticate"}, 401)
   end
 end
