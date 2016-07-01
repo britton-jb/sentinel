@@ -9,7 +9,7 @@ defmodule Sentinel.UserRegistration do
   @doc """
   Registration with email
   """
-  def register(conn, params = %{"user" => %{"email" => email}}) when email != "" and email != nil do
+  def register(params = %{"user" => %{"email" => email}}) when email != "" and email != nil do
     {confirmation_token, changeset} =
       Registrator.changeset(params["user"])
       |> Confirmator.confirmation_needed_changeset
@@ -19,7 +19,7 @@ defmodule Sentinel.UserRegistration do
         Util.repo.insert!(changeset)
       end do
         {:ok, user} ->
-          confirmable_and_invitable(conn, user, confirmation_token)
+          confirmable_and_invitable(user, confirmation_token)
       end
     else
       {:error, Enum.into(changeset.errors, %{})}
@@ -29,7 +29,7 @@ defmodule Sentinel.UserRegistration do
   @doc """
   Registration with username
   """
-  def register(conn, params = %{"user" => %{"username" => username}}) when username != "" and username != nil do
+  def register(params = %{"user" => %{"username" => username}}) when username != "" and username != nil do
     changeset = Registrator.changeset(params["user"])
 
     if changeset.valid? do
@@ -37,34 +37,34 @@ defmodule Sentinel.UserRegistration do
         Util.repo.insert(changeset)
       end do
         {:ok, user} ->
-          confirmable_and_invitable(conn, user, "")
+          confirmable_and_invitable(user, "")
       end
     else
-      Util.send_error(conn, Enum.into(changeset.errors, %{}))
+      {:error, Enum.into(changeset.errors, %{})}
     end
   end
 
   @doc """
   Invalid user parameters
   """
-  def register(conn, params) do
+  def register(params) do
     changeset = Registrator.changeset(params["user"])
     {:error, Enum.into(changeset.errors, %{})}
   end
 
-  def confirm(conn, params = %{"id" => user_id, "confirmation_token" => _}) do
+  def confirm(params = %{"id" => user_id, "confirmation_token" => _}) do
     user = Util.repo.get!(UserHelper.model, user_id)
     changeset = Confirmator.confirmation_changeset(user, params)
 
     if changeset.valid? do
       user = Util.repo.update!(changeset)
-      encode_and_sign(conn, user)
+      encode_and_sign(user)
     else
       {:error, Enum.into(changeset.errors, %{})}
     end
   end
 
-  def invited(conn, params) do
+  def invited(params) do
     user_id = params["id"]
 
     user = Util.repo.get!(UserHelper.model, user_id)
@@ -79,16 +79,16 @@ defmodule Sentinel.UserRegistration do
 
       changeset = Confirmator.confirmation_changeset(user, params)
       user = Util.repo.update!(changeset)
-      encode_and_sign(conn, user)
+      encode_and_sign(user)
     else
       {:error, Enum.into(changeset.errors, %{})}
     end
   end
 
-  defp confirmable_and_invitable(conn, user, confirmation_token) do
+  defp confirmable_and_invitable(user, confirmation_token) do
     case {is_confirmable, is_invitable} do
       {false, false} ->
-        encode_and_sign(conn, user) # not confirmable or invitable - just log them in
+        encode_and_sign(user) # not confirmable or invitable - just log them in
 
       {_confirmable, :true} -> # must be invited
         {password_reset_token, changeset} = PasswordResetter.create_changeset(user)
@@ -108,16 +108,16 @@ defmodule Sentinel.UserRegistration do
 
       {_confirmable_default, _invitable} -> # default behavior, optional confirmable, not invitable
         Mailer.send_welcome_email(user, confirmation_token)
-        encode_and_sign(conn, user)
+        encode_and_sign(user)
     end
   end
 
 
-  defp encode_and_sign(conn, user) do
+  defp encode_and_sign(user) do
     permissions = UserHelper.model.permissions(user.role)
 
     case Guardian.encode_and_sign(user, :token, permissions) do
-      {:ok, token, claims} -> conn
+      {:ok, token, claims} ->
         {:ok, user, token, claims}
       {:error, :token_storage_failure} ->
         {:error, "Failed to store session, please try to login again using your new password"}

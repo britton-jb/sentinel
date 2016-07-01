@@ -15,7 +15,7 @@ defmodule Sentinel.Controllers.Users do
   Responds with status 422 and body {errors: {field: "message"}} otherwise.
   """
   def create(conn, params) do
-    case UserRegistration.register(conn, params) do
+    case UserRegistration.register(params) do
       {:ok, _reason} -> # User registered but not logged in (needs invite or activation)
         conn
         |> put_status(201)
@@ -38,7 +38,7 @@ defmodule Sentinel.Controllers.Users do
   Responds with status 422 and body {errors: {field: "message"}} otherwise.
   """
   def confirm(conn, params) do
-    case UserRegistration.confirm(conn, params) do
+    case UserRegistration.confirm(params) do
       {:ok, user, token, claims} -> # User logged in
         conn
         |> put_status(201)
@@ -49,7 +49,7 @@ defmodule Sentinel.Controllers.Users do
   end
 
   def invited(conn, params) do
-    case UserRegistration.invited(conn, params) do
+    case UserRegistration.invited(params) do
       {:ok, user, token, claims} -> # User logged in
         conn
         |> put_status(201)
