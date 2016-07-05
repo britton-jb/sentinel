@@ -48,7 +48,7 @@ defmodule Sentinel.PasswordResetter do
 
   defp validate_token(changeset) do
     token_matches = Util.crypto_provider.checkpw(changeset.params["password_reset_token"],
-    changeset.model.hashed_password_reset_token)
+    changeset.data.hashed_password_reset_token)
     do_validate_token token_matches, changeset
   end
 

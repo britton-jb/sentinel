@@ -15,7 +15,7 @@ defmodule Sentinel.AccountUpdater do
     |> apply_email_change
   end
 
-  def apply_email_change(changeset = %{params: %{"email" => email}, model: %{email: email_before}})
+  def apply_email_change(changeset = %{params: %{"email" => email}, data: %{email: email_before}})
   when email != "" and email != nil and email != email_before do
     changeset
     |> Changeset.put_change(:unconfirmed_email, email)

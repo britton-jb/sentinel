@@ -1,6 +1,6 @@
 defmodule Sentinel.UserView do
-  use Phoenix.View, root: "web/templates"
-  import Phoenix.Controller, only: [view_module: 1]
+  use Phoenix.View, root: "lib/sentinel/templates/"
+  use Phoenix.HTML
 
   def render("index.json", %{users: users}) do
     render_many(users, Sentinel.UserView, "user.json")

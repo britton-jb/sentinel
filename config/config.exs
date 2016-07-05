@@ -11,10 +11,11 @@ use Mix.Config
 # Sample configuration:
 #
 config :logger, :console,
-  level: :info,
-  format: "$date $time [$level] $metadata$message\n",
-  metadata: [:user_id]
+  level: :info
 
 config :comeonin, :bcrypt_log_rounds, 4
+
+config :sentinel, Sentinel.Mailer,
+  adapter: Bamboo.LocalAdapter
 
 import_config "#{Mix.env}.exs"

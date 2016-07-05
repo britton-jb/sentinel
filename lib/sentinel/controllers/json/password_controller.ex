@@ -1,4 +1,4 @@
-defmodule Sentinel.Controllers.PasswordResets do
+defmodule Sentinel.Controllers.Json.Password do
   use Phoenix.Controller
   use Guardian.Phoenix.Controller
 
@@ -18,9 +18,9 @@ defmodule Sentinel.Controllers.PasswordResets do
     user = UserHelper.find_by_email(email)
     {password_reset_token, changeset} = PasswordResetter.create_changeset(user)
 
-    if changeset.valid? do
-      user = Util.repo.update!(changeset)
-      Mailer.send_password_reset_email(user, password_reset_token)
+    case Util.repo.update(changeset) do
+      {:ok, updated_user} -> Mailer.send_password_reset_email(updated_user, password_reset_token)
+      _ -> nil
     end
 
     json conn, :ok
@@ -37,17 +37,17 @@ defmodule Sentinel.Controllers.PasswordResets do
     user = Util.repo.get(UserHelper.model, user_id)
     changeset = PasswordResetter.reset_changeset(user, params)
 
-    if changeset.valid? do
-      user = Util.repo.update!(changeset)
-      permissions = UserHelper.model.permissions(user.role)
+    case Util.repo.update(changeset) do
+      {:ok, updated_user} ->
+        permissions = UserHelper.model.permissions(updated_user.role)
 
-      case Guardian.encode_and_sign(user, :token, permissions) do
-        { :ok, token, _encoded_claims } -> json conn, %{token: token}
-        { :error, :token_storage_failure } -> Util.send_error(conn, %{errors: "Failed to store session, please try to login again using your new password"})
-        { :error, reason } -> Util.send_error(conn, %{errors: reason})
-      end
-    else
-      Util.send_error(conn, Enum.into(changeset.errors, %{}))
+        case Guardian.encode_and_sign(updated_user, :token, permissions) do
+          { :ok, token, _encoded_claims } -> json conn, %{token: token}
+          { :error, :token_storage_failure } -> Util.send_error(conn, %{errors: "Failed to store session, please try to login again using your new password"})
+          { :error, reason } -> Util.send_error(conn, %{errors: reason})
+        end
+      {:error, changeset} ->
+        Util.send_error(conn, changeset.errors)
     end
   end
 end

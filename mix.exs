@@ -8,12 +8,17 @@ defmodule Sentinel.Mixfile do
     [app: :sentinel,
       version: @version,
       elixir: "~> 1.1",
+      elixirc_paths: elixirc_paths(Mix.env),
+      compilers: [:phoenix] ++ Mix.compilers,
       package: package,
       description: description,
       source_url: @source_url,
+      aliases: aliases,
       deps: deps]
   end
 
+  defp elixirc_paths(:test), do: ["lib", "test/support"]
+  defp elixirc_paths(_),     do: ["lib"]
 
   # Configuration for the OTP application
   #
@@ -26,10 +31,11 @@ defmodule Sentinel.Mixfile do
   defp applications(_all),  do: [
     :logger,
     :comeonin,
-    :ueberauth,
     :ecto,
     :postgrex,
-    :phoenix
+    :phoenix,
+    :phoenix_html,
+    :bamboo
   ]
 
   defp package do
@@ -59,26 +65,31 @@ defmodule Sentinel.Mixfile do
   # Type `mix help deps` for more examples and options
   defp deps do
     [
-      {:guardian, "> 0.9.0"},
-      {:guardian_db, "~> 0.4.0", optional: true},
-      {:ueberauth, "~> 0.2"},
+      {:guardian, "~> 0.12"},
+      {:guardian_db, "~> 0.7", optional: true},
       {:secure_random, "~> 0.2"},
       {:comeonin, "~> 2.0"},
-      {:mailman, github: "Joe-noh/mailman"},
-      {:eiconv, github: "zotonic/eiconv"},
+      {:bamboo, "~> 0.6"},
+      #{:eiconv, github: "zotonic/eiconv"},
 
       {:cowboy, "~> 1.0.0"},
-      {:phoenix, "~> 1.1.0"},
-      {:ecto, "~> 1.0"},
-      {:postgrex, ">= 0.6.0"},
+      {:phoenix, "~> 1.1"},
+      {:phoenix_html, "~> 2.2"},
+      {:ecto, "~> 2.0"},
+      {:postgrex, ">= 0.11.1"},
       {:jose, "~> 1.4"},
 
       # DEV
-      {:earmark, ">= 0.0.0"},
-      {:ex_doc, ">= 0.6.0"},
+      {:credo, "~> 0.4", only: [:dev, :test]},
       # TESTING
-      {:mock, "~> 0.1.0", only: :test},
+      {:mock, "~> 0.1", only: :test},
       {:blacksmith, git: "git://github.com/batate/blacksmith.git", only: :test},
+    ]
+  end
+
+  defp aliases do
+    [
+      "test": ["ecto.create --quiet", "ecto.migrate", "test"]
     ]
   end
 end

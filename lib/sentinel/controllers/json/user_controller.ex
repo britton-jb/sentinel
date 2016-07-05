@@ -1,4 +1,4 @@
-defmodule Sentinel.Controllers.Users do
+defmodule Sentinel.Controllers.Json.User do
   use Phoenix.Controller
   alias Sentinel.Registrator
   alias Sentinel.Confirmator
@@ -19,36 +19,29 @@ defmodule Sentinel.Controllers.Users do
     {confirmation_token, changeset} = Registrator.changeset(params["user"])
                                       |> Confirmator.confirmation_needed_changeset
 
-    if changeset.valid? do
-      case Util.repo.transaction fn ->
-        Util.repo.insert!(changeset)
-      end do
-        {:ok, user} ->
-          confirmable_and_invitable(conn, user, confirmation_token)
-      end
-    else
-      Util.send_error(conn, Enum.into(changeset.errors, %{}))
+    case Util.repo.insert(changeset) do
+      {:ok, user} ->
+        confirmable_and_invitable(conn, user, confirmation_token)
+      {:error, changeset} ->
+        Util.send_error(conn, changeset.errors)
     end
   end
 
   def create(conn, params = %{"user" => %{"username" => username}}) when username != "" and username != nil do
-    changeset = Registrator.changeset(params["user"])
+    {confirmation_token, changeset} = Registrator.changeset(params["user"])
+                |> Confirmator.confirmation_needed_changeset
 
-    if changeset.valid? do
-      case Util.repo.transaction fn ->
-        Util.repo.insert(changeset)
-      end do
-        {:ok, user} ->
-          confirmable_and_invitable(conn, user, "")
-      end
-    else
-      Util.send_error(conn, Enum.into(changeset.errors, %{}))
+    case Util.repo.insert(changeset) do
+      {:ok, user} ->
+        confirmable_and_invitable(conn, user, confirmation_token)
+      {:error, changeset} ->
+        Util.send_error(conn, changeset.errors)
     end
   end
 
   def create(conn, params) do
     changeset = Registrator.changeset(params["user"])
-    Util.send_error(conn, Enum.into(changeset.errors, %{}))
+    Util.send_error(conn, changeset.errors)
   end
 
   @doc """
@@ -63,32 +56,20 @@ defmodule Sentinel.Controllers.Users do
     user = Util.repo.get!(UserHelper.model, user_id)
     changeset = Confirmator.confirmation_changeset(user, params)
 
-    if changeset.valid? do
-      user = Util.repo.update!(changeset)
-      encode_and_sign(conn, user)
-    else
-      Util.send_error(conn, Enum.into(changeset.errors, %{}))
+    case Util.repo.update(changeset) do
+      {:ok, user} -> encode_and_sign(conn, user)
+      {:error, changeset} -> Util.send_error(conn, changeset.errors)
     end
   end
 
-  def invited(conn, params) do
-    user_id = params["id"]
-
+  def invited(conn, %{"id" => user_id} = params) do
     user = Util.repo.get!(UserHelper.model, user_id)
-    user_params = Map.merge(params, %{
-      "id" => user.id,
-      "email" => user.email
-    })
     changeset = PasswordResetter.reset_changeset(user, params)
+      |> Confirmator.confirmation_changeset
 
-    if changeset.valid? do
-      user = Util.repo.update!(changeset)
-
-      changeset = Confirmator.confirmation_changeset(user, params)
-      user = Util.repo.update!(changeset)
-      encode_and_sign(conn, user)
-    else
-      Util.send_error(conn, Enum.into(changeset.errors, %{}))
+    case Util.repo.update(changeset) do
+      {:ok, updated_user} -> encode_and_sign(conn, updated_user)
+      {:error, changeset} -> Util.send_error(conn, changeset.errors)
     end
   end
 
@@ -98,23 +79,20 @@ defmodule Sentinel.Controllers.Users do
       {_confirmable, :true} -> # must be invited
         {password_reset_token, changeset} = PasswordResetter.create_changeset(user)
 
-        if changeset.valid? do
-          user = Util.repo.update!(changeset)
-        end
-
-        Mailer.send_invite_email(user, {confirmation_token, password_reset_token})
+        user = Util.repo.update!(changeset)
+        Mailer.send_invite_email(user, {confirmation_token, password_reset_token}) |> Mailer.managed_deliver
 
         conn
         |> put_status(201)
         |> json(:ok)
       {:required, _invitable} -> # must be confirmed
-        Mailer.send_welcome_email(user, confirmation_token)
+        Mailer.send_welcome_email(user, confirmation_token) |> Mailer.managed_deliver
 
         conn
         |> put_status(201)
         |> json(:ok)
       {_confirmable_default, _invitable} -> # default behavior, optional confirmable, not invitable
-        Mailer.send_welcome_email(user, confirmation_token)
+        Mailer.send_welcome_email(user, confirmation_token) |> Mailer.managed_deliver
         encode_and_sign(conn, user)
     end
   end
@@ -125,7 +103,7 @@ defmodule Sentinel.Controllers.Users do
     case Guardian.encode_and_sign(user, :token, permissions) do
       { :ok, token, _encoded_claims } -> conn
         |> put_status(201)
-        |> json %{token: token}
+        |> json(%{token: token})
       { :error, :token_storage_failure } -> Util.send_error(conn, %{errors: "Failed to store session, please try to login again using your new password"})
       { :error, reason } -> Util.send_error(conn, %{errors: reason})
     end

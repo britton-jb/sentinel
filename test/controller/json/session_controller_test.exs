@@ -1,5 +1,5 @@
-defmodule SessionControllerTest do
-  use Sentinel.Case
+defmodule Json.SessionControllerTest do
+  use Sentinel.TestCase
   use Plug.Test
   import RouterHelper
   alias Sentinel.TestRouter
@@ -9,6 +9,7 @@ defmodule SessionControllerTest do
   alias Mix.Config
 
   @email "user@example.com"
+  @odd_case_email "User@example.com"
   @username "user@example.com"
   @password "secret"
   @headers [{"content-type", "application/json"}]
@@ -17,7 +18,7 @@ defmodule SessionControllerTest do
   test "sign in with unknown email" do
     conn = call(TestRouter, :post, "/api/sessions", %{password: @password, email: @email}, @headers)
     assert conn.status == 401
-    assert conn.resp_body == Poison.encode!(%{errors: %{base: "Unknown email or password"}})
+    assert conn.resp_body == Poison.encode!(%{errors: [%{base: "Unknown email or password"}]})
   end
 
   test "sign in with wrong password" do
@@ -26,7 +27,7 @@ defmodule SessionControllerTest do
 
     conn = call(TestRouter, :post, "/api/sessions", %{password: "wrong", email: @email}, @headers)
     assert conn.status == 401
-    assert conn.resp_body == Poison.encode!(%{errors: %{base: "Unknown email or password"}})
+    assert conn.resp_body == Poison.encode!(%{errors: [%{base: "Unknown email or password"}]})
   end
 
   test "sign in as unconfirmed user - confirmable default/optional" do
@@ -40,7 +41,7 @@ defmodule SessionControllerTest do
     assert conn.status == 200
     %{"token" => token} = Poison.decode!(conn.resp_body)
 
-    assert repo.one(GuardianDb.Token).jwt == token
+    repo.get_by!(GuardianDb.Token, jwt: token)
   end
 
   test "sign in as unconfirmed user - confirmable false" do
@@ -54,7 +55,7 @@ defmodule SessionControllerTest do
     assert conn.status == 200
     %{"token" => token} = Poison.decode!(conn.resp_body)
 
-    assert repo.one(GuardianDb.Token).jwt == token
+    repo.get_by!(GuardianDb.Token, jwt: token)
   end
 
   test "sign in as unconfirmed user - confirmable required" do
@@ -66,7 +67,7 @@ defmodule SessionControllerTest do
 
     conn = call(TestRouter, :post, "/api/sessions", %{password: @password, email: @email}, @headers)
     assert conn.status == 401
-    assert conn.resp_body == Poison.encode!(%{errors: %{base: "Account not confirmed yet. Please follow the instructions we sent you by email."}})
+    assert conn.resp_body == Poison.encode!(%{errors: [%{base: "Account not confirmed yet. Please follow the instructions we sent you by email."}]})
   end
 
   test "sign in as confirmed user with email" do
@@ -78,13 +79,25 @@ defmodule SessionControllerTest do
     assert conn.status == 200
     %{"token" => token} = Poison.decode!(conn.resp_body)
 
-    assert repo.one(GuardianDb.Token).jwt == token
+    repo.get_by!(GuardianDb.Token, jwt: token)
+  end
+
+  test "sign in as confirmed user with email - case insensitive" do
+    Registrator.changeset(%{"email" => @odd_case_email, "password" => @password, "role" => @role})
+                                      |> Ecto.Changeset.put_change(:confirmed_at, Ecto.DateTime.utc)
+                                      |> repo.insert!
+
+    conn = call(TestRouter, :post, "/api/sessions", %{password: @password, email: String.upcase(@odd_case_email)}, @headers)
+    assert conn.status == 200
+    %{"token" => token} = Poison.decode!(conn.resp_body)
+
+    repo.get_by!(GuardianDb.Token, jwt: token)
   end
 
   test "sign in with unknown username" do
     conn = call(TestRouter, :post, "/api/sessions", %{password: @password, username: @username}, @headers)
     assert conn.status == 401
-    assert conn.resp_body == Poison.encode!(%{errors: %{base: "Unknown email or password"}})
+    assert conn.resp_body == Poison.encode!(%{errors: [%{base: "Unknown email or password"}]})
   end
 
   test "sign in with username and wrong password" do
@@ -93,7 +106,7 @@ defmodule SessionControllerTest do
 
     conn = call(TestRouter, :post, "/api/sessions", %{password: "wrong", username: @username}, @headers)
     assert conn.status == 401
-    assert conn.resp_body == Poison.encode!(%{errors: %{base: "Unknown email or password"}})
+    assert conn.resp_body == Poison.encode!(%{errors: [%{base: "Unknown email or password"}]})
   end
 
   test "sign in user with username" do
@@ -104,7 +117,7 @@ defmodule SessionControllerTest do
     assert conn.status == 200
     %{"token" => token} = Poison.decode!(conn.resp_body)
 
-    assert repo.one(GuardianDb.Token).jwt == token
+    repo.get_by!(GuardianDb.Token, jwt: token)
   end
 
   test "sign out" do

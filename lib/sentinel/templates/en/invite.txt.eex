@@ -1,7 +1,0 @@
-Hello <%= user.email %>!
-
-You've been invited to <%= Application.get_env(:sentinel, :app_name) %>
-<% if !Application.get_env(:sentinel, :confirmable) && Sentinel.RouterHelper.configured? do %>
-
-  Use this URL to confirm your account: <%= Sentinel.RouterHelper.helpers.users_url(Sentinel.RouterHelper.endpoint, :invited) %>?password_reset_token=<%= password_reset_token %>&confirmation_token=<%= confirmation_token %>
-<% end %>

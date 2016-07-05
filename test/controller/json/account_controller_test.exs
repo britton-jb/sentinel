@@ -1,7 +1,9 @@
-defmodule AccountControllerTest do
-  use Sentinel.Case
+defmodule Json.AccountControllerTest do
+  use Sentinel.TestCase
   use Plug.Test
+  use Bamboo.Test, shared: true
 
+  import Mock
   import RouterHelper
   alias Sentinel.TestRouter
   alias Sentinel.TestRepo
@@ -16,14 +18,7 @@ defmodule AccountControllerTest do
   @new_password "secret"
   @headers [{"content-type", "application/json"}]
 
-  setup_all do
-    Mailman.TestServer.start
-    :ok
-  end
-
   setup do
-    Mailman.TestServer.clear_deliveries
-
     user = TestRepo.insert!(%User{
       email: @old_email,
       confirmed_at: Ecto.DateTime.utc,
@@ -43,39 +38,47 @@ defmodule AccountControllerTest do
   test "get current user account info", context do
     conn = call(TestRouter, :get, "/api/account", %{}, context.headers)
     assert conn.status == 200
-    assert Poison.decode!(conn.resp_body) |> Map.get("email") == @old_email
+    assert Poison.decode!(conn.resp_body)["email"] == @old_email
   end
 
   test "update password", context do
     conn = call(TestRouter, :put, "/api/account", %{account: %{password: @new_password}}, context.headers)
     assert conn.status == 200
-    assert conn.resp_body == Poison.encode!("ok")
+    assert Poison.decode!(conn.resp_body)["hashed_password"] != context.user.hashed_password
     {:ok, _} = Authenticator.authenticate_by_email(@old_email, @new_password)
 
-    assert length(Mailman.TestServer.deliveries) == 0
+    refute_delivered_email Sentinel.Mailer.send_new_email_address_email(context.user, "token")
   end
 
   test "update email", context do
-    conn = call(TestRouter, :put, "/api/account", %{account: %{email: @new_email}}, context.headers)
-    assert conn.status == 200
-    assert conn.resp_body == Poison.encode!("ok")
-    {:ok, _} = Authenticator.authenticate_by_email(@old_email, @old_password)
-    assert TestRepo.one(User).unconfirmed_email == @new_email
+    mocked_token = SecureRandom.urlsafe_base64()
+    mocked_user = Map.merge(context.user, %{unconfirmed_email: @new_email})
+    mocked_mail = Sentinel.Mailer.send_new_email_address_email(mocked_user, mocked_token)
 
-    mail =  Mailman.TestServer.deliveries |> List.last |> Mailman.Email.parse!
-    assert mail.from == @from_email
-    assert mail.to == ["User <#{@new_email}>"]
-    assert mail.subject == "Please confirm your email address"
+    with_mock Sentinel.Mailer, [:passthrough], [send_new_email_address_email: fn(_, _) -> mocked_mail end] do
+      conn = call(TestRouter, :put, "/api/account", %{account: %{email: @new_email}}, context.headers)
+      assert conn.status == 200
+      assert Poison.decode!(conn.resp_body)["email"] == @old_email
+      assert Poison.decode!(conn.resp_body)["unconfirmed_email"] == @new_email
+      {:ok, _} = Authenticator.authenticate_by_email(@old_email, @old_password)
+
+      assert mocked_mail.from == @from_email
+      assert mocked_mail.to == @new_email
+      assert mocked_mail.subject == "Please confirm your email address"
+      assert_delivered_email mocked_mail
+    end
   end
 
   test "set email to the same email it was before", context do
     conn = call(TestRouter, :put, "/api/account", %{account: %{email: @old_email}}, context.headers)
     assert conn.status == 200
-    assert conn.resp_body == Poison.encode!("ok")
+    assert Poison.decode!(conn.resp_body)["email"] == @old_email
     {:ok, _} = Authenticator.authenticate_by_email(@old_email, @old_password)
-    assert TestRepo.one(User).unconfirmed_email == nil
 
-    assert length(Mailman.TestServer.deliveries) == 0
+    reloaded_user = TestRepo.get(User, context.user.id)
+    assert reloaded_user.unconfirmed_email == nil
+
+    refute_delivered_email Sentinel.Mailer.send_new_email_address_email(context.user, "token")
   end
 
   test "update account with custom validations", context do
@@ -84,9 +87,9 @@ defmodule AccountControllerTest do
     end)
     conn = call(TestRouter, :put, "/api/account", %{account: %{password: @new_password}}, context.headers)
     assert conn.status == 422
-    assert conn.resp_body == Poison.encode!(%{errors: %{password: :too_short}})
+    assert conn.resp_body == Poison.encode!(%{errors: [%{password: :too_short}]})
     {:ok, _} = Authenticator.authenticate_by_email(@old_email, @old_password)
 
-    assert length(Mailman.TestServer.deliveries) == 0
+    refute_delivered_email Sentinel.Mailer.send_new_email_address_email(context.user, "token")
   end
 end

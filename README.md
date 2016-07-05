@@ -4,17 +4,10 @@ Status](https://travis-ci.org/britton-jb/sentinel.svg?branch=master)](https://tr
 
 Things I wish [Guardian](https://github.com/ueberauth/guardian) included
 out of the box. Routing, confirmation emails, password reset emails.
-It's really just a thin wrapper on Guardian, and some ground work, but
-really, everybody shouldn't have to repeat this themselves when they
-build stuff.
+It's just a thin wrapper on Guardian buteverybody shouldn't have to repeat
+this themselves when they build stuff.
 
-Shamelessly borrows from
-[Devise](https://github.com/plataformatec/devise) and
-[PhoenixTokenAuth](https://github.com/manukall/phoenix_token_auth).
-
-If there are any ways that you feel that this library isn't "functional"
-or the code isn't written in "idiomatic Elixir" or whatever see the
-`Contributing/Want something new?` section.
+Suggestions? See the `Contributing/Want something new?` section.
 
 ## Installation
 Here's how to add it to your phoenix project, and things you need to
@@ -132,7 +125,8 @@ config :sentinel,
   invitable: :required, # possible options {:false, :true}, optional config, defaulting to false
   endpoint: MyApp.Endpoint,
   router: MyApp.Router,
-  user_view: MyApp.UserModel.View
+  user_view: MyApp.UserModel.View,
+  environment: :development
 ```
 
 ### Configure Mailman
@@ -272,25 +266,7 @@ Having experienced sending in PRs and never hearing anything about
 them, I know it sucks.
 
 ## TODO
-Ueberauth integration
-
-Add a mix tasks that does all the configuration? and one that includes
-the user model and router stuff for a fresh, fresh project.
-
-Mailer subject I18n
-
-## Still on the Roadmap
-Session/View vs JWT/API configuration
-
-Multiple Model types (user, admin)
-
-[Devise lockable](http://rubydoc.info/github/plataformatec/devise/master/Devise/Models/Lockable) equivalent
-
-[Devise
-trackable](http://rubydoc.info/github/plataformatec/devise/master/Devise/Models/Trackable) equivalent
-
-[Devise
-timeout-able](http://rubydoc.info/github/plataformatec/devise/master/Devise/Models/Timeoutable) equivalent
-
-[Devise enterprise security
-addon](https://github.com/phatworx/devise_security_extension) equivalent
+- HTML Views
+- README DOCUMENT :sentinel, :send_emails, ecto 2 syntax changes,
+  overriding Sentinel.EmailView and Sentinel.EmailLayoutView, other old
+  stuff/general doc update, applying custom layouts via the router plug

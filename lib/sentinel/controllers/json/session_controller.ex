@@ -1,12 +1,12 @@
-defmodule Sentinel.Controllers.Sessions do
+defmodule Sentinel.Controllers.Json.Session do
   use Phoenix.Controller
   alias Sentinel.Authenticator
   alias Sentinel.UserHelper
   alias Sentinel.Util
 
   plug Guardian.Plug.VerifyHeader
-  plug Guardian.Plug.LoadResource
   plug Guardian.Plug.EnsureAuthenticated, %{ handler: Application.get_env(:sentinel, :auth_handler) || Sentinel.AuthHandler } when action in [:delete]
+  plug Guardian.Plug.LoadResource
 
   @doc """
   Log in as an existing user.
@@ -24,8 +24,7 @@ defmodule Sentinel.Controllers.Sessions do
           { :error, :token_storage_failure } -> Util.send_error(conn, %{error: "Failed to store session, please try to login again using your new password"})
           { :error, reason } -> Util.send_error(conn, %{error: reason})
         end
-      {:error, errors} ->
-        Util.send_error(conn, errors, 401)
+      {:error, errors} -> Util.send_error(conn, errors, 401)
     end
   end
 
