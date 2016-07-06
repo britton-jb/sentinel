@@ -40,9 +40,7 @@ defmodule Json.UserControllerTest do
     with_mock Sentinel.Mailer, [:passthrough], [send_welcome_email: fn(_, _) -> mocked_mail end] do
       conn = call(TestRouter, :post, "/api/users", %{user: %{password: @password, email: @email}}, @headers)
       assert conn.status == 201
-      %{"token" => token} = Poison.decode!(conn.resp_body)
-
-      repo.get_by!(GuardianDb.Token, jwt: token)
+      assert %{"email" => _email} = Poison.decode!(conn.resp_body)
 
       user = TestRepo.get_by!(User, email: @email)
       refute is_nil(user.hashed_confirmation_token)
@@ -64,7 +62,7 @@ defmodule Json.UserControllerTest do
     with_mock Sentinel.Mailer, [:passthrough], [send_welcome_email: fn(_, _) -> mocked_mail end] do
       conn = call(TestRouter, :post, "/api/users", %{user: %{password: @password, email: @email}}, @headers)
       assert conn.status == 201
-      assert conn.resp_body == Poison.encode!("ok")
+      assert %{"email" => _email} = Poison.decode!(conn.resp_body)
 
       user = TestRepo.get_by!(User, email: @email)
       refute is_nil(user.hashed_confirmation_token)
@@ -82,9 +80,7 @@ defmodule Json.UserControllerTest do
 
     conn = call(TestRouter, :post, "/api/users", %{user: %{password: @password, email: @email}}, @headers)
     assert conn.status == 201
-    %{"token" => token} = Poison.decode!(conn.resp_body)
-
-    repo.get_by!(GuardianDb.Token, jwt: token)
+    assert %{"email" => _email} = Poison.decode!(conn.resp_body)
 
     user = TestRepo.get_by!(User, email: @email)
     refute is_nil(user.hashed_confirmation_token)
@@ -102,7 +98,7 @@ defmodule Json.UserControllerTest do
     with_mock Sentinel.Mailer, [:passthrough], [send_invite_email: fn(_, _) -> mocked_mail end] do
       conn = call(TestRouter, :post, "/api/users", %{user: %{email: @email}}, @headers)
       assert conn.status == 201
-      assert Poison.decode!(conn.resp_body) == "ok"
+      assert %{"email" => _email} = Poison.decode!(conn.resp_body)
 
       assert mocked_mail.from == @from_email
       assert mocked_mail.to == @email
@@ -122,7 +118,7 @@ defmodule Json.UserControllerTest do
     with_mock Sentinel.Mailer, [:passthrough], [send_invite_email: fn(_, _) -> mocked_mail end] do
       conn = call(TestRouter, :post, "/api/users", %{user: %{email: @email}}, @headers)
       assert conn.status == 201
-      assert Poison.decode!(conn.resp_body) == "ok"
+      assert %{"email" => _email} = Poison.decode!(conn.resp_body)
 
       assert mocked_mail.from == @from_email
       assert mocked_mail.to == @email
@@ -143,10 +139,9 @@ defmodule Json.UserControllerTest do
     user = repo.update!(changeset)
 
     conn = call(TestRouter, :post, "/api/users/#{user.id}/invited", %{confirmation_token: confirmation_token, password_reset_token: password_reset_token, password: @password}, @headers)
-    assert conn.status == 201
-    %{"token" => token} = Poison.decode!(conn.resp_body)
+    assert conn.status == 200
+    assert %{"email" => _email} = Poison.decode!(conn.resp_body)
 
-    repo.get_by!(GuardianDb.Token, jwt: token)
     updated_user = repo.get! UserHelper.model, user.id
 
     assert updated_user.hashed_confirmation_token == nil

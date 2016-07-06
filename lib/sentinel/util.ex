@@ -10,24 +10,31 @@ defmodule Sentinel.Util do
     Application.get_env(:sentinel, :crypto_provider, Comeonin.Bcrypt)
   end
 
+  def format_errors(errors) when is_list(errors) do
+    Enum.into(errors, %{})
+    |> Enum.map(fn{field, {message, _}} ->
+      %{ field => message }
+    end) |> List.wrap
+  end
+  def format_errors(errors) do
+    Enum.map(errors, fn{field, message} ->
+      %{ field => message }
+    end) |> List.wrap
+  end
+
   def send_error(conn, changeset_error, status \\ 422)
   def send_error(conn, changeset_error, status) when is_list(changeset_error) do
-    errors =
-      Enum.into(changeset_error, %{})
-      |> Enum.map(fn{field, {message, _}} ->
-        %{ field => message }
-      end) |> List.wrap
+    errors = Sentinel.Util.format_errors(changeset_error)
 
-    conn
-    |> put_status(status)
-    |> json(%{errors: errors})
+    Sentinel.Util.send_formatted_error(conn, errors, status)
   end
   def send_error(conn, changeset_error, status) do
-    errors =
-      Enum.map(changeset_error, fn{field, message} ->
-        %{ field => message }
-      end) |> List.wrap
+    errors = Sentinel.Util.format_errors(changeset_error)
 
+    Sentinel.Util.send_formatted_error(conn, errors, status)
+  end
+
+  def send_formatted_error(conn, errors, status \\ 422) do
     conn
     |> put_status(status)
     |> json(%{errors: errors})
