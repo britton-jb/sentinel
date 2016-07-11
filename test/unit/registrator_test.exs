@@ -19,13 +19,13 @@ defmodule RegistratorTest do
 
   test "changeset validates presence of email" do
     changeset = Registrator.changeset(%{})
-    assert changeset.errors[:email] == {"can't be blank", []}
+    assert changeset.errors[:email] == {"Username or email address required", []}
 
     changeset = Registrator.changeset(%{"email" => ""})
     assert changeset.errors[:email] == {"can't be blank", []}
 
     changeset = Registrator.changeset(%{"email" => nil})
-    assert changeset.errors[:email] == {"can't be blank", []}
+    assert changeset.errors[:email] == {"Username or email address required", []}
   end
 
   test "changeset validates presence of password when invitable is false" do

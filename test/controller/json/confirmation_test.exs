@@ -7,7 +7,6 @@ defmodule Json.ConfirmationTest do
   alias Sentinel.Confirmator
   alias Sentinel.AccountUpdater
   alias Sentinel.TestRepo
-  alias Sentinel.User
   import Sentinel.Util
   alias Sentinel.UserHelper
 
@@ -31,12 +30,11 @@ defmodule Json.ConfirmationTest do
     user = repo.insert!(changeset)
 
     conn = call(TestRouter, :post, "/api/users/#{user.id}/confirm", %{confirmation_token: token}, @headers)
-    assert conn.status == 201
-    {:ok, session_token} = Poison.decode!(conn.resp_body) |> Dict.fetch("token")
+    assert conn.status == 200
+    assert %{"email" => _email} = Poison.decode!(conn.resp_body)
 
     updated_user = repo.get! UserHelper.model, user.id
 
-    repo.get_by!(GuardianDb.Token, jwt: session_token)
     assert updated_user.hashed_confirmation_token == nil
     assert updated_user.confirmed_at != nil
   end
@@ -53,12 +51,9 @@ defmodule Json.ConfirmationTest do
     TestRepo.update!(updater_changeset)
 
     conn = call(TestRouter, :post, "/api/users/#{user.id}/confirm", %{confirmation_token: token}, @headers)
-    assert conn.status == 201
+    assert conn.status == 200
+    assert %{"email" => _email} = Poison.decode!(conn.resp_body)
 
-    session_token = Poison.decode!(conn.resp_body)
-            |> Dict.fetch!("token")
-
-    repo.get_by!(GuardianDb.Token, jwt: session_token)
     updated_user = repo.get! UserHelper.model, user.id
     assert updated_user.hashed_confirmation_token == nil
     assert updated_user.unconfirmed_email == nil

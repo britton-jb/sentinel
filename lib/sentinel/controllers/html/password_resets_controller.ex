@@ -39,8 +39,6 @@ defmodule Sentinel.Controllers.Html.PasswordResets do
   Resets a users password if the provided token matches
   Params should be:
   {user_id: 1, password_reset_token: "abc123"}
-  Responds with status 200 and body {token: token} if successfull. Use this token in subsequent requests as authentication.
-  Responds with status 422 and body {errors: [messages]} otherwise.
   """
   def reset(conn, params = %{"user_id" => user_id}, _headers \\%{}, _session \\ %{}) do
     user = Util.repo.get(UserHelper.model, user_id)
@@ -49,7 +47,6 @@ defmodule Sentinel.Controllers.Html.PasswordResets do
     case Util.repo.update(changeset) do
       {:ok, _updated_user} ->
         conn
-        #|> Guardian.Plug.sign_in(updated_user) #FIXME do we actualy want it to sign you in herer?
         |> put_status(:ok)
         |> put_flash(:info, "Successfully reset your password")
         |> redirect(to: Sentinel.RouterHelper.helpers.sessions_path(conn, :new))

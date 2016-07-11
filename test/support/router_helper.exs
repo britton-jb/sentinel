@@ -57,18 +57,17 @@ defmodule RouterHelper do
   @signing_opts Plug.Session.init(Keyword.put(@default_opts, :encrypt, false))
   def call(router, verb, path, params \\ nil, headers \\ []) do
     conn = Plug.Test.conn(verb, path, params)
-    conn =
-      Enum.reduce(headers, conn, fn ({name, value}, conn) ->
+    conn = Enum.reduce(headers, conn, fn ({name, value}, conn) ->
         put_req_header(conn, name, value)
       end) |> Plug.Conn.fetch_query_params(conn)
 
-    conn =
+    keyed_conn =
       conn.secret_key_base
       |> put_in(@secret)
       |> Plug.Session.call(@signing_opts)
       |> Plug.Conn.fetch_session
 
-    router.call(conn, router.init([]))
+    router.call(keyed_conn, router.init([]))
   end
 end
 

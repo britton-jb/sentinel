@@ -1,5 +1,4 @@
 defmodule Sentinel.UserHelper do
-  import Ecto.Query, only: [from: 2]
   alias Sentinel.Util
 
   def model do

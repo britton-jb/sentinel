@@ -277,3 +277,9 @@ Having said that if you bother to put up a PR I'll take a look, and
 either merge it, or let you know what needs to change before I do.
 Having experienced sending in PRs and never hearing anything about
 them, I know it sucks.
+
+## TODO
+- HTML Views
+- README DOCUMENT :sentinel, :send_emails, ecto 2 syntax changes,
+  overriding Sentinel.EmailView and Sentinel.EmailLayoutView, other old
+  stuff/general doc update, applying custom layouts via the router plug

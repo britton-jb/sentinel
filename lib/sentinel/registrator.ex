@@ -59,8 +59,11 @@ defmodule Sentinel.Registrator do
   def set_hashed_password(changeset = %{params: %{"password" => password}}) when password != "" and password != nil do
     hashed_password = Util.crypto_provider.hashpwsalt(password)
 
-    changeset
-    |> Changeset.put_change(:hashed_password, hashed_password)
+
+    case Enum.empty?(changeset.errors) do
+      true -> changeset |> Changeset.put_change(:hashed_password, hashed_password)
+      false -> changeset
+    end
   end
   def set_hashed_password(changeset) do
     if !is_invitable? do
