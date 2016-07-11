@@ -28,10 +28,10 @@ defmodule Sentinel.User do
 
   defp username_or_email_required(changeset) do
     case fetch_change(changeset, :username) do
-      {:ok, username} -> changeset
+      {:ok, _username} -> changeset
       :error ->
         case fetch_change(changeset, :email) do
-          {:ok, email} -> changeset
+          {:ok, _email} -> changeset
           :error ->
             changeset = add_error(changeset, :username, "Username or email address required")
             add_error(changeset, :email, "Username or email address required")

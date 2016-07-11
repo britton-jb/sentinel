@@ -1,16 +1,3 @@
-#### FIXME don't push notes
-- README DOCUMENT :sentinel, :send_emails, ecto 2 syntax changes,
-  overriding Sentinel.EmailView and Sentinel.EmailLayoutView, other old
-  stuff/general doc update, applying custom layouts via the router plug
-- creedo
-- update changelog
-
-## done
-- lots of general codebase cleanup
-- instances of rendering pure json for user render
-- 403 to 401 specs update
-- Make email handling case insensitive on login
-
 # Sentinel
 [![Build
 Status](https://travis-ci.org/britton-jb/sentinel.svg?branch=master)](https://travis-ci.org/britton-jb/sentinel)
@@ -32,11 +19,6 @@ setup:
 
 # If you'd like to database back your tokens, and prevent replayability
 {:guardian_db, "~> 0.4.0"},
-
-# Add mailman as a peer dependency
-#{:mailman, "~> 0.2.1"}
-# OR
-#{:mailman, github: "Joe-noh/mailman"}
 ```
 
 ### The User Model
@@ -48,7 +30,7 @@ permissions](https://github.com/ueberauth/guardian/#permissions).
 
 ```elixir
 defmodule MyApp.User do
-  use Ecto.Model
+  use Ecto.Schema
 
   schema "users" do
     field  :email,                       :string     # or :username
@@ -122,7 +104,6 @@ defmodule MyApp.Repo.Migrations.GuardianDb do
 end
 ```
 
-
 [More info](https://github.com/hassox/guardian_db)
 
 ### Configure Sentinel
@@ -142,28 +123,8 @@ config :sentinel,
   environment: :development
 ```
 
-### Configure Mailman
-```
-# Local server example
-config :mailman,
-  port: 1234
-
-# Mailgun Example
-config :mailman,
-  port: 587,
-  address: "smtp.mailgun.org",
-  user_name: System.get_env("MAILGUN_USERNAME"),
-  password: System.get_env("MAILGUN_PASSWORD")
-
-# Mandrill Example
-config :mailman,
-  port: 587,
-  address: "smtp.mandrillapp.com",
-  user_name: System.get_env("MANDRILL_USERNAME"),
-  password: System.get_env("MANDRILL_PASSWORD")
-```
-
-[More info](https://github.com/kamilc/mailman/)
+### Configure Bamboo
+[More info](https://github.com/thoughtbot/bamboo/)
 
 ### Routes
 Add the following to your routes file to add default routes, complete
@@ -279,7 +240,6 @@ Having experienced sending in PRs and never hearing anything about
 them, I know it sucks.
 
 ## TODO
-- HTML Views
 - README DOCUMENT :sentinel, :send_emails, ecto 2 syntax changes,
   overriding Sentinel.EmailView and Sentinel.EmailLayoutView, other old
   stuff/general doc update, applying custom layouts via the router plug

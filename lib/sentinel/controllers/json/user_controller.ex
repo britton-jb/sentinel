@@ -20,8 +20,7 @@ defmodule Sentinel.Controllers.Json.User do
         conn
         |> put_status(201)
         |> render(Sentinel.ViewHelper.user_view, "show.json", %{user: user})
-      {:error, reason} ->
-        Util.send_formatted_error(conn, reason)
+      {:error, changeset} -> Util.send_error(conn, changeset.errors)
     end
   end
 
@@ -30,7 +29,8 @@ defmodule Sentinel.Controllers.Json.User do
   Parameter "id" should be the user's id.
   Parameter "confirmation" should be the user's confirmation token.
   If the confirmation matches, the user will be confirmed and signed in.
-  Responds with status 201 and body {token: token} if successfull. Use this token in subsequent requests as authentication.
+  Responds with status 201 and body {token: token} if successfull.
+  Use this token in subsequent requests as authentication.
   Responds with status 422 and body {errors: {field: "message"}} otherwise.
   """
   def confirm(conn, params) do
@@ -39,8 +39,7 @@ defmodule Sentinel.Controllers.Json.User do
         conn
         |> put_status(200)
         |> render(Sentinel.ViewHelper.user_view, "show.json", %{user: user})
-      {:error, reason} ->
-        Util.send_formatted_error(conn, reason)
+      {:error, changeset} -> Util.send_error(conn, changeset.errors)
     end
   end
 
@@ -50,7 +49,7 @@ defmodule Sentinel.Controllers.Json.User do
         conn
         |> put_status(200)
         |> render(Sentinel.ViewHelper.user_view, "show.json", %{user: user})
-      { :error, reason } -> Util.send_formatted_error(conn, %{errors: reason})
+      { :error, changeset} -> Util.send_error(conn, changeset.errors)
     end
   end
 end

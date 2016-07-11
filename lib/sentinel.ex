@@ -24,7 +24,7 @@ defmodule Sentinel do
       post    "/users",                 Sentinel.Controllers.Json.User, :create
       post    "/users/:id/invited",     Sentinel.Controllers.Json.User, :invited
       if Application.get_env(:sentinel, :confirmable) != :false do
-        post    "/users/:id/confirm",     Sentinel.Controllers.Json.User, :confirm
+        post    "/users/confirm",     Sentinel.Controllers.Json.User, :confirm
       end
       post    "/sessions",              Sentinel.Controllers.Json.Session, :create
       delete  "/sessions",              Sentinel.Controllers.Json.Session, :delete

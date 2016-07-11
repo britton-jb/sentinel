@@ -17,9 +17,9 @@ defmodule Json.ConfirmationTest do
   test "confirm user with a bad token" do
     {_, changeset} = Registrator.changeset(%{email: @email, password: @password})
                       |> Confirmator.confirmation_needed_changeset
-    user = repo.insert!(changeset)
+    repo.insert!(changeset)
 
-    conn = call(TestRouter, :post, "/api/users/#{user.id}/confirm", %{confirmation_token: "bad_token"}, @headers)
+    conn = call(TestRouter, :post, "/api/users/confirm", %{email: @email, confirmation_token: "bad_token"}, @headers)
     assert conn.status == 422
     assert conn.resp_body == Poison.encode!(%{errors: [%{confirmation_token: "invalid"}]})
   end
@@ -29,7 +29,7 @@ defmodule Json.ConfirmationTest do
                           |> Confirmator.confirmation_needed_changeset
     user = repo.insert!(changeset)
 
-    conn = call(TestRouter, :post, "/api/users/#{user.id}/confirm", %{confirmation_token: token}, @headers)
+    conn = call(TestRouter, :post, "/api/users/confirm", %{email: @email, confirmation_token: token}, @headers)
     assert conn.status == 200
     assert %{"email" => _email} = Poison.decode!(conn.resp_body)
 
@@ -50,7 +50,7 @@ defmodule Json.ConfirmationTest do
     {token, updater_changeset} = AccountUpdater.changeset(user, %{"email" => "new@example.com"})
     TestRepo.update!(updater_changeset)
 
-    conn = call(TestRouter, :post, "/api/users/#{user.id}/confirm", %{confirmation_token: token}, @headers)
+    conn = call(TestRouter, :post, "/api/users/confirm", %{email: user.email, confirmation_token: token}, @headers)
     assert conn.status == 200
     assert %{"email" => _email} = Poison.decode!(conn.resp_body)
 

@@ -4,7 +4,6 @@ defmodule Html.ConfirmationTest do
   use Phoenix.ConnTest
 
   import RouterHelper
-  import HtmlRequestHelper
   alias Sentinel.Registrator
   alias Sentinel.Confirmator
 
@@ -47,7 +46,7 @@ defmodule Html.ConfirmationTest do
     user = Sentinel.Util.repo.insert!(changeset)
 
     conn = call(Sentinel.TestRouter, :post, "/users/confirm", %{email: user.email, confirmation_token: token})
-    assert conn.status == 201
+    assert conn.status == 200
 
     updated_user = Sentinel.Util.repo.get! Sentinel.UserHelper.model, user.id
 
@@ -67,7 +66,7 @@ defmodule Html.ConfirmationTest do
     new_email_user = Sentinel.TestRepo.update!(changeset)
 
     conn = call(Sentinel.TestRouter, :post, "/users/confirm", %{email: new_email_user.email, confirmation_token: token})
-    assert conn.status == 201
+    assert conn.status == 200
 
     updated_user = Sentinel.Util.repo.get! Sentinel.UserHelper.model, user.id
     assert updated_user.hashed_confirmation_token == nil

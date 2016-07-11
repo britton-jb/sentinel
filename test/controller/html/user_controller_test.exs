@@ -3,11 +3,8 @@ defmodule Html.UserControllerTest do
   use Plug.Test
   use Bamboo.Test, shared: true
 
-  #FIXME need to include body tests
-
   import Mock
   import RouterHelper
-  import HtmlRequestHelper
   alias Sentinel.Registrator
   alias Sentinel.PasswordResetter
   alias Sentinel.Confirmator
@@ -42,6 +39,7 @@ defmodule Html.UserControllerTest do
     with_mock Sentinel.Mailer, [:passthrough], [send_welcome_email: fn(_, _) -> mocked_mail end] do
       conn = call(TestRouter, :post, "/users", %{user: %{password: @password, email: @email}})
       assert conn.status == 201
+      assert conn.private.phoenix_flash == %{"info" => "Successfully logged in. Please confirm your account"}
 
       user = TestRepo.get_by!(User, email: @email)
       refute is_nil(user.hashed_confirmation_token)
@@ -63,6 +61,7 @@ defmodule Html.UserControllerTest do
     with_mock Sentinel.Mailer, [:passthrough], [send_welcome_email: fn(_, _) -> mocked_mail end] do
       conn = call(TestRouter, :post, "/users", %{user: %{password: @password, email: @email}})
       assert conn.status == 201
+      assert conn.private.phoenix_flash == %{"info" => "Successfully created account. Please confirm your account"}
 
       user = TestRepo.get_by!(User, email: @email)
       refute is_nil(user.hashed_confirmation_token)
@@ -80,6 +79,7 @@ defmodule Html.UserControllerTest do
 
     conn = call(TestRouter, :post, "/users", %{user: %{password: @password, email: @email}})
     assert conn.status == 201
+    assert conn.private.phoenix_flash == %{"info" => "Successfully logged in"}
 
     user = TestRepo.get_by!(User, email: @email)
     refute is_nil(user.hashed_confirmation_token)
@@ -97,6 +97,7 @@ defmodule Html.UserControllerTest do
     with_mock Sentinel.Mailer, [:passthrough], [send_invite_email: fn(_, _) -> mocked_mail end] do
       conn = call(TestRouter, :post, "/users", %{user: %{email: @email}})
       assert conn.status == 201
+      assert conn.private.phoenix_flash == %{"info" => "Successfully invited the user"}
 
       assert mocked_mail.from == @from_email
       assert mocked_mail.to == @email
@@ -116,6 +117,7 @@ defmodule Html.UserControllerTest do
     with_mock Sentinel.Mailer, [:passthrough], [send_invite_email: fn(_, _) -> mocked_mail end] do
       conn = call(TestRouter, :post, "/users", %{user: %{email: @email}})
       assert conn.status == 201
+      assert conn.private.phoenix_flash == %{"info" => "Successfully invited the user"}
 
       assert mocked_mail.from == @from_email
       assert mocked_mail.to == @email
@@ -137,6 +139,7 @@ defmodule Html.UserControllerTest do
 
     conn = call(TestRouter, :post, "/users/#{user.id}/invited", %{confirmation_token: confirmation_token, password_reset_token: password_reset_token, password: @password})
     assert conn.status == 201
+    assert conn.private.phoenix_flash == %{"info" => "Successfully setup your account"}
 
     updated_user = repo.get! UserHelper.model, user.id
 
@@ -150,11 +153,13 @@ defmodule Html.UserControllerTest do
 
     conn = call(TestRouter, :post, "/users", %{user: %{email: @email}})
     assert conn.status == 422
+    assert String.contains?(conn.resp_body, "Unable to complete the registration")
   end
 
   test "sign up with missing email" do
     conn = call(TestRouter, :post, "/users", %{"user" => %{"password" => @password}})
     assert conn.status == 422
+    assert String.contains?(conn.resp_body, "Unable to complete the registration")
   end
 
   test "sign up with custom validations" do
@@ -166,5 +171,6 @@ defmodule Html.UserControllerTest do
     end)
     conn = call(TestRouter, :post, "/users", %{user: %{email: @email, password: @password}})
     assert conn.status == 422
+    assert String.contains?(conn.resp_body, "Unable to complete the registration")
   end
 end

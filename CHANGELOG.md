@@ -3,11 +3,14 @@
 `Sentinel.AuthHandler` returns `401` instead of `403` - because I forgot
 how to HTTP when writing this library initially
 
+Updates a number of API endpoints to return different HTTP status
+codes, more RESTFUL interface.
+
 Lots of general codebase cleanup, thanks in part to
 [@Draiken](https://github.com/Draiken), and due to the fact that I'm
 becoming more comfortable with Elixir
 
-Email hanlding is no longer case sensitive. Don't know how this bug got
+Email handling is no longer case sensitive. Don't know how this bug got
 past me, but now `username` is case sensitive, `email` is not. Added
 specs to prevent regression
 
@@ -21,6 +24,8 @@ Swapped out email system from `mailer` to
 [Bamboo](https://github.com/thoughtbot/bamboo), because I trust their
 team, and because I don't have to use a fork in order to get a working
 testing utility
+
+HTML Views added
 
 ## 0.1.0
 Merges in @termoose's changes that declutter compilation output

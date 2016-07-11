@@ -1,8 +1,6 @@
 defmodule Sentinel.Controllers.Html.Sessions do
   use Phoenix.Controller
   alias Sentinel.Authenticator
-  alias Sentinel.UserHelper
-  alias Sentinel.Util
 
   plug Guardian.Plug.VerifySession
   plug Guardian.Plug.EnsureAuthenticated, %{ handler: Application.get_env(:sentinel, :auth_handler) || Sentinel.AuthHandler } when action in [:delete]
@@ -27,9 +25,7 @@ defmodule Sentinel.Controllers.Html.Sessions do
         |> Guardian.Plug.sign_in(user)
         |> put_flash(:info, "Successfully logged in")
         |> redirect(to: "/")
-      {:error, errors} ->
-        changeset = Sentinel.Session.changeset(%Sentinel.Session{})
-
+      {:error, _errors} ->
         conn
         |> put_flash(:error, "Unable to authenticate successfully")
         |> put_status(:unauthorized)
@@ -48,9 +44,7 @@ defmodule Sentinel.Controllers.Html.Sessions do
         |> Guardian.Plug.sign_in(user)
         |> put_flash(:info, "Successfully logged in")
         |> redirect(to: "/")
-      {:error, errors} ->
-        changeset = Sentinel.Session.changeset(%Sentinel.Session{})
-
+      {:error, _errors} ->
         conn
         |> put_flash(:error, "Unable to authenticate successfully")
         |> put_status(:unauthorized)

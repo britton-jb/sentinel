@@ -16,7 +16,7 @@ defmodule Sentinel.UserRegistration do
 
     case Util.repo.insert(changeset) do
       {:ok, user} -> confirmable_and_invitable(user, confirmation_token)
-      {:error, changeset} -> {:error, Sentinel.Util.format_errors(changeset.errors)}
+      {:error, changeset} -> {:error, changeset}
     end
   end
 
@@ -28,7 +28,7 @@ defmodule Sentinel.UserRegistration do
 
     case Util.repo.insert(changeset) do
       {:ok, user} -> confirmable_and_invitable(user, "")
-      {:error, changeset} -> {:error, Sentinel.Util.format_errors(changeset.errors)}
+      {:error, changeset} -> {:error, changeset}
     end
   end
 
@@ -37,16 +37,20 @@ defmodule Sentinel.UserRegistration do
   """
   def register(%{"user" => user}) do
     changeset = Registrator.changeset(user)
-    {:error, Sentinel.Util.format_errors(changeset.errors)}
+    {:error, changeset}
   end
 
-  def confirm(params = %{"id" => user_id, "confirmation_token" => _}) do
-    user = Util.repo.get!(UserHelper.model, user_id)
+  def confirm(params = %{"email" => email}) do
+    user =
+      case Util.repo.get_by(UserHelper.model, email: email) do
+        nil -> Util.repo.get_by!(UserHelper.model, unconfirmed_email: email)
+        user -> user
+      end
     changeset = Confirmator.confirmation_changeset(user, params)
 
     case Util.repo.update(changeset) do
       {:ok, updated_user} -> {:ok, updated_user}
-      {:error, changeset} -> {:error, Sentinel.Util.format_errors(changeset.errors)}
+      {:error, changeset} -> {:error, changeset}
     end
   end
 
@@ -57,7 +61,7 @@ defmodule Sentinel.UserRegistration do
 
     case Util.repo.update(changeset) do
       {:ok, updated_user} -> {:ok, updated_user}
-      {:error, changeset} -> {:error, Sentinel.Util.format_errors(changeset.errors)}
+      {:error, changeset} -> {:error, changeset}
     end
   end
 
