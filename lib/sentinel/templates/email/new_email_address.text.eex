@@ -1,0 +1,7 @@
+Hello <%= @user.email %>!
+
+We're contacting you to notify you that an email address change was requested.
+<% if !Application.get_env(:sentinel, :confirmable) && Sentinel.RouterHelper.configured? do %>
+
+  Use this URL to confirm email address change: <%= Sentinel.RouterHelper.helpers.users_url(Sentinel.RouterHelper.endpoint, :confirm) %>?confirmation_token=<%= @confirmation_token %>
+<% end %>

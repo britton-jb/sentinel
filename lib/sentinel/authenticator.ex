@@ -10,12 +10,13 @@ defmodule Sentinel.Authenticator do
   """
   @unconfirmed_account_error_message "Account not confirmed yet. Please follow the instructions we sent you by email."
   def authenticate_by_email(email, password) do
-    user = UserHelper.find_by_email(email)
-    authenticate(user, password)
+    String.downcase(email)
+    |> UserHelper.find_by_email
+    |> authenticate(password)
   end
   def authenticate_by_username(username, password) do
-    user = UserHelper.find_by_username(username)
-    authenticate(user, password)
+    UserHelper.find_by_username(username)
+    |> authenticate(password)
   end
 
   def authenticate(user, password) do

@@ -37,13 +37,20 @@ defmodule Sentinel.Confirmator do
     Changeset.cast(user, params, [], ~w())
     |> Changeset.put_change(:hashed_confirmation_token, nil)
     |> Changeset.put_change(:unconfirmed_email, nil)
+    |> Changeset.put_change(:confirmed_at, Ecto.DateTime.utc)
     |> Changeset.put_change(:email, unconfirmed_email)
+    |> validate_token
+  end
+  def confirmation_changeset(%{data: %{confirmed_at: nil}} = password_reset_changeset) do
+    password_reset_changeset
+    |> Changeset.put_change(:hashed_confirmation_token, nil)
+    |> Changeset.put_change(:confirmed_at, Ecto.DateTime.utc)
     |> validate_token
   end
 
   defp validate_token(changeset) do
     token_matches = Util.crypto_provider.checkpw(changeset.params["confirmation_token"],
-    changeset.model.hashed_confirmation_token)
+    changeset.data.hashed_confirmation_token)
     do_validate_token token_matches, changeset
   end
 

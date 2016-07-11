@@ -1,0 +1,15 @@
+<% if assigns.conn.private[:phoenix_controller] != Sentinel.Controllers.Html.PasswordResets do %>
+  <%= link "Log in", to: Sentinel.RouterHelper.helpers.sessions_path(@conn, :new) %><br />
+<% end %>
+
+<% if assigns.conn.private[:phoenix_controller] != Sentinel.Controllers.Html.User do %>
+  <%= link "Sign up", to: Sentinel.RouterHelper.helpers.user_path(@conn, :new) %><br />
+<% end %>
+
+<% if assigns.conn.private[:phoenix_controller] != Sentinel.Controllers.Html.User && assigns.conn.private[:phoenix_controller] != Sentinel.Controllers.Html.PasswordResets do %>
+  <%= link "Forgot your password?", to: Sentinel.RouterHelper.helpers.password_resets_path(@conn, :new) %><br />
+<% end %>
+
+<% if Application.get_env(:sentinel, :confirmable) != :false && assigns.conn.private[:phoenix_controller] != Sentinel.Controllers.Html.User do %>
+  <%= link "Didn't receive confirmation instructions?", to: Sentinel.RouterHelper.helpers.user_path(@conn, :confirmation_instructions) %><br />
+<% end %>

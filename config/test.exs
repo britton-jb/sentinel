@@ -19,12 +19,19 @@ config :guardian_db, GuardianDb,
 config :sentinel,
   app_name: "Test App",
   user_model: Sentinel.User,
-  emailing_module: Sentinel.TestMailing,
   email_sender: "test@example.com",
   crypto_provider: Comeonin.Bcrypt,
-  unauthorized_handler: Sentinel.AuthHandler,
   repo: Sentinel.TestRepo,
-  user_view: Sentinel.UserView
+  ecto_repos: [Sentinel.TestRepo],
+  auth_handler: Sentinel.AuthHandler,
+  user_view: Sentinel.UserView,
+  error_view: SentinelTester.ErrorView,
+  router: Sentinel.TestRouter,
+  endpoint: Sentinel.Endpoint,
+  send_emails: true
+
+config :sentinel, Sentinel.Endpoint,
+  secret_key_base: "sentinel_sekret"
 
 config :sentinel, Sentinel.TestRepo,
   username: "postgres",
@@ -33,9 +40,10 @@ config :sentinel, Sentinel.TestRepo,
   pool: Ecto.Adapters.SQL.Sandbox,
   url: "ecto://localhost/sentinel_test",
   size: 1,
-  max_overflow: 0
+  max_overflow: 0,
+  priv: "test/support"
 
-config :mailman,
-  port: 1234,
-  html_email_templates: "lib/sentinel/templates/",
-  text_email_templates: "lib/sentinel/templates/"
+config :sentinel, Sentinel.Mailer,
+  adapter: Bamboo.TestAdapter
+
+config :bamboo, :refute_timeout, 10

@@ -7,13 +7,11 @@ defmodule Sentinel.UserHelper do
   end
 
   def find_by_email(email) do
-    query = from u in model, where: u.email == ^email
-    Util.repo.one query
+    Util.repo.get_by(Sentinel.UserHelper.model, email: email)
   end
 
   def find_by_username(username) do
-    query = from u in model, where: u.username == ^username
-    Util.repo.one query
+    Util.repo.get_by(Sentinel.UserHelper.model, username: username)
   end
 
   def validator(changeset) do

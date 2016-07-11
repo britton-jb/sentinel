@@ -1,11 +1,7 @@
 defmodule Sentinel.Mailer do
-  alias Mailman.Email
-
-  def deliver(email, config) do
-    if email do
-      Mailman.deliver(email, config)
-    end
-  end
+  use Bamboo.Mailer, otp_app: :sentinel
+  use Bamboo.Phoenix, view: Sentinel.EmailView
+  import Bamboo.Email
 
   defp email_sender do
     Application.get_env(:sentinel, :email_sender)
@@ -15,92 +11,59 @@ defmodule Sentinel.Mailer do
     Application.get_env(:sentinel, :reply_to) || email_sender
   end
 
-  defp app_name do
+  defp send_emails? do
+    Application.get_env(:sentinel, :send_emails)
+  end
+
+  def app_name do
     Application.get_env(:sentinel, :app_name)
   end
 
-  def send_new_email_address_email(user, confirmation_token, language \\ :en) do
-    language_string = Atom.to_string(language)
-
-    email =  %Email{
-      from: email_sender,
-      reply_to: reply_to,
-      to: [user.unconfirmed_email],
-      data: [user: user, confirmation_token: confirmation_token],
-      subject: "Please confirm your email address",
-      html: "/#{language_string}/new_email_address.html.eex",
-      text: "/#{language_string}/new_email_address.txt.eex",
-    }
-
-    deliver(email, config)
+  def base_email(user) do
+    new_email
+    |> put_layout({Sentinel.EmailLayoutView, :email})
+    |> to(user.email)
+    |> from(email_sender)
+    |> put_header("Reply-To", reply_to)
   end
 
-  def send_password_reset_email(user, password_reset_token, language \\ :en) do
-    language_string = Atom.to_string(language)
-
-    email =  %Email{
-      from: email_sender,
-      reply_to: reply_to,
-      to: [user.email],
-      data: [user: user, password_reset_token: password_reset_token],
-      subject: "Reset Your Password",
-      html: "/#{language_string}/password_reset.html.eex",
-      text: "/#{language_string}/password_reset.txt.eex",
-    }
-
-    deliver(email, config)
+  def send_new_email_address_email(user, confirmation_token) do
+    Sentinel.Mailer.base_email(user)
+    |> to(user.unconfirmed_email)
+    |> subject("Please confirm your email address")
+    |> assign(:user, user)
+    |> assign(:confirmation_token, confirmation_token)
+    |> render(:new_email_address)
   end
 
-  def send_welcome_email(user, confirmation_token, language \\ :en) do
-    language_string = Atom.to_string(language)
-
-    email =  %Email{
-      from: email_sender,
-      reply_to: reply_to,
-      to: [user.email],
-      data: [user: user, confirmation_token: confirmation_token],
-      subject: "Hello #{user.email}",
-      html: "/#{language_string}/welcome.html.eex",
-      text: "/#{language_string}/welcome.txt.eex",
-    }
-
-    deliver(email, config)
+  def send_password_reset_email(user, password_reset_token) do
+    Sentinel.Mailer.base_email(user)
+    |> assign(:user, user)
+    |> assign(:password_reset_token, password_reset_token)
+    |> subject("Reset Your Password")
+    |> render(:password_reset)
   end
 
-  def send_invite_email(user, {confirmation_token, password_reset_token}, language \\ :en) do
-    language_string = Atom.to_string(language)
-
-    email =  %Email{
-      from: email_sender,
-      reply_to: reply_to,
-      to: [user.email],
-      data: [user: user, confirmation_token: confirmation_token, password_reset_token: password_reset_token],
-      subject: "You've been invited to #{app_name} #{user.email}",
-      html: "/#{language_string}/invite.html.eex",
-      text: "/#{language_string}/invite.txt.eex",
-    }
-
-    deliver(email, config)
+  def send_welcome_email(user, confirmation_token) do
+    Sentinel.Mailer.base_email(user)
+    |> assign(:user, user)
+    |> assign(:confirmation_token, confirmation_token)
+    |> subject("Hello #{user.email}")
+    |> render(:welcome)
   end
 
-  def env_config do
-    case Mix.env do
-      :test ->
-        %Mailman.TestConfig{}
-      _ ->
-        %Mailman.LocalSmtpConfig{ port: Application.get_env(:mailman, :port)}
+  def send_invite_email(user, {confirmation_token, password_reset_token}) do
+    Sentinel.Mailer.base_email(user)
+    |> assign(:user, user)
+    |> assign(:confirmation_token, confirmation_token)
+    |> assign(:password_reset_token, password_reset_token)
+    |> subject("You've been invited to #{app_name} #{user.email}")
+    |> render("invite.html")
+  end
+
+  def managed_deliver(email) do
+    if send_emails? do
+      Sentinel.Mailer.deliver_later(email)
     end
-  end
-
-  def config do
-    %Mailman.Context{
-      config: env_config,
-      composer: %Mailman.EexComposeConfig{
-        html_file: true,
-        text_file: true,
-        html_file_path: Application.get_env(:mailman, :html_email_templates) || Path.expand("templates/", __DIR__),
-        text_file_path: Application.get_env(:mailman, :text_email_templates) || Path.expand("templates/", __DIR__),
-      }
-    }
   end
 end
