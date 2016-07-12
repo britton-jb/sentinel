@@ -137,10 +137,16 @@ defmodule MyApp.Router do
   use MyApp.Web, :router
   require Sentinel
 
+  scope "/" do
+    pipe_through :browser
+
+    Sentinel.mount_html
+  end
+
   scope "/api" do
     pipe_through :api
 
-    Sentinel.mount
+    Sentinel.mount_api
   end
 end
 ```
