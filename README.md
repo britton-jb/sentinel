@@ -15,10 +15,10 @@ setup:
 
 ```
 # mix.exs
-{:sentinel, "~> 0.1.0"},
+{:sentinel, "~> 1.0.0"},
 
 # If you'd like to database back your tokens, and prevent replayability
-{:guardian_db, "~> 0.4.0"},
+{:guardian_db, "~> 0.7.0"},
 ```
 
 ### The User Model
@@ -45,8 +45,8 @@ defmodule MyApp.User do
   @required_fields ~w(email)
   @optional_fields ~w()
 
-  def changeset(model, params \\ :empty) do
-    model
+  def changeset(struct, params \\ :empty) do
+    struct
     |> cast(params, @required_fields, @optional_fields)
   end
 
@@ -123,6 +123,8 @@ config :sentinel,
   environment: :development
 ```
 
+See `config/test.exs` for more current examples of configuring Sentinel
+
 ### Configure Bamboo
 [More info](https://github.com/thoughtbot/bamboo/)
 
@@ -143,7 +145,7 @@ defmodule MyApp.Router do
 end
 ```
 
-The generated routes are:
+The generated routes are shown in `/lib/sentinel.ex`:
 
 method | path | description
 -------|------|------------
@@ -207,15 +209,6 @@ get   "account",               Sentinel.Controllers.Account, :show
 put   "account",               Sentinel.Controllers.Account, :update
 ```
 
-### Mailer Customization/I18n
-You setup your own email templates to send out by configuring the
-`mailman` `html_email_tempaltes` and `text_email_templates` config
-variables to point to your own email template directories.
-
-Internationalization is easy. Just make a folder for each langauge under
-your email template directory. Pass in the language to your mailer
-config
-
 ### Auth Error Handler
 If you'd like to write your own custom authorization or authentication
 handler change the `auth_handler` Sentinel configuration option
@@ -224,6 +217,11 @@ to the module name of your handler.
 It must define two functions, `unauthorized/2`, and `unauthenticated/2`,
 where the first parameter is the connection, and the second is
 information about the session.
+
+## Notes
+1.0.0 attempted to utilize the semantic versioning tradition of
+increasing the major version on breaking changes. There are many
+breaking changes in this update.
 
 ## Contributing/Want something new?
 Create an issue. Preferably with a PR. If you're super awesome
