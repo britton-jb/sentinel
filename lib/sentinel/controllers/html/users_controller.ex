@@ -2,7 +2,7 @@ defmodule Sentinel.Controllers.Html.User do
   use Phoenix.Controller
 
   def new(conn, _params) do
-    changeset = Sentinel.UserHelper.model.changeset(%{})
+    changeset = Sentinel.UserHelper.model.changeset(struct(Sentinel.UserHelper.model))
 
     conn
     |> put_status(:ok)
