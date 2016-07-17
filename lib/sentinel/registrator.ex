@@ -66,12 +66,10 @@ defmodule Sentinel.Registrator do
     end
   end
   def set_hashed_password(changeset) do
-    if !is_invitable? do
-      changeset = changeset
-      |> Changeset.add_error(:password, "can't be blank")
+    cond do
+      !is_invitable? -> changeset |> Changeset.add_error(:password, "can't be blank")
+      true -> changeset
     end
-
-    changeset
   end
 
   defp is_invitable? do
