@@ -1,21 +1,71 @@
 # Sentinel
-[![Build
-Status](https://travis-ci.org/britton-jb/sentinel.svg?branch=master)](https://travis-ci.org/britton-jb/sentinel)
+[![Build Status][travis-img]][travis] [![Hex Version][hex-img]][hex]
+[![License][license-img]][license]
+[travis-img]: https://travis-ci.org/britton-jb/sentinel.svg?branch=master
+[travis]: https://travis-ci.org/britton-jb/sentinel
+[hex-img]: https://img.shields.io/hexpm/v/sentinel.svg
+[hex]: https://hex.pm/packages/sentinel
+[license-img]: http://img.shields.io/badge/license-MIT-brightgreen.svg
+[license]: http://opensource.org/licenses/MIT
+
+#### FIXME vv
+- It should raise error at run/compile time if it can't find those
+  routes for teh router helper
+- Add a route to verify the token is legit and return the user? YES!!!
+- is account view modification necessary/wanted in config?
+
+- on change password kill password reset token
+- ensure email gets downcased on insert
+- password reset token setting and spec
+- Need to update to handle updating password vs "user", because they now
+  update separately
+
+- Don't create the model, just the migration for the ueberauths
+- Add required fields to default model changeset in mix task
+
+- move HTML controller testing to more traditional, rather than the way the
+  original guy was doing it.
+- FIX the password reset HTML
+
+- Rename stuff to new Web namespace
+- Change route nesting scope to only have `/auth` handle the ueberauth
+  routes?
+
+- remove all mention of username? (probs yeah? else figure out how to
+  handle it later)
+- Credo
+- Remove compile time warnings
+- remove FIXMEs
+
+- manually test html
+- Make sure it actually works
+
+- update the README
+#### END FIXME ^^
 
 Things I wish [Guardian](https://github.com/ueberauth/guardian) included
 out of the box. Routing, confirmation emails, password reset emails.
 It's just a thin wrapper on Guardian buteverybody shouldn't have to repeat
 this themselves when they build stuff.
 
+I do my best to follow [semantic versioning](http://semver.org/) with this
+repo.
+
+This will likely be going through some serious changes, and was likley
+incremented to 1.0.0 prematurely. Part of why the semantic versioning is
+important. I currently utilize Sentinel, but
+would say that you should handle it with care, especially the
+HTML section, as noted below.
+
 Suggestions? See the `Contributing/Want something new?` section.
 
 ## Installation
-Here's how to add it to your phoenix project, and things you need to
+Here's how to add it to your Phoenix project, and things you need to
 setup:
 
 ```
 # mix.exs
-{:sentinel, "~> 1.0.0"},
+{:sentinel, "~> 2.0"},
 
 # If you'd like to database back your tokens, and prevent replayability
 {:guardian_db, "~> 0.7.0"},
@@ -27,6 +77,44 @@ Your user model must have at least the following fields, and the
 into your token, currently even if the function is empty, and you don't
 plan on using [Guardian
 permissions](https://github.com/ueberauth/guardian/#permissions).
+
+# FIXME make this into the generated user model
+```
+t.string :email,              null: false, default: ""
+t.string :encrypted_password, null: false, default: ""
+
+## Recoverable
+t.string   :reset_password_token
+t.datetime :reset_password_sent_at
+
+## Rememberable
+t.datetime :remember_created_at
+
+## Trackable
+t.integer  :sign_in_count, default: 0, null: false
+t.datetime :current_sign_in_at
+t.datetime :last_sign_in_at
+t.inet     :current_sign_in_ip
+t.inet     :last_sign_in_ip
+
+## Confirmable
+t.string   :confirmation_token
+t.datetime :confirmed_at
+t.datetime :confirmation_sent_at
+t.string   :unconfirmed_email # Only if using reconfirmable
+t.datetime :confirmation_reminder_sent_at
+
+## Lockable
+t.integer  :failed_attempts, default: 0, null: false # Only if lock strategy is :failed_attempts
+t.string   :unlock_token # Only if unlock strategy is :email or :both
+t.datetime :locked_at
+
+## Invitable
+t.string :invitation_token
+t.datetime :invitation_sent_at
+
+t.timestamps null: false
+```
 
 ```elixir
 defmodule MyApp.User do
@@ -225,9 +313,16 @@ where the first parameter is the connection, and the second is
 information about the session.
 
 ## Notes
-1.0.0 attempted to utilize the semantic versioning tradition of
+2.0.0 attempted to utilize the semantic versioning tradition of
 increasing the major version on breaking changes. There are many
 breaking changes in this update.
+
+Currently the HTML portion needs some serious TLC. I jumped the gun
+trying to release it one weekend. Use it, as with the rest of the
+library at your own risk. Any PRs to help shape it up are appreciated.
+In the meantime if you need a strong Elixir auth library that provides
+great HTML take a look at
+[Coherence](https://github.com/smpallen99/coherence).
 
 ## Contributing/Want something new?
 Create an issue. Preferably with a PR. If you're super awesome
@@ -242,8 +337,3 @@ Having said that if you bother to put up a PR I'll take a look, and
 either merge it, or let you know what needs to change before I do.
 Having experienced sending in PRs and never hearing anything about
 them, I know it sucks.
-
-## TODO
-- README DOCUMENT :sentinel, :send_emails, ecto 2 syntax changes,
-  overriding Sentinel.EmailView and Sentinel.EmailLayoutView, other old
-  stuff/general doc update, applying custom layouts via the router plug

@@ -15,7 +15,40 @@ config :logger, :console,
 
 config :comeonin, :bcrypt_log_rounds, 4
 
+config :sentinel,
+  crypto_provider: Comeonin.Bcrypt, #FIXME make this a default
+  auth_handler: Sentinel.AuthHandler,
+  user_view: Sentinel.UserView
+
+config :guardian, Guardian,
+  allowed_algos: ["HS512"], # optional
+  verify_module: Guardian.JWT,  # optional
+  ttl: { 30, :days },
+  verify_issuer: true, # optional
+  serializer: Sentinel.GuardianSerializer,
+  hooks: GuardianDb,
+  permissions: Application.get_env(:sentinel, :permissions)#,
+  #issuer: "Sentinel",
+  #secret_key: "guardian_sekret", #FIXME collapse these two
+
+config :guardian_db, GuardianDb,
+  repo: Application.get_env(:sentinel, :repo)
+
 config :sentinel, Sentinel.Mailer,
   adapter: Bamboo.LocalAdapter
+
+config :bamboo, :refute_timeout, 10
+
+config :ueberauth, Ueberauth,
+  providers: [
+    identity: {
+      Ueberauth.Strategy.Identity,
+      [
+        param_nesting: "user",
+        callback_methods: ["POST"],
+        uid_field: :email,
+      ]
+    },
+  ]
 
 import_config "#{Mix.env}.exs"

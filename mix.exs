@@ -1,7 +1,9 @@
 defmodule Sentinel.Mixfile do
   use Mix.Project
 
-  @version "1.0.1"
+  #FIXME
+  @version "1.0.3" # if you just fix the email issue on json
+  @version "1.1.0" # if you add the route to fix the email issue on html
   @source_url "https://github.com/britton-jb/sentinel"
 
   def project do
@@ -27,15 +29,17 @@ defmodule Sentinel.Mixfile do
     [applications: applications(Mix.env)]
   end
 
-  defp applications(:test), do: applications(:all) ++ [:blacksmith]
+  defp applications(:test), do: applications(:all) ++ [:ex_machina]
   defp applications(_all),  do: [
-    :logger,
+    :bamboo,
     :comeonin,
     :ecto,
-    :postgrex,
+    :logger,
     :phoenix,
     :phoenix_html,
-    :bamboo
+    :postgrex,
+    :ueberauth,
+    :ueberauth_identity,
   ]
 
   defp package do
@@ -69,8 +73,7 @@ defmodule Sentinel.Mixfile do
       {:guardian_db, "~> 0.7", optional: true},
       {:secure_random, "~> 0.2"},
       {:comeonin, "~> 2.0"},
-      {:bamboo, "~> 0.6"},
-      #{:eiconv, github: "zotonic/eiconv"},
+      {:bamboo, "~> 0.7"},
 
       {:cowboy, "~> 1.0.0"},
       {:phoenix, "~> 1.1"},
@@ -80,17 +83,20 @@ defmodule Sentinel.Mixfile do
       {:postgrex, ">= 0.11.1"},
       {:jose, "~> 1.4"},
 
+      {:ueberauth, "~> 0.4"},
+      {:ueberauth_identity, "~> 0.2"}, #FIXME optional?
+
       # DEV
-      {:credo, "~> 0.4", only: [:dev, :test]},
+      {:credo, "~> 0.5", only: [:dev, :test]},
       # TESTING
       {:mock, "~> 0.1", only: :test},
-      {:blacksmith, git: "git://github.com/batate/blacksmith.git", only: :test},
+      {:ex_machina, "~> 1.0", only: :test},
     ]
   end
 
   defp aliases do
     [
-      "test": ["ecto.create --quiet", "ecto.migrate", "test"]
+      "test": ["ecto.drop", "ecto.create --quiet", "ecto.migrate", "test"]
     ]
   end
 end

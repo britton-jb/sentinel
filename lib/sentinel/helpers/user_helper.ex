@@ -1,21 +1,23 @@
 defmodule Sentinel.UserHelper do
-  alias Sentinel.Util
+  @moduledoc """
+  User helper for Sentinel, pulling in the model, as well as a few query helper methods
+  """
 
+  alias Sentinel.Config
+  alias Sentinel.UserHelper
+
+  @doc """
+  Wrapper for the user model passed in via sentinel configuration
+  """
   def model do
-    Application.get_env(:sentinel, :user_model)
+    Config.user_model
   end
 
-  def find_by_email(email) do
-    Util.repo.get_by(Sentinel.UserHelper.model, email: email)
-  end
-
-  def find_by_username(username) do
-    Util.repo.get_by(Sentinel.UserHelper.model, username: username)
-  end
-
+  @doc """
+  Adds extra validator specified in configuration
+  """
   def validator(changeset) do
-    apply_validator(Application.get_env(:sentinel, :user_model_validator),
-    changeset)
+    apply_validator(Config.user_model_validator, changeset)
   end
   defp apply_validator(nil, changeset), do: changeset
   defp apply_validator({mod, fun}, changeset), do: apply(mod, fun, [changeset])

@@ -1,6 +1,11 @@
 defmodule Sentinel.Session do
+  @moduledoc """
+  Virtual Session data model allowing us to have session changesets and HTML validations
+  """
+
   use Ecto.Schema
   import Ecto.Changeset
+  alias Sentinel.Session
 
   schema "virtual_session_table" do
     field :username, :string
@@ -20,15 +25,20 @@ defmodule Sentinel.Session do
   def changeset(struct, params \\ %{}) do
     struct
     |> cast(params, @required_fields ++ @optional_fields)
-    |> Sentinel.Session.username_or_email_required
+    |> Session.email_or_username_required
   end
 
-  def username_or_email_required(changeset) do
-    case fetch_change(changeset, :username) do
-      {:ok, _username} -> changeset
+  #FIXME this is ugly
+  @doc """
+  Changeset validation ensuring that the user has either the username or email
+  address defined
+  """
+  def email_or_username_required(changeset) do
+    case fetch_change(changeset, :email) do
+      {:ok, _email} -> changeset
       :error ->
-        case fetch_change(changeset, :email) do
-          {:ok, _email} -> changeset
+        case fetch_change(changeset, :username) do
+          {:ok, _username} -> changeset
           :error ->
             changeset
             |> add_error(:username, "Username or email address required")

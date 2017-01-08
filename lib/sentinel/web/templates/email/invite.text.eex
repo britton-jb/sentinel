@@ -1,0 +1,7 @@
+Hello <%= @user.email %>!
+
+You've been invited to <%= Config.app_name %>
+<% if !Config.confirmable && Config.router_helper_configured? do %>
+
+  Use this URL to confirm your account: <%= "#{Config.invitation_registration_url}?password_reset_token=#{@password_reset_token}&confirmation_token=#{@confirmation_token}" %>
+<% end %>

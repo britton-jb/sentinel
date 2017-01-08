@@ -1,38 +1,8 @@
 use Mix.Config
 
 config :logger, level: :warn
-
-config :guardian, Guardian,
-  allowed_algos: ["HS512"], # optional
-  verify_module: Guardian.JWT,  # optional
-  issuer: "Sentinel",
-  ttl: { 30, :days },
-  verify_issuer: true, # optional
-  secret_key: "guardian_sekret",
-  serializer: Sentinel.GuardianSerializer,
-  hooks: GuardianDb,
-  permissions: Application.get_env(:sentinel, :permissions)
-
-config :guardian_db, GuardianDb,
-  repo: Sentinel.TestRepo
-
-config :sentinel,
-  app_name: "Test App",
-  user_model: Sentinel.User,
-  email_sender: "test@example.com",
-  crypto_provider: Comeonin.Bcrypt,
-  repo: Sentinel.TestRepo,
-  ecto_repos: [Sentinel.TestRepo],
-  auth_handler: Sentinel.AuthHandler,
-  user_view: Sentinel.UserView,
-  error_view: SentinelTester.ErrorView,
-  router: Sentinel.TestRouter,
-  endpoint: Sentinel.Endpoint,
-  send_emails: true
-
 config :sentinel, Sentinel.Endpoint,
-  secret_key_base: "sentinel_sekret"
-
+  secret_key_base: "DOInS/rFmVWzmcHaoYAXX8moniIGldPCvtGcYv+GY5XE5xS8aQKRH4Aw6gDUmncd"
 config :sentinel, Sentinel.TestRepo,
   username: "postgres",
   password: "postgres",
@@ -43,7 +13,52 @@ config :sentinel, Sentinel.TestRepo,
   max_overflow: 0,
   priv: "test/support"
 
+config :guardian, Guardian,
+  issuer: "Sentinel",
+  secret_key: "guardian_sekret", #FIXME change me
+  allowed_algos: ["HS512"], # optional
+  verify_module: Guardian.JWT,  # optional
+  ttl: { 30, :days },
+  verify_issuer: true, # optional
+  serializer: Sentinel.GuardianSerializer,
+  hooks: GuardianDb,
+  permissions: Application.get_env(:sentinel, :permissions)
+
+
+# imported by mix install task
+config :sentinel,
+  app_name: "Test App",
+  user_model: Sentinel.User, #FIXME should be your generated model
+  send_address: "test@example.com",
+  crypto_provider: Comeonin.Bcrypt,
+  repo: Sentinel.TestRepo,
+  ecto_repos: [Sentinel.TestRepo],
+  auth_handler: Sentinel.AuthHandler,
+  user_view: Sentinel.UserView,
+  error_view: Sentinel.ErrorView,
+  router: Sentinel.TestRouter, #FIXME your router
+  endpoint: Sentinel.Endpoint, #FIXME your endpoint
+  invitable: true,
+  invitation_registration_url: "http://localhost:4000", #for api usage only
+  send_emails: true
+
+config :guardian_db, GuardianDb,
+  repo: Sentinel.TestRepo #FIXME your repo
+
 config :sentinel, Sentinel.Mailer,
   adapter: Bamboo.TestAdapter
 
-config :bamboo, :refute_timeout, 10
+config :ueberauth, Ueberauth,
+  providers: [
+    identity: {
+      Ueberauth.Strategy.Identity,
+      [
+        param_nesting: "user",
+        callback_methods: ["POST"],
+      ]
+    },
+    github: {
+      Ueberauth.Strategy.Github,
+      []
+    }
+  ]

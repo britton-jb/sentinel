@@ -1,0 +1,8 @@
+<html>
+  <head>
+    <link rel="stylesheet" href="<%= Config.email_css_url %>">
+  </head>
+  <body>
+    <%= render @view_module, @view_template, assigns %>
+  </body>
+</html>

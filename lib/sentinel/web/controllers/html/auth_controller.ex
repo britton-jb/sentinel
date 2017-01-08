@@ -1,0 +1,121 @@
+defmodule Sentinel.Controllers.Html.AuthController do
+  @moduledoc """
+  Handles the session create and destroy actions
+  """
+
+  require Ueberauth
+  use Phoenix.Controller
+  alias Plug.Conn
+  alias Sentinel.AfterRegistrator
+  alias Sentinel.Config
+  alias Sentinel.Ueberauthenticator
+  alias Sentinel.UserHelper
+  alias Sentinel.Util
+  alias Ueberauth.Strategy.Helpers
+
+  plug Ueberauth
+  plug Guardian.Plug.VerifyHeader when action in [:delete]
+  plug Guardian.Plug.EnsureAuthenticated, %{handler: Config.auth_handler} when action in [:delete]
+  plug Guardian.Plug.LoadResource when action in [:delete]
+
+  def new(conn, _params) do
+    changeset = Sentinel.Session.changeset(%Sentinel.Session{})
+    render(conn, Sentinel.SessionView, "new.html", %{conn: conn, changeset: changeset, providers: ueberauth_providers})
+  end
+
+  defp ueberauth_providers do
+    [_config, {_module, [providers: ueberauth_config]}] = Application.get_all_env(:ueberauth)
+
+    ueberauth_config
+    |> Enum.filter(fn provider_config ->
+      {provider, _config} = provider_config
+      provider != :identity
+    end)
+    |> Enum.map(fn provider_config ->
+      {provider, _details} = provider_config
+      {Atom.to_string(provider), Config.router_helper.auth_url(Config.endpoint, :request, provider)}
+    end)
+  end
+
+  #FIXME wtf does this do in the example app
+  def request(conn, _params) do
+  end
+
+  def callback(%{assigns: %{ueberauth_failure: _fails}} = conn, _params) do
+    Util.send_error(conn, %{error: "Failed to authenticate"}, 401)
+  end
+  def callback(%{assigns: %{ueberauth_auth: auth}} = conn, _params) do
+    case Ueberauthenticator.ueberauthenticate(auth) do
+      {:ok, %{user: user, confirmation_token: confirmation_token}} ->
+        new_user(conn, user, confirmation_token)
+      {:ok, user} -> existing_user(conn, user)
+      {:error, errors} -> Util.send_error(conn, errors, 401)
+    end
+  end
+
+  defp new_user(conn, user, confirmation_token) do
+    {:ok, _} = AfterRegistrator.confirmable_and_invitable(user, confirmation_token)
+
+    conn
+    |> put_status(201)
+    |> json Config.user_view.render("show.json", %{user: user})
+  end
+
+  defp existing_user(conn, user) do
+    permissions = UserHelper.model.permissions(user.id)
+
+    case Guardian.encode_and_sign(user, :token, permissions) do
+      {:ok, token, _encoded_claims} ->
+        conn
+        |> put_status(201)
+        |> json %{token: token}
+        {:error, :token_storage_failure} -> Util.send_error(conn, %{error: "Failed to store session, please try to login again using your new password"})
+        {:error, reason} -> Util.send_error(conn, %{error: reason})
+    end
+  end
+
+  @doc """
+  Destroy the active session.
+  Will delete the authentication token from the user table.
+  Responds with status 200 if no error occured.
+  """
+  def delete(conn, _params) do
+    token = conn |> Conn.get_req_header("authorization") |> List.first
+
+    case Guardian.revoke! token do
+      :ok -> json conn, :ok
+      {:error, :could_not_revoke_token} -> Util.send_error(conn, %{error: "Could not revoke the session token"}, 422)
+      {:error, error} -> Util.send_error(conn, error, 422)
+    end
+  end
+
+  @doc """
+  Log in as an existing user.
+  Parameter are "email" and "password".
+  Responds with status 200 and {token: token} if credentials were correct.
+  Responds with status 401 and {errors: error_message} otherwise.
+  """
+  def create(conn, %{"user" => %{"email" => email, "password" => password}}) do
+    auth = %Ueberauth.Auth{
+      provider: :identity,
+      credentials: %Ueberauth.Auth.Credentials{
+        other: %{
+          password: password
+        }
+      },
+      uid: email
+    }
+
+    case Ueberauthenticator.ueberauthenticate(auth) do
+      {:ok, user} ->
+        permissions = UserHelper.model.permissions(user.id)
+
+        case Guardian.encode_and_sign(user, :token, permissions) do
+          {:ok, token, _encoded_claims} -> json conn, %{token: token}
+          {:error, :token_storage_failure} -> Util.send_error(conn, %{error: "Failed to store session, please try to login again using your new password"})
+          {:error, reason} -> Util.send_error(conn, %{error: reason})
+        end
+      {:error, errors} -> Util.send_error(conn, errors, 401)
+    end
+  end
+end

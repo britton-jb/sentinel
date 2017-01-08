@@ -1,0 +1,35 @@
+<h2>Login</h2>
+
+<%= form_for @changeset, Config.router_helper.auth_path(@conn, :create), fn f -> %>
+  <%= if @changeset.action do %>
+    <div class="alert alert-danger">
+      <p>Oops, something went wrong with your email or password!</p>
+    </div>
+  <% end %>
+
+  <div class="sentinel form-group">
+    <%= label f, :email, class: "sentinel control-label" %>
+    <%= email_input f, :email, class: "sentinel form-control" %>
+  </div>
+
+  <div class="sentinel form-group">
+    <%= label f, :password, class: "sentinel control-label" %>
+    <%= password_input f, :password, class: "sentinel form-control" %>
+  </div>
+
+  <div class="sentinel actions form-group">
+    <%= submit "Submit", class: "sentinel btn btn-primary" %>
+  </div>
+<% end %>
+
+<p>Or login with one of the following</p>
+<ul>
+  <% providers = @providers; require IEx; IEx.pry %>
+  <%= for {provider, request_path} <- @providers do %>
+    <li>
+      <a href="<%= request_path %>"><%= String.capitalize(provider) %></a>
+    </li>
+  <% end %>
+</ul>
+
+<%= render Sentinel.SharedView, "links.html", assigns %>

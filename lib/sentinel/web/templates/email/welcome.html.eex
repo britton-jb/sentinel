@@ -1,0 +1,7 @@
+<p>Hello <%= @user.email %>!</p>
+
+<p>Welcome to <%= Config.app_name %></p>
+<% if !Config.confirmable && Config.router_helper_configured? do %>
+
+  <p><a href="<%= Config.router_helper.user_url(Config.endpoint, :confirm, confirmation_token: @confirmation_token) %>">Click here to confirm your account</a></p>
+<% end %>
