@@ -14,9 +14,6 @@ defmodule Sentinel.Controllers.Html.UserController do
   Parameter "id" should be the user's id.
   Parameter "confirmation" should be the user's confirmation token.
   If the confirmation matches, the user will be confirmed and signed in.
-  Responds with status 201 and body {token: token} if successfull.
-  Use this token in subsequent requests as authentication.
-  Responds with status 422 and body {errors: {field: "message"}} otherwise.
   """
   def confirm(conn, params) do
     case do_confirm(params) do

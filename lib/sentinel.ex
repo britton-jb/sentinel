@@ -3,12 +3,6 @@ defmodule Sentinel do
   Module responsible for the macros that mount the Sentinel routes
   """
 
-  require Ueberauth
-
-  alias Sentinel.Config
-  alias Sentinel.Controllers.Html
-  alias Sentinel.Controllers.Json
-
   @doc """
   Mount's Sentinel HTML routes inside your application
   """
@@ -16,7 +10,7 @@ defmodule Sentinel do
     quote do
       require Ueberauth
 
-      scope "/auth" do #FIXME really scope all of this in auth?
+      scope "/auth", Sentinel.Controllers do #FIXME really scope all of this in auth?
         get "/users/new", Html.UserController, :new
         post "/users", Html.UserController, :create
         if Sentinel.invitable? do
@@ -38,6 +32,7 @@ defmodule Sentinel do
 
         get "/account", Html.AccountController, :edit
         put "/account", Html.AccountController, :update
+        put "/account/password", Html.PasswordController, :authenticated_update
 
         #FIXME setup
         get "/:provider", Html.AuthController, :request
@@ -58,7 +53,7 @@ defmodule Sentinel do
     quote do
       require Ueberauth
 
-      scope "/auth" do #FIXME really scope all of this in auth?
+      scope "/auth", Sentinel.Controllers do #FIXME really scope all of this in auth?
         if Sentinel.invitable? do
           post "/users/:id/invited", Json.UserController, :invited
         end
@@ -67,6 +62,7 @@ defmodule Sentinel do
         end
 
         get "/password/new", Json.PasswordController, :new
+        post "/password", Json.PasswordController, :create
         put "/password", Json.PasswordController, :update
 
         get "/account", Json.AccountController, :show
@@ -85,14 +81,14 @@ defmodule Sentinel do
   end
 
   def invitable? do
-    Config.invitable
+    Sentinel.Config.invitable
   end
 
   def invitable_configured? do
-    Config.invitable_configured?
+    Sentinel.Config.invitable_configured?
   end
 
   def confirmable? do
-    Config.confirmable
+    Sentinel.Config.confirmable
   end
 end

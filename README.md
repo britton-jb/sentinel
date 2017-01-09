@@ -23,8 +23,6 @@
 - Don't create the model, just the migration for the ueberauths
 - Add required fields to default model changeset in mix task
 
-- move HTML controller testing to more traditional, rather than the way the
-  original guy was doing it.
 - FIX the password reset HTML
 
 - Rename stuff to new Web namespace

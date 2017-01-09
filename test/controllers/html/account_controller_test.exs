@@ -29,7 +29,12 @@ defmodule Html.AccountControllerTest do
     permissions = User.permissions(user.id)
     {:ok, token, _} = Guardian.encode_and_sign(user, :token, permissions)
 
-    conn = build_conn |> Conn.put_req_header("authorization", token)
+    conn =
+      build_conn()
+      |> Sentinel.ConnCase.conn_with_fetched_session
+      |> put_session(Guardian.Keys.base_key(:default), token)
+      |> Sentinel.ConnCase.run_plug(Guardian.Plug.VerifySession)
+      |> Sentinel.ConnCase.run_plug(Guardian.Plug.LoadResource)
 
     {:ok, %{user: user, auth: ueberauth, conn: conn}}
   end

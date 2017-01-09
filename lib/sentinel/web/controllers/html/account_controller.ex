@@ -27,7 +27,6 @@ defmodule Sentinel.Controllers.Html.AccountController do
   Update email address or user params of the current user.
   If the email address should be updated, the user will receive an email to his new address.
   The stored email address will only be updated after clicking the link in that message.
-  Responds with status 200 and the updated user if successfull.
   """
   def update(conn, %{"account" => params}, current_user, _claims) do
     {confirmation_token, changeset} = current_user |> AccountUpdater.changeset(params)

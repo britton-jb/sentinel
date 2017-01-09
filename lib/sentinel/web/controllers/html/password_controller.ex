@@ -14,22 +14,19 @@ defmodule Sentinel.Controllers.Html.PasswordController do
   plug Guardian.Plug.VerifyHeader when action in [:authenticated_update]
   plug Guardian.Plug.LoadResource when action in [:authenticated_update]
 
-  @doc """
-  Create a password reset token for a user
-  Params should be:
-  {email: "user@example.com"}
-  If successfull, sends an email with instructions on how to reset the password.
-  Responds with status 200 and body "ok" if successful or not, for security.
-  """
-  def new(conn, %{"email" => email}, _headers \\ %{}, _session \\ %{}) do
+  def new(conn, _params, _headers \\ %{}, _session \\ %{}) do
+    render(conn, Sentinel.PasswordView, "new.html", %{conn: conn})
+  end
+
+  def create(conn, %{"email" => email}, _headers \\ %{}, _session \\ %{}) do
     user = Config.repo.get_by(Config.user_model, email: email)
 
     if is_nil(user) do
-      json conn, :ok
+      send_redirect_and_flash(conn)
     else
       auth = Config.repo.get_by(Sentinel.Ueberauth, user_id: user.id, provider: "identity")
       if is_nil(auth) do
-        json conn, :ok
+        send_redirect_and_flash(conn)
       else
         {password_reset_token, changeset} = auth |> PasswordResetter.create_changeset
 
@@ -42,17 +39,21 @@ defmodule Sentinel.Controllers.Html.PasswordController do
             _ -> nil
         end
 
-        json conn, :ok
+        send_redirect_and_flash(conn)
       end
     end
+  end
+
+  defp send_redirect_and_flash(conn) do
+    conn
+    |> put_flash(:info, "You'll receive an email with instructions about how to reset your password in a few minutes. ")
+    |> redirect(to: "/")
   end
 
   @doc """
   Resets a users password if the provided token matches
   Params should be:
   {user_id: 1, password_reset_token: "abc123"}
-  Responds with status 200 and body {token: token} if successfull. Use this token in subsequent requests as authentication.
-  Responds with status 422 and body {errors: [messages]} otherwise.
   """
   def update(conn, params = %{"user_id" => user_id}, _headers \\ %{}, _session \\ %{}) do
     user = Config.repo.get(UserHelper.model, user_id)
@@ -65,20 +66,20 @@ defmodule Sentinel.Controllers.Html.PasswordController do
 
     case Config.repo.update(changeset) do
       {:ok, auth} ->
-        permissions = UserHelper.model.permissions(user.id)
-
-        case Guardian.encode_and_sign(user, :token, permissions) do
-          {:ok, token, _encoded_claims} -> json conn, %{token: token}
-          {:error, :token_storage_failure} -> Util.send_error(conn, %{errors: "Failed to store session, please try to login again using your new password"})
-          {:error, reason} -> Util.send_error(conn, %{errors: reason})
-        end
+        conn
+        |> Guardian.Plug.sign_in(user)
+        |> put_flash(:info, "Successfully updated password")
+        |> redirect(to: Config.router_helper.account_path(Config.endpoint, :edit))
       {:error, changeset} ->
-        Util.send_error(conn, changeset.errors)
+        conn
+        |> put_status(422)
+        |> put_flash(:error, "Unable to reset your password")
+        |> redirect(to: Config.router_helper.password_path(Config.endpoint, :new))
     end
   end
 
-  def authenticated_update(conn, %{"account" => params}, user, _session) do
-    auth = Config.repo.get_by(Sentinel.Ueberauth, user_id: user.id, provider: "identity")
+  def authenticated_update(conn, %{"account" => params}, current_user, _session) do
+    auth = Config.repo.get_by(Sentinel.Ueberauth, user_id: current_user.id, provider: "identity")
     {password_reset_token, changeset} = auth |> PasswordResetter.create_changeset
     updated_auth = Config.repo.update!(changeset)
 
@@ -90,9 +91,11 @@ defmodule Sentinel.Controllers.Html.PasswordController do
 
     case Config.repo.update(changeset) do
       {:ok, _updated_auth} ->
-        json conn, Config.user_view.render("show.json", %{user: user})
+        conn
+        |> put_flash(:info, "Update successful")
+        |> redirect(to: Config.router_helper.account_path(Config.endpoint, :edit))
       {:error, changeset} ->
-        Util.send_error(conn, changeset.errors)
+        render(conn, Sentinel.AccountView, "edit.html", %{conn: conn, user: current_user, changeset: changeset})
     end
   end
 end

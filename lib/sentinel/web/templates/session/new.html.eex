@@ -22,14 +22,15 @@
   </div>
 <% end %>
 
-<p>Or login with one of the following</p>
-<ul>
-  <% providers = @providers; require IEx; IEx.pry %>
-  <%= for {provider, request_path} <- @providers do %>
-    <li>
-      <a href="<%= request_path %>"><%= String.capitalize(provider) %></a>
-    </li>
-  <% end %>
-</ul>
+<%= if Enum.any?(@providers) do %>
+  <p>Or login with one of the following</p>
+  <ul>
+    <%= for {provider, request_path} <- @providers do %>
+      <li>
+        <a href="<%= request_path %>"><%= String.capitalize(provider) %></a>
+      </li>
+    <% end %>
+  </ul>
+<% end %>
 
 <%= render Sentinel.SharedView, "links.html", assigns %>

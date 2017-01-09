@@ -129,6 +129,23 @@ defmodule Sentinel.Config do
   end
 
   @doc """
+  Retrieves list of tuples of {ueberauth_provider, auth_url}
+  """
+  def ueberauth_providers do
+    [_config, {_module, [providers: ueberauth_config]}] = Application.get_all_env(:ueberauth)
+
+    ueberauth_config
+    |> Enum.filter(fn provider_config ->
+      {provider, _config} = provider_config
+      provider != :identity
+    end)
+    |> Enum.map(fn provider_config ->
+      {provider, _details} = provider_config
+      {Atom.to_string(provider), router_helper.auth_url(endpoint, :request, provider)}
+    end)
+  end
+
+  @doc """
   Wrapper for getting the application config of :user_model
   """
   def user_model do

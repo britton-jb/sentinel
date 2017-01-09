@@ -13,20 +13,33 @@ defmodule Json.PasswordControllerTest do
   @headers [{"content-type", "application/json"}]
 
   setup do
-    conn = build_conn |> Conn.put_req_header("content-type", "application/json")
     auth = Factory.insert(:ueberauth)
     user = auth.user
     permissions = User.permissions(user.id)
     {:ok, token, _} = Guardian.encode_and_sign(user, :token, permissions)
-    authenticated_conn = conn |> Conn.put_req_header("authorization", token)
+    authenticated_conn =
+      build_conn()
+      |> Sentinel.ConnCase.conn_with_fetched_session
+      |> put_session(Guardian.Keys.base_key(:default), token)
+      |> Sentinel.ConnCase.run_plug(Guardian.Plug.VerifySession)
+      |> Sentinel.ConnCase.run_plug(Guardian.Plug.LoadResource)
 
-    {:ok, %{conn: conn, user: user, auth: auth, authenticated_conn: authenticated_conn}}
+    {:ok, %{conn: build_conn(), user: user, auth: auth, authenticated_conn: authenticated_conn}}
+  end
+
+  test "request the password reset new page", %{conn: conn} do
+    conn = get conn, password_path(conn, :new)
+    response(conn, 200)
+
+    assert String.contains?(conn.resp_body, "Forgot your password?")
   end
 
   test "request a reset token for an unknown email", %{conn: conn} do
-    conn = get conn, password_path(conn, :new), %{email: @email}
-    response = json_response(conn, 200)
-    assert response == "ok"
+    conn = post conn, password_path(conn, :create), %{email: @email}
+    response(conn, 302)
+
+    assert String.contains?(conn.private.phoenix_flash["info"],
+      "You'll receive an email with instructions about how to reset your password in a few minutes. ")
     refute_delivered_email Sentinel.Mailer.PasswordReset.build(%User{email: @email}, "token")
   end
 
@@ -35,9 +48,8 @@ defmodule Json.PasswordControllerTest do
     mocked_mail = Mailer.send_password_reset_email(user, mocked_reset_token)
 
     with_mock Sentinel.Mailer, [:passthrough], [send_password_reset_email: fn(_, _) -> mocked_mail end] do
-      conn = get conn, password_path(conn, :new), %{email: user.email}
-      response = json_response(conn, 200)
-      assert response == "ok"
+      conn = post conn, password_path(conn, :create), %{email: user.email}
+      response(conn, 302)
 
       updated_auth = TestRepo.get_by!(Sentinel.Ueberauth, user_id: user.id, provider: "identity")
       assert updated_auth.hashed_password_reset_token != nil
@@ -51,9 +63,10 @@ defmodule Json.PasswordControllerTest do
 
     params = %{user_id: user.id, password_reset_token: "wrong_token", password: "newpassword"}
     conn = put conn, password_path(conn, :update), params
-    response = json_response(conn, 422)
+    response(conn, 422)
 
-    assert response == %{"errors" => [%{"password_confirmation" => "mismatch"}, %{"password_reset_token" => "invalid"}]}
+    assert String.contains?(conn.private.phoenix_flash["error"], "Unable to reset your password")
+    assert String.contains?(conn.resp_body, "/auth/password/new")
   end
 
   test "reset password without confirmation", %{conn: conn, user: user, auth: auth} do
@@ -63,21 +76,29 @@ defmodule Json.PasswordControllerTest do
 
     params = %{user_id: user.id, password_reset_token: reset_token, password: @new_password}
     conn = put conn, password_path(conn, :update), params
-    response = json_response(conn, 422)
-    assert response == %{"errors" => [%{"password_confirmation" => "mismatch"}]}
+    response(conn, 422)
+
+    assert String.contains?(conn.private.phoenix_flash["error"], "Unable to reset your password")
+    assert String.contains?(conn.resp_body, "/auth/password/new")
   end
 
   test "reset password with confirmation", %{conn: conn, user: user, auth: auth} do #FIXME FAILING
     old_hashed_password = auth.hashed_password
     {reset_token, changeset} = auth |> PasswordResetter.create_changeset
     TestRepo.update!(changeset)
+    token_count = length(TestRepo.all(Token))
 
     params = %{user_id: user.id, password_reset_token: reset_token, password: @new_password, password_confirmation: @new_password}
     conn = put conn, password_path(conn, :update), params
-    assert %{"token" => session_token} = json_response(conn, 200)
-    assert TestRepo.get_by!(Token, jwt: session_token)
+    response(conn, 302)
+
+    assert String.contains?(conn.private.phoenix_flash["info"], "Successfully updated password")
+    assert String.contains?(conn.resp_body, "/auth/account")
+
     updated_auth = TestRepo.get!(Sentinel.Ueberauth, auth.id)
+
     refute updated_auth.hashed_password == old_hashed_password
+    assert (token_count + 1) == length(TestRepo.all(Token))
   end
 
   test "Reset password when logged in", %{authenticated_conn: conn, user: user, auth: auth} do #FIXME FAILING
@@ -87,7 +108,7 @@ defmodule Json.PasswordControllerTest do
     |> TestRepo.update!
 
     conn = put conn, password_path(conn, :authenticated_update), %{account: %{password: @new_password, password_confirmation: @new_password}}
-    response = json_response(conn, 200)
+    response = response(conn, 302)
 
     updated_auth = TestRepo.get!(Sentinel.Ueberauth, auth.id)
     refute updated_auth.hashed_password == old_hashed_password
@@ -99,6 +120,9 @@ defmodule Json.PasswordControllerTest do
         other: %{password: @new_password}
       }
     })
+
     refute_delivered_email Sentinel.Mailer.NewEmailAddress.build(user, "token")
+    assert String.contains?(conn.private.phoenix_flash["info"], "Update successful")
+    assert String.contains?(conn.resp_body, "/auth/account")
   end
 end

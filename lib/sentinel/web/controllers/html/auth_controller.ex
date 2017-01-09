@@ -20,21 +20,7 @@ defmodule Sentinel.Controllers.Html.AuthController do
 
   def new(conn, _params) do
     changeset = Sentinel.Session.changeset(%Sentinel.Session{})
-    render(conn, Sentinel.SessionView, "new.html", %{conn: conn, changeset: changeset, providers: ueberauth_providers})
-  end
-
-  defp ueberauth_providers do
-    [_config, {_module, [providers: ueberauth_config]}] = Application.get_all_env(:ueberauth)
-
-    ueberauth_config
-    |> Enum.filter(fn provider_config ->
-      {provider, _config} = provider_config
-      provider != :identity
-    end)
-    |> Enum.map(fn provider_config ->
-      {provider, _details} = provider_config
-      {Atom.to_string(provider), Config.router_helper.auth_url(Config.endpoint, :request, provider)}
-    end)
+    render(conn, Sentinel.SessionView, "new.html", %{conn: conn, changeset: changeset, providers: Config.ueberauth_providers})
   end
 
   #FIXME wtf does this do in the example app
@@ -49,53 +35,46 @@ defmodule Sentinel.Controllers.Html.AuthController do
       {:ok, %{user: user, confirmation_token: confirmation_token}} ->
         new_user(conn, user, confirmation_token)
       {:ok, user} -> existing_user(conn, user)
-      {:error, errors} -> Util.send_error(conn, errors, 401)
+      {:error, errors} ->
+        changeset = Sentinel.Session.changeset(%Sentinel.Session{})
+        render(conn, Sentinel.SessionView, "new.html", %{conn: conn, changeset: changeset, providers: Config.ueberauth_providers})
     end
   end
 
   defp new_user(conn, user, confirmation_token) do
+    # FIXME ensure we don't login invited users.
     {:ok, _} = AfterRegistrator.confirmable_and_invitable(user, confirmation_token)
 
     conn
-    |> put_status(201)
-    |> json Config.user_view.render("show.json", %{user: user})
+    |> Guardian.Plug.sign_in(user)
+    |> put_flash(:info, "Signed up")
+    |> redirect(to: Config.router_helper.account_path(Config.endpoint, :edit))
   end
 
   defp existing_user(conn, user) do
     permissions = UserHelper.model.permissions(user.id)
 
-    case Guardian.encode_and_sign(user, :token, permissions) do
-      {:ok, token, _encoded_claims} ->
-        conn
-        |> put_status(201)
-        |> json %{token: token}
-        {:error, :token_storage_failure} -> Util.send_error(conn, %{error: "Failed to store session, please try to login again using your new password"})
-        {:error, reason} -> Util.send_error(conn, %{error: reason})
-    end
+    conn
+    |> Guardian.Plug.sign_in(user)
+    |> put_flash(:info, "Logged in")
+    |> redirect(to: Config.router_helper.account_path(Config.endpoint, :edit))
   end
 
   @doc """
   Destroy the active session.
   Will delete the authentication token from the user table.
-  Responds with status 200 if no error occured.
   """
   def delete(conn, _params) do
-    token = conn |> Conn.get_req_header("authorization") |> List.first
-
-    case Guardian.revoke! token do
-      :ok -> json conn, :ok
-      {:error, :could_not_revoke_token} -> Util.send_error(conn, %{error: "Could not revoke the session token"}, 422)
-      {:error, error} -> Util.send_error(conn, error, 422)
-    end
+    conn
+    |> Guardian.Plug.sign_out
+    |> put_flash(:info, "Logged out successfully.")
+    |> redirect(to: "/")
   end
 
   @doc """
   Log in as an existing user.
-  Parameter are "email" and "password".
-  Responds with status 200 and {token: token} if credentials were correct.
-  Responds with status 401 and {errors: error_message} otherwise.
   """
-  def create(conn, %{"user" => %{"email" => email, "password" => password}}) do
+  def create(conn, %{"session" => %{"email" => email, "password" => password}}) do
     auth = %Ueberauth.Auth{
       provider: :identity,
       credentials: %Ueberauth.Auth.Credentials{
@@ -110,12 +89,14 @@ defmodule Sentinel.Controllers.Html.AuthController do
       {:ok, user} ->
         permissions = UserHelper.model.permissions(user.id)
 
-        case Guardian.encode_and_sign(user, :token, permissions) do
-          {:ok, token, _encoded_claims} -> json conn, %{token: token}
-          {:error, :token_storage_failure} -> Util.send_error(conn, %{error: "Failed to store session, please try to login again using your new password"})
-          {:error, reason} -> Util.send_error(conn, %{error: reason})
-        end
-      {:error, errors} -> Util.send_error(conn, errors, 401)
+        conn
+        |> Guardian.Plug.sign_in(user)
+        |> put_flash(:info, "Logged in")
+        |> redirect(to: Config.router_helper.account_path(Config.endpoint, :edit))
+      {:error, errors} ->
+        conn
+        |> put_flash(:error, "Unknown username or password")
+        |> redirect(to: Config.router_helper.auth_path(Config.endpoint, :new))
     end
   end
 end

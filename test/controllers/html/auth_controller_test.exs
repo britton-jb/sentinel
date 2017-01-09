@@ -9,11 +9,9 @@ defmodule Html.AuthControllerTest do
   @unknown_email "unknown_email@example.com"
   @email "user@example.com"
   @password "secret"
-  @headers [{"content-type", "application/json"}]
   @role "user"
 
   setup do
-    conn = build_conn() |> Plug.Conn.put_req_header("content-type", "application/json")
     auth = Factory.insert(:ueberauth)
     user = auth.user
 
@@ -22,8 +20,8 @@ defmodule Html.AuthControllerTest do
       Config.persist([sentinel: [invitable: true]])
     end
 
-    params = %{user: %{email: user.email, password: auth.plain_text_password}}
-    {:ok, %{conn: conn, params: params}}
+    params = %{session: %{email: user.email, password: auth.plain_text_password}}
+    {:ok, %{conn: build_conn(), params: params}}
   end
 
   test "get new session page", %{conn: conn} do
@@ -35,90 +33,108 @@ defmodule Html.AuthControllerTest do
   test "session page renders ueberauth provider links", %{conn: conn} do
     conn = get conn, auth_path(conn, :new)
     response(conn, 200)
-    assert String.contains?(conn.resp_body, "Github")
-  end
-
-  #FIXME make this test gud
-  test "clicking the ueberauth links do what you think they should do", %{conn: conn} do
+    assert String.contains?(conn.resp_body, "Or login with one of the following")
   end
 
   test "sign in with unknown email", %{conn: conn} do
-    conn = post conn, auth_path(conn, :create), %{user: %{email: @unknown_email, password: @password}}
-    response = json_response(conn, 401)
-    assert response == %{"errors" => [%{"base" => "Unknown email or password"}]}
+    conn = post conn, auth_path(conn, :create), %{session: %{email: @unknown_email, password: @password}}
+    response = response(conn, 302)
+    assert String.contains?(conn.resp_body, "/auth/sessions/new")
+    assert String.contains?(conn.private.phoenix_flash["error"], "Unknown username or password")
   end
 
   test "sign in with wrong password", %{conn: conn, params: params} do
-    conn = post conn, auth_path(conn, :create), %{user: %{password: "wrong", email: params.user.email}}
-    response = json_response(conn, 401)
-    assert response == %{"errors" => [%{"base" => "Unknown email or password"}]}
+    conn = post conn, auth_path(conn, :create), %{session: %{password: "wrong", email: params.session.email}}
+    response = response(conn, 302)
+    assert String.contains?(conn.resp_body, "/auth/sessions/new")
+    assert String.contains?(conn.private.phoenix_flash["error"], "Unknown username or password")
   end
 
   test "sign in as unconfirmed user - confirmable default/optional", %{conn: conn, params: params} do
     Config.persist([sentinel: [confirmable: :optional]])
+    token_count = length(TestRepo.all(Token))
 
     conn = post conn, auth_path(conn, :create), params
-    assert %{"token" => token} = json_response(conn, 200)
-    TestRepo.get_by!(Token, jwt: token)
+    response = response(conn, 302)
+    assert String.contains?(conn.resp_body, "/auth/account")
+    assert String.contains?(conn.private.phoenix_flash["info"], "Logged in")
+    assert (token_count + 1) == length(TestRepo.all(Token))
   end
 
   test "sign in as unconfirmed user - confirmable false", %{conn: conn, params: params} do
     Config.persist([sentinel: [confirmable: :false]])
+    token_count = length(TestRepo.all(Token))
 
     conn = post conn, auth_path(conn, :create), params
-    assert %{"token" => token} = json_response(conn, 200)
-    TestRepo.get_by!(Token, jwt: token)
+    response = response(conn, 302)
+    assert String.contains?(conn.resp_body, "/auth/account")
+    assert String.contains?(conn.private.phoenix_flash["info"], "Logged in")
+    assert (token_count + 1) == length(TestRepo.all(Token))
   end
 
   test "sign in as unconfirmed user - confirmable required", %{conn: conn, params: params} do
     Config.persist([sentinel: [confirmable: :required]])
 
     conn = post conn, auth_path(conn, :create), params
-    response = json_response(conn, 401)
-    assert response == %{"errors" => [%{"base" => "Account not confirmed yet. Please follow the instructions we sent you by email."}]}
+    response = response(conn, 302)
+    assert String.contains?(conn.resp_body, "/auth/sessions/new")
+    assert String.contains?(conn.private.phoenix_flash["error"], "Unknown username or password")
   end
 
   test "sign in as confirmed user with email", %{conn: conn, params: params} do
     Config.persist([sentinel: [confirmable: :required]])
+    token_count = length(TestRepo.all(Token))
 
     Sentinel.User
-    |> TestRepo.get_by(email: params.user.email)
+    |> TestRepo.get_by(email: params.session.email)
     |> Sentinel.User.changeset(%{confirmed_at: Ecto.DateTime.utc, hashed_confirmation_token: nil})
     |> TestRepo.update!
 
     conn = post conn, auth_path(conn, :create), params
-    assert %{"token" => token} = json_response(conn, 200)
-    TestRepo.get_by!(Token, jwt: token)
+    response = response(conn, 302)
+
+    assert String.contains?(conn.resp_body, "/auth/account")
+    assert (token_count + 1) == length(TestRepo.all(Token))
   end
 
   test "sign in as confirmed user with email - case insensitive", %{conn: conn, params: params} do
     Config.persist([sentinel: [confirmable: :required]])
+    token_count = length(TestRepo.all(Token))
 
     Sentinel.User
-    |> TestRepo.get_by(email: params.user.email)
+    |> TestRepo.get_by(email: params.session.email)
     |> Sentinel.User.changeset(%{confirmed_at: Ecto.DateTime.utc, hashed_confirmation_token: nil})
     |> TestRepo.update!
 
     conn = post conn, auth_path(conn, :create), %{
-      user: %{
-        email: String.upcase(params.user.email),
-        password: params.user.password
+      session: %{
+        email: String.upcase(params.session.email),
+        password: params.session.password
       }
     }
-    assert %{"token" => token} = json_response(conn, 200)
-    TestRepo.get_by!(Token, jwt: token)
+    response = response(conn, 302)
+
+    assert String.contains?(conn.resp_body, "/auth/account")
+    assert String.contains?(conn.private.phoenix_flash["info"], "Logged in")
+    assert (token_count + 1) == length(TestRepo.all(Token))
   end
 
   test "sign out", %{conn: conn} do
     user = Factory.insert(:user, confirmed_at: Ecto.DateTime.utc)
     permissions = Sentinel.User.permissions(user.role)
     {:ok, token, _} = Guardian.encode_and_sign(user, :token, permissions)
-
     token_count = length(TestRepo.all(Token))
-    conn = conn |> Plug.Conn.put_req_header("authorization", token)
+
+    conn =
+      conn
+      |> Sentinel.ConnCase.conn_with_fetched_session
+      |> put_session(Guardian.Keys.base_key(:default), token)
+      |> Sentinel.ConnCase.run_plug(Guardian.Plug.VerifySession)
+      |> Sentinel.ConnCase.run_plug(Guardian.Plug.LoadResource)
+
     conn = delete conn, auth_path(conn, :delete)
 
-    assert json_response(conn, 200)
-    assert (token_count - 1) == length(TestRepo.all(Token))
+    response = response(conn, 302)
+    assert String.contains?(conn.resp_body, "a href=\"/\"")
   end
 end
