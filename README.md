@@ -10,34 +10,23 @@
 
 #### FIXME vv
 - It should raise error at run/compile time if it can't find those
-  routes for teh router helper
-- Add a route to verify the token is legit and return the user? YES!!!
-- is account view modification necessary/wanted in config?
+  routes for the router helper
+- Add a route to verify the token is legit and return the user
 
 - on change password kill password reset token
-- ensure email gets downcased on insert
-- password reset token setting and spec
-- Need to update to handle updating password vs "user", because they now
-  update separately
+- ensure email gets downcased on insert, in the model (see if in
+  other module logic currently also)
 
 - Don't create the model, just the migration for the ueberauths
 - Add required fields to default model changeset in mix task
 
-- FIX the password reset HTML
-
-- Rename stuff to new Web namespace
 - Change route nesting scope to only have `/auth` handle the ueberauth
   routes?
 
-- remove all mention of username? (probs yeah? else figure out how to
-  handle it later)
 - Credo
 - Remove compile time warnings
 - remove FIXMEs
-
-- manually test html
-- Make sure it actually works
-
+- manually test
 - update the README
 #### END FIXME ^^
 

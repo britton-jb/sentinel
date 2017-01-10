@@ -1,4 +1,4 @@
-defmodule Json.UserControllerTest do
+defmodule Html.UserControllerTest do
   use Sentinel.ConnCase
 
   alias Mix.Config
@@ -6,6 +6,7 @@ defmodule Json.UserControllerTest do
   alias Sentinel.Changeset.Confirmator
   alias Sentinel.Changeset.PasswordResetter
   alias Sentinel.Changeset.Registrator
+  alias GuardianDb.Token
 
   @password "secret"
 
@@ -96,31 +97,35 @@ defmodule Json.UserControllerTest do
     assert String.contains?(conn.resp_body, "/auth/account")
   end
 
-  #test "invitable sign up", %{conn: conn, invite_params: params, invite_email: mocked_mail} do # green
-  #  Config.persist([sentinel: [invitable: true]])
-  #  Config.persist([sentinel: [confirmable: false]])
+  test "inviting a user via the invitable sign up", %{conn: conn, invite_params: params, invite_email: mocked_mail} do # green
+    Config.persist([sentinel: [invitable: true]])
+    Config.persist([sentinel: [confirmable: false]])
 
-  #  with_mock Sentinel.Mailer, [:passthrough], [send_invite_email: fn(_, _) -> mocked_mail end] do
-  #    conn = post conn, auth_path(conn, :callback, "identity"), params
-  #    response(conn, 302)
+    with_mock Sentinel.Mailer, [:passthrough], [send_invite_email: fn(_, _) -> mocked_mail end] do
+      token_count = length(TestRepo.all(Token))
+      conn = post conn, auth_path(conn, :callback, "identity"), params
+      response(conn, 302)
 
-  #    assert_delivered_email mocked_mail
-  #  end
-  #end
+      refute token_count + 1 == length(TestRepo.all(Token))
+      assert_delivered_email mocked_mail
+      assert String.contains?(conn.resp_body, "/auth/users/new")
+    end
+  end
 
-  #test "invitable and confirmable sign up", %{conn: conn, invite_params: params, invite_email: mocked_mail} do # green
-  #  Config.persist([sentinel: [invitable: true]])
-  #  Config.persist([sentinel: [confirmable: :optional]])
+  test "invitable and confirmable sign up", %{conn: conn, invite_params: params, invite_email: mocked_mail} do # green
+    Config.persist([sentinel: [invitable: true]])
+    Config.persist([sentinel: [confirmable: :optional]])
 
-  #  with_mock Sentinel.Mailer, [:passthrough], [send_invite_email: fn(_, _) -> mocked_mail end] do
-  #    conn = post conn, auth_path(conn, :callback, "identity"), params
-  #    response = json_response(conn, 201)
+    with_mock Sentinel.Mailer, [:passthrough], [send_invite_email: fn(_, _) -> mocked_mail end] do
+      token_count = length(TestRepo.all(Token))
+      conn = post conn, auth_path(conn, :callback, "identity"), params
+      response(conn, 302)
 
-  #    %{"email" => email} = response
-  #    assert email == params.user.email
-  #    assert_delivered_email mocked_mail
-  #  end
-  #end
+      refute token_count + 1 == length(TestRepo.all(Token))
+      assert_delivered_email mocked_mail
+      assert String.contains?(conn.resp_body, "/auth/users/new")
+    end
+  end
 
   test "invitable setup password", %{conn: conn, params: params} do
     Config.persist([sentinel: [confirmable: :optional]])
@@ -153,48 +158,50 @@ defmodule Json.UserControllerTest do
     {password_reset_token, changeset} = PasswordResetter.create_changeset(db_auth)
     updated_db_auth = TestRepo.update!(changeset)
 
+    token_count = length(TestRepo.all(Token))
     conn = post conn, user_path(conn, :invited, user.id), %{confirmation_token: confirmation_token, password_reset_token: password_reset_token, password: params.user.password, password_confirmation: params.user.password}
     response = response(conn, 302)
 
+    assert String.contains?(conn.resp_body, "/auth/users/new")
     updated_user = TestRepo.get!(User, user.id)
     updated_auth = TestRepo.get!(Sentinel.Ueberauth, db_auth.id)
 
     assert updated_user.hashed_confirmation_token == nil
     assert updated_auth.hashed_password_reset_token == nil
     assert updated_user.unconfirmed_email == nil
-    #FIXME token count test?
+    refute token_count + 1 == length(TestRepo.all(Token))
   end
 
-  #test "sign up with missing password without the invitable module enabled", %{conn: conn, invite_params: params}  do # green
-  #  Config.persist([sentinel: [invitable: false]])
+  test "sign up with missing password without the invitable module enabled", %{conn: conn, invite_params: params}  do # green
+    Config.persist([sentinel: [invitable: false]])
 
-  #  conn = post conn, auth_path(conn, :callback, "identity"), params
-  #  response = json_response(conn, 401)
-  #  assert response == %{"errors" => [%{"password" => "A password is required to login"}]}
-  #end
+    conn = post conn, auth_path(conn, :callback, "identity"), params
+    response(conn, 401) #FIXME or 422?
 
-  #test "sign up with missing email", %{conn: conn} do # green
-  #  conn = post conn, auth_path(conn, :callback, "identity"), %{"user" => %{"password" => @password}}
-  #  response = json_response(conn, 401)
-  #  assert response == %{"errors" =>
-  #    [
-  #      %{"email" => "An email is required to login"},
-  #    ]
-  #  }
-  #end
+    IO.inspect conn.resp_body
+    assert String.contains?(conn.private.phoenix_flash["error"], "Failed to create user")
+  end
 
-  #test "sign up with custom validations", %{conn: conn, params: params} do
-  #  Config.persist([sentinel: [confirmable: :optional]])
-  #  Config.persist([sentinel: [invitable: false]])
+  test "sign up with missing email", %{conn: conn} do
+    conn = post conn, auth_path(conn, :callback, "identity"), %{"user" => %{"password" => @password}}
+    response(conn, 422) #FIXME or 401?
 
-  #  Application.put_env(:sentinel, :user_model_validator, fn changeset ->
-  #    Ecto.Changeset.add_error(changeset, :password, "too short")
-  #  end)
+    assert String.contains?(conn.private.phoenix_flash["error"], "Failed to create user")
+  end
 
-  #  conn = post conn, auth_path(conn, :callback, "identity"), params
-  #  response = json_response(conn, 401)
-  #  assert response == %{"errors" => [%{"password" => "too short"}]}
-  #end
+  test "sign up with custom validations", %{conn: conn, params: params} do
+    Config.persist([sentinel: [confirmable: :optional]])
+    Config.persist([sentinel: [invitable: false]])
+
+    Application.put_env(:sentinel, :user_model_validator, fn changeset ->
+      Ecto.Changeset.add_error(changeset, :password, "too short")
+    end)
+
+    conn = post conn, auth_path(conn, :callback, "identity"), params
+    response(conn, 401) #FIXME or 422
+
+    assert String.contains?(conn.private.phoenix_flash["error"], "Failed to create user")
+  end
 
   ##FIXME working on the confirmable thing
   #test "confirm user with a bad token", %{conn: conn, params: %{user: params}} do

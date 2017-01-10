@@ -18,6 +18,8 @@ defmodule Sentinel.TestRouter do
     Sentinel.mount_html
   end
 
+  #FIXME do I need this router to have two modules,
+  # one each set using mix config in the tests as needed?
   #scope "/" do
   #  pipe_through :api
   #  Sentinel.mount_api

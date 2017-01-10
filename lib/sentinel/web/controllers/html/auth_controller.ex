@@ -37,18 +37,26 @@ defmodule Sentinel.Controllers.Html.AuthController do
       {:ok, user} -> existing_user(conn, user)
       {:error, errors} ->
         changeset = Sentinel.Session.changeset(%Sentinel.Session{})
-        render(conn, Sentinel.SessionView, "new.html", %{conn: conn, changeset: changeset, providers: Config.ueberauth_providers})
+        conn
+        |> put_status(401)
+        |> render(Sentinel.SessionView, "new.html", %{conn: conn, changeset: changeset, providers: Config.ueberauth_providers})
     end
   end
 
   defp new_user(conn, user, confirmation_token) do
-    # FIXME ensure we don't login invited users.
-    {:ok, _} = AfterRegistrator.confirmable_and_invitable(user, confirmation_token)
+    {:ok, user} = AfterRegistrator.confirmable_and_invitable(user, confirmation_token)
+    ueberauth = Config.repo.get_by(Sentinel.Ueberauth, provider: "identity", user_id: user.id)
 
-    conn
-    |> Guardian.Plug.sign_in(user)
-    |> put_flash(:info, "Signed up")
-    |> redirect(to: Config.router_helper.account_path(Config.endpoint, :edit))
+    if is_nil(ueberauth.hashed_password) do
+      conn
+      |> put_flash(:info, "Successfully invited user")
+      |> redirect(to: Config.router_helper.user_path(Config.endpoint, :new))
+    else
+      conn
+      |> Guardian.Plug.sign_in(user)
+      |> put_flash(:info, "Signed up")
+      |> redirect(to: Config.router_helper.account_path(Config.endpoint, :edit))
+    end
   end
 
   defp existing_user(conn, user) do

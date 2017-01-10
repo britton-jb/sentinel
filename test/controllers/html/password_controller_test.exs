@@ -1,4 +1,4 @@
-defmodule Json.PasswordControllerTest do
+defmodule Html.PasswordControllerTest do
   use Sentinel.ConnCase
 
   alias Ecto.Changeset
