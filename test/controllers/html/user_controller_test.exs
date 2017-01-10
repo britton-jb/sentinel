@@ -138,8 +138,7 @@ defmodule Html.UserControllerTest do
     }
 
     {:ok, %{user: user, confirmation_token: confirmation_token}} =
-      TestRepo.transaction(fn ->
-        {confirmation_token, changeset} =
+      TestRepo.transaction(fn -> {confirmation_token, changeset} =
           auth.info
           |> Map.from_struct
           |> Registrator.changeset
@@ -159,34 +158,38 @@ defmodule Html.UserControllerTest do
     updated_db_auth = TestRepo.update!(changeset)
 
     token_count = length(TestRepo.all(Token))
-    conn = post conn, user_path(conn, :invited, user.id), %{confirmation_token: confirmation_token, password_reset_token: password_reset_token, password: params.user.password, password_confirmation: params.user.password}
+    conn = post conn, user_path(conn, :invited, user.id), %{
+      confirmation_token: confirmation_token,
+      password_reset_token: password_reset_token,
+      password: params.user.password,
+      password_confirmation: params.user.password
+    }
     response = response(conn, 302)
 
-    assert String.contains?(conn.resp_body, "/auth/users/new")
+    assert String.contains?(conn.resp_body, "/auth/account")
     updated_user = TestRepo.get!(User, user.id)
     updated_auth = TestRepo.get!(Sentinel.Ueberauth, db_auth.id)
 
     assert updated_user.hashed_confirmation_token == nil
     assert updated_auth.hashed_password_reset_token == nil
     assert updated_user.unconfirmed_email == nil
-    refute token_count + 1 == length(TestRepo.all(Token))
+    assert token_count + 1 == length(TestRepo.all(Token))
   end
 
-  test "sign up with missing password without the invitable module enabled", %{conn: conn, invite_params: params}  do # green
+  test "sign up with missing password without the invitable module enabled", %{conn: conn, invite_params: params}  do
     Config.persist([sentinel: [invitable: false]])
 
     conn = post conn, auth_path(conn, :callback, "identity"), params
-    response(conn, 401) #FIXME or 422?
+    response(conn, 401)
 
-    IO.inspect conn.resp_body
-    assert String.contains?(conn.private.phoenix_flash["error"], "Failed to create user")
+    assert String.contains?(conn.private.phoenix_flash["error"], "Failed to authenticate")
   end
 
   test "sign up with missing email", %{conn: conn} do
     conn = post conn, auth_path(conn, :callback, "identity"), %{"user" => %{"password" => @password}}
-    response(conn, 422) #FIXME or 401?
+    response(conn, 401) #FIXME or 422?
 
-    assert String.contains?(conn.private.phoenix_flash["error"], "Failed to create user")
+    assert String.contains?(conn.private.phoenix_flash["error"], "Failed to authenticate") #FIXME is this the error message we want?
   end
 
   test "sign up with custom validations", %{conn: conn, params: params} do
@@ -200,58 +203,63 @@ defmodule Html.UserControllerTest do
     conn = post conn, auth_path(conn, :callback, "identity"), params
     response(conn, 401) #FIXME or 422
 
-    assert String.contains?(conn.private.phoenix_flash["error"], "Failed to create user")
+    assert String.contains?(conn.private.phoenix_flash["error"], "Failed to authenticate") #FIXME is this the error message we want?
   end
 
-  ##FIXME working on the confirmable thing
-  #test "confirm user with a bad token", %{conn: conn, params: %{user: params}} do
-  #  {_, changeset} =
-  #    params
-  #    |> Registrator.changeset
-  #    |> Confirmator.confirmation_needed_changeset
-  #  TestRepo.insert!(changeset)
+  test "confirm user with a bad token", %{conn: conn, params: %{user: params}} do
+    {_, changeset} =
+      params
+      |> Registrator.changeset
+      |> Confirmator.confirmation_needed_changeset
+    TestRepo.insert!(changeset)
 
-  #  conn = post conn, user_path(conn, :confirm), %{email: params.email, confirmation_token: "bad_token"}
-  #  response = json_response(conn, 422)
-  #  assert response == %{"errors" => [%{"confirmation_token" => "invalid"}]}
-  #end
+    conn = post conn, user_path(conn, :confirm), %{email: params.email, confirmation_token: "bad_token"}
+    response(conn, 422)
 
-  #test "confirm a user", %{conn: conn, params: %{user: params}} do
-  #  {token, changeset} =
-  #    params
-  #    |> Registrator.changeset
-  #    |> Confirmator.confirmation_needed_changeset
-  #  user = TestRepo.insert!(changeset)
+    assert String.contains?(conn.private.phoenix_flash["error"], "Unable to confirm your account")
+    assert String.contains?(conn.resp_body, "You are being <a href=\"/\">redirected</a>")
+  end
 
-  #  conn = post conn, user_path(conn, :confirm), %{email: params.email, confirmation_token: token}
-  #  assert json_response(conn, 200)
+  test "confirm a user", %{conn: conn, params: %{user: params}} do
+    {token, changeset} =
+      params
+      |> Registrator.changeset
+      |> Confirmator.confirmation_needed_changeset
+    user = TestRepo.insert!(changeset)
 
-  #  updated_user = TestRepo.get! User, user.id
-  #  assert updated_user.hashed_confirmation_token == nil
-  #  assert updated_user.confirmed_at != nil
-  #end
+    conn = post conn, user_path(conn, :confirm), %{email: params.email, confirmation_token: token}
+    response(conn, 302)
 
-  #test "confirm a user's new email", %{conn: conn, params: %{user: user}} do
-  #  {token, registrator_changeset} =
-  #    user
-  #    |> Registrator.changeset
-  #    |> Confirmator.confirmation_needed_changeset
+    updated_user = TestRepo.get! User, user.id
+    assert updated_user.hashed_confirmation_token == nil
+    assert updated_user.confirmed_at != nil
+    assert String.contains?(conn.private.phoenix_flash["info"], "Successfully confirmed your account")
+    assert String.contains?(conn.resp_body, "You are being <a href=\"/\">redirected</a>")
+  end
 
-  #  user =
-  #    registrator_changeset
-  #    |> TestRepo.insert!
-  #    |> Confirmator.confirmation_changeset(%{"confirmation_token" => token})
-  #    |> TestRepo.update!
+  test "confirm a user's new email", %{conn: conn, params: %{user: user}} do
+    {token, registrator_changeset} =
+      user
+      |> Registrator.changeset
+      |> Confirmator.confirmation_needed_changeset
 
-  #  {token, updater_changeset} = AccountUpdater.changeset(user, %{"email" => "new@example.com"})
-  #  updated_user = TestRepo.update!(updater_changeset)
+    user =
+      registrator_changeset
+      |> TestRepo.insert!
+      |> Confirmator.confirmation_changeset(%{"confirmation_token" => token})
+      |> TestRepo.update!
 
-  #  conn = post conn, user_path(conn, :confirm), %{email: updated_user.email, confirmation_token: token}
-  #  assert json_response(conn, 200)
+    {token, updater_changeset} = AccountUpdater.changeset(user, %{"email" => "new@example.com"})
+    updated_user = TestRepo.update!(updater_changeset)
 
-  #  updated_user = TestRepo.get! User, user.id
-  #  assert updated_user.hashed_confirmation_token == nil
-  #  assert updated_user.unconfirmed_email == nil
-  #  assert updated_user.email == "new@example.com"
-  #end
+    conn = post conn, user_path(conn, :confirm), %{email: updated_user.email, confirmation_token: token}
+    response(conn, 302)
+
+    updated_user = TestRepo.get! User, user.id
+    assert updated_user.hashed_confirmation_token == nil
+    assert updated_user.unconfirmed_email == nil
+    assert updated_user.email == "new@example.com"
+    assert String.contains?(conn.private.phoenix_flash["info"], "Successfully confirmed your account")
+    assert String.contains?(conn.resp_body, "You are being <a href=\"/\">redirected</a>")
+  end
 end

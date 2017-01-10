@@ -28,7 +28,7 @@ defmodule Sentinel.Controllers.Html.AuthController do
   end
 
   def callback(%{assigns: %{ueberauth_failure: _fails}} = conn, _params) do
-    Util.send_error(conn, %{error: "Failed to authenticate"}, 401)
+    failed_to_authenticate(conn)
   end
   def callback(%{assigns: %{ueberauth_auth: auth}} = conn, _params) do
     case Ueberauthenticator.ueberauthenticate(auth) do
@@ -36,11 +36,16 @@ defmodule Sentinel.Controllers.Html.AuthController do
         new_user(conn, user, confirmation_token)
       {:ok, user} -> existing_user(conn, user)
       {:error, errors} ->
-        changeset = Sentinel.Session.changeset(%Sentinel.Session{})
-        conn
-        |> put_status(401)
-        |> render(Sentinel.SessionView, "new.html", %{conn: conn, changeset: changeset, providers: Config.ueberauth_providers})
+        failed_to_authenticate(conn)
     end
+  end
+
+  defp failed_to_authenticate(conn) do
+    changeset = Sentinel.Session.changeset(%Sentinel.Session{})
+    conn
+    |> put_status(401)
+    |> put_flash(:error, "Failed to authenticate")
+    |> render(Sentinel.SessionView, "new.html", %{conn: conn, changeset: changeset, providers: Config.ueberauth_providers})
   end
 
   defp new_user(conn, user, confirmation_token) do

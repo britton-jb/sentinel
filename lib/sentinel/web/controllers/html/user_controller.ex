@@ -19,13 +19,16 @@ defmodule Sentinel.Controllers.Html.UserController do
     case do_confirm(params) do
       {:ok, user} ->
         conn
-        |> put_status(200)
-        |> render(Config.user_view, "show.json", %{user: user})
-      {:error, changeset} -> Util.send_error(conn, changeset.errors)
+        |> put_flash(:info, "Successfully confirmed your account")
+        |> redirect(to: "/")
+      {:error, changeset} ->
+        conn
+        |> put_status(422)
+        |> put_flash(:error, "Unable to confirm your account")
+        |> redirect(to: "/")
     end
   end
 
-  # FIXME move into another module
   defp do_confirm(params) do
     Config.user_model
     |> Config.repo.get_by(email: params["email"])
@@ -34,18 +37,18 @@ defmodule Sentinel.Controllers.Html.UserController do
     |> Config.repo.update
   end
 
-  @doc """
-  Creates a new user using the invitable flow, without a password. This sends
-  them an email which links to an endpoint where they can create a password
-  and fill in other account information
-  """
   def invited(conn, params) do
     case do_invited(params) do
       {:ok, user} ->
         conn
-        |> put_status(200)
-        |> render(Config.user_view, "show.json", %{user: user})
-      {:error, changeset} -> Util.send_error(conn, changeset.errors)
+        |> Guardian.Plug.sign_in(user)
+        |> put_flash(:info, "Signed up")
+        |> redirect(to: Config.router_helper.account_path(Config.endpoint, :edit))
+      {:error, changeset} ->
+        conn
+        |> put_status(422)
+        |> put_flash(:error, "Failed to create user")
+        |> render(Sentinel.SessionView, "new.html", %{conn: conn, changeset: changeset, providers: Config.ueberauth_providers})
     end
   end
 

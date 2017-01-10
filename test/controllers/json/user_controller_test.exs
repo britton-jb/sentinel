@@ -204,7 +204,6 @@ defmodule Json.UserControllerTest do
     assert response == %{"errors" => [%{"password" => "too short"}]}
   end
 
-  #FIXME working on the confirmable thing
   test "confirm user with a bad token", %{conn: conn, params: %{user: params}} do
     {_, changeset} =
       params
