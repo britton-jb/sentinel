@@ -13,15 +13,25 @@ defmodule Sentinel.TestRouter do
     plug :put_secure_browser_headers
   end
 
+  pipeline :ueberauth do
+    plug :accepts, ["html", "json"]
+    plug :fetch_session
+    plug :fetch_flash
+    plug :put_secure_browser_headers
+  end
+
+  scope "/" do
+    pipe_through :ueberauth
+    Sentinel.mount_ueberauth_routes
+  end
+
   scope "/" do
     pipe_through :browser
     Sentinel.mount_html
   end
 
-  #FIXME do I need this router to have two modules,
-  # one each set using mix config in the tests as needed?
-  #scope "/" do
-  #  pipe_through :api
-  #  Sentinel.mount_api
-  #end
+  scope "/api", as: :api do
+    pipe_through :api
+    Sentinel.mount_api
+  end
 end

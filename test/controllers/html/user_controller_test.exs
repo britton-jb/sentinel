@@ -62,7 +62,7 @@ defmodule Html.UserControllerTest do
       refute is_nil(user.hashed_confirmation_token)
       assert_delivered_email mocked_mail
       assert String.contains?(conn.private.phoenix_flash["info"], "Signed up")
-      assert String.contains?(conn.resp_body, "/auth/account")
+      assert String.contains?(conn.resp_body, Sentinel.Config.router_helper.account_path(Sentinel.Config.endpoint, :edit))
     end
   end
 
@@ -79,7 +79,7 @@ defmodule Html.UserControllerTest do
       refute is_nil(user.hashed_confirmation_token)
       assert_delivered_email mocked_mail
       assert String.contains?(conn.private.phoenix_flash["info"], "Signed up")
-      assert String.contains?(conn.resp_body, "/auth/account")
+      assert String.contains?(conn.resp_body, Sentinel.Config.router_helper.account_path(Sentinel.Config.endpoint, :edit))
     end
   end
 
@@ -94,7 +94,7 @@ defmodule Html.UserControllerTest do
     refute is_nil(user.hashed_confirmation_token)
     refute_delivered_email Sentinel.Mailer.NewEmailAddress.build(user, "token")
     assert String.contains?(conn.private.phoenix_flash["info"], "Signed up")
-    assert String.contains?(conn.resp_body, "/auth/account")
+    assert String.contains?(conn.resp_body, Sentinel.Config.router_helper.account_path(Sentinel.Config.endpoint, :edit))
   end
 
   test "inviting a user via the invitable sign up", %{conn: conn, invite_params: params, invite_email: mocked_mail} do # green
@@ -108,7 +108,7 @@ defmodule Html.UserControllerTest do
 
       refute token_count + 1 == length(TestRepo.all(Token))
       assert_delivered_email mocked_mail
-      assert String.contains?(conn.resp_body, "/auth/users/new")
+      assert String.contains?(conn.resp_body, Sentinel.Config.router_helper.user_path(Sentinel.Config.endpoint, :new))
     end
   end
 
@@ -123,7 +123,7 @@ defmodule Html.UserControllerTest do
 
       refute token_count + 1 == length(TestRepo.all(Token))
       assert_delivered_email mocked_mail
-      assert String.contains?(conn.resp_body, "/auth/users/new")
+      assert String.contains?(conn.resp_body, Sentinel.Config.router_helper.user_path(Sentinel.Config.endpoint, :new))
     end
   end
 
@@ -166,7 +166,7 @@ defmodule Html.UserControllerTest do
     }
     response = response(conn, 302)
 
-    assert String.contains?(conn.resp_body, "/auth/account")
+    assert String.contains?(conn.resp_body, Sentinel.Config.router_helper.account_path(Sentinel.Config.endpoint, :edit))
     updated_user = TestRepo.get!(User, user.id)
     updated_auth = TestRepo.get!(Sentinel.Ueberauth, db_auth.id)
 

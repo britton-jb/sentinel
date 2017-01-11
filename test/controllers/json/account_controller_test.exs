@@ -38,7 +38,7 @@ defmodule Json.AccountControllerTest do
   end
 
   test "get current user account info", %{conn: conn} do
-    conn = get conn, account_path(conn, :show)
+    conn = get conn, api_account_path(conn, :show)
     response = json_response(conn, 200)
     assert response["email"] == old_email
   end
@@ -51,7 +51,7 @@ defmodule Json.AccountControllerTest do
     mocked_mail = Mailer.send_new_email_address_email(mocked_user, mocked_token)
 
     with_mock Mailer, [:passthrough], [send_new_email_address_email: fn(_, _) -> mocked_mail end] do
-      conn = put conn, account_path(conn, :update), %{account: %{email: @new_email}}
+      conn = put conn, api_account_path(conn, :update), %{account: %{email: @new_email}}
       response = json_response(conn, 200)
 
       assert response["email"] == @old_email
@@ -69,7 +69,7 @@ defmodule Json.AccountControllerTest do
   end
 
   test "set email to the same email it was before", %{conn: conn, user: user, auth: auth} do
-    conn = put conn, account_path(conn, :update), %{account: %{email: @old_email}}
+    conn = put conn, api_account_path(conn, :update), %{account: %{email: @old_email}}
     response = json_response(conn, 200)
 
     assert response["email"] == @old_email
@@ -92,7 +92,7 @@ defmodule Json.AccountControllerTest do
       Changeset.add_error(changeset, :password, "too_short")
     end)
 
-    conn = put conn, account_path(conn, :update), %{account: %{password: @new_password}}
+    conn = put conn, api_account_path(conn, :update), %{account: %{password: @new_password}}
     response = json_response(conn, 422)
     assert response == %{"errors" => [%{"password" => "too_short"}]} #FIXME this should be a better error
     {:ok, _} = Ueberauthenticator.ueberauthenticate(%Ueberauth.Auth{

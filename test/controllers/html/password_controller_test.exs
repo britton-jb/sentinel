@@ -10,7 +10,6 @@ defmodule Html.PasswordControllerTest do
 
   @email "user@example.com"
   @new_password "new_password"
-  @headers [{"content-type", "application/json"}]
 
   setup do
     auth = Factory.insert(:ueberauth)
@@ -66,7 +65,7 @@ defmodule Html.PasswordControllerTest do
     response(conn, 422)
 
     assert String.contains?(conn.private.phoenix_flash["error"], "Unable to reset your password")
-    assert String.contains?(conn.resp_body, "/auth/password/new")
+    assert String.contains?(conn.resp_body, Sentinel.Config.router_helper.password_path(Sentinel.Config.endpoint, :new))
   end
 
   test "reset password without confirmation", %{conn: conn, user: user, auth: auth} do
@@ -79,7 +78,7 @@ defmodule Html.PasswordControllerTest do
     response(conn, 422)
 
     assert String.contains?(conn.private.phoenix_flash["error"], "Unable to reset your password")
-    assert String.contains?(conn.resp_body, "/auth/password/new")
+    assert String.contains?(conn.resp_body, Sentinel.Config.router_helper.password_path(Sentinel.Config.endpoint, :new))
   end
 
   test "reset password with confirmation", %{conn: conn, user: user, auth: auth} do #FIXME FAILING
@@ -93,7 +92,7 @@ defmodule Html.PasswordControllerTest do
     response(conn, 302)
 
     assert String.contains?(conn.private.phoenix_flash["info"], "Successfully updated password")
-    assert String.contains?(conn.resp_body, "/auth/account")
+    assert String.contains?(conn.resp_body, Sentinel.Config.router_helper.account_path(Sentinel.Config.endpoint, :edit))
 
     updated_auth = TestRepo.get!(Sentinel.Ueberauth, auth.id)
 
@@ -123,6 +122,6 @@ defmodule Html.PasswordControllerTest do
 
     refute_delivered_email Sentinel.Mailer.NewEmailAddress.build(user, "token")
     assert String.contains?(conn.private.phoenix_flash["info"], "Update successful")
-    assert String.contains?(conn.resp_body, "/auth/account")
+    assert String.contains?(conn.resp_body, Sentinel.Config.router_helper.account_path(Sentinel.Config.endpoint, :edit))
   end
 end

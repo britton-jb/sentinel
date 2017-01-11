@@ -13,7 +13,10 @@ defmodule Json.AuthControllerTest do
   @role "user"
 
   setup do
-    conn = build_conn() |> Plug.Conn.put_req_header("content-type", "application/json")
+    conn =
+      build_conn()
+      |> Plug.Conn.put_req_header("content-type", "application/json")
+      |> Plug.Conn.put_req_header("accept", "application/json")
     auth = Factory.insert(:ueberauth)
     user = auth.user
 

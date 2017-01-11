@@ -39,14 +39,14 @@ defmodule Html.AuthControllerTest do
   test "sign in with unknown email", %{conn: conn} do
     conn = post conn, auth_path(conn, :create), %{session: %{email: @unknown_email, password: @password}}
     response = response(conn, 302)
-    assert String.contains?(conn.resp_body, "/auth/sessions/new")
+    assert String.contains?(conn.resp_body, Sentinel.Config.router_helper.auth_path(Sentinel.Config.endpoint, :new))
     assert String.contains?(conn.private.phoenix_flash["error"], "Unknown username or password")
   end
 
   test "sign in with wrong password", %{conn: conn, params: params} do
     conn = post conn, auth_path(conn, :create), %{session: %{password: "wrong", email: params.session.email}}
     response = response(conn, 302)
-    assert String.contains?(conn.resp_body, "/auth/sessions/new")
+    assert String.contains?(conn.resp_body, Sentinel.Config.router_helper.auth_path(Sentinel.Config.endpoint, :new))
     assert String.contains?(conn.private.phoenix_flash["error"], "Unknown username or password")
   end
 
@@ -56,7 +56,7 @@ defmodule Html.AuthControllerTest do
 
     conn = post conn, auth_path(conn, :create), params
     response = response(conn, 302)
-    assert String.contains?(conn.resp_body, "/auth/account")
+    assert String.contains?(conn.resp_body, Sentinel.Config.router_helper.account_path(Sentinel.Config.endpoint, :edit))
     assert String.contains?(conn.private.phoenix_flash["info"], "Logged in")
     assert (token_count + 1) == length(TestRepo.all(Token))
   end
@@ -67,7 +67,7 @@ defmodule Html.AuthControllerTest do
 
     conn = post conn, auth_path(conn, :create), params
     response = response(conn, 302)
-    assert String.contains?(conn.resp_body, "/auth/account")
+    assert String.contains?(conn.resp_body, Sentinel.Config.router_helper.account_path(Sentinel.Config.endpoint, :edit))
     assert String.contains?(conn.private.phoenix_flash["info"], "Logged in")
     assert (token_count + 1) == length(TestRepo.all(Token))
   end
@@ -93,7 +93,7 @@ defmodule Html.AuthControllerTest do
     conn = post conn, auth_path(conn, :create), params
     response = response(conn, 302)
 
-    assert String.contains?(conn.resp_body, "/auth/account")
+    assert String.contains?(conn.resp_body, Sentinel.Config.router_helper.account_path(Sentinel.Config.endpoint, :edit))
     assert (token_count + 1) == length(TestRepo.all(Token))
   end
 
@@ -114,7 +114,7 @@ defmodule Html.AuthControllerTest do
     }
     response = response(conn, 302)
 
-    assert String.contains?(conn.resp_body, "/auth/account")
+    assert String.contains?(conn.resp_body, Sentinel.Config.router_helper.account_path(Sentinel.Config.endpoint, :edit))
     assert String.contains?(conn.private.phoenix_flash["info"], "Logged in")
     assert (token_count + 1) == length(TestRepo.all(Token))
   end
