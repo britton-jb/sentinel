@@ -2,7 +2,6 @@ defmodule Sentinel.AfterRegistrator do
   @moduledoc """
   Handles the email sending logic after a new user is registered to the platform
   """
-
   alias Sentinel.Config
   alias Sentinel.Mailer
   alias Sentinel.Changeset.PasswordResetter
@@ -17,7 +16,7 @@ defmodule Sentinel.AfterRegistrator do
           Sentinel.Ueberauth
           |> Config.repo.get_by!(provider: "identity", user_id: user.id)
           |> PasswordResetter.create_changeset
-        updated_auth = Config.repo.update!(changeset)
+        Config.repo.update!(changeset)
 
         user
         |> Mailer.send_invite_email({confirmation_token, password_reset_token})

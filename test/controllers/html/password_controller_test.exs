@@ -1,10 +1,7 @@
 defmodule Html.PasswordControllerTest do
   use Sentinel.ConnCase
 
-  alias Ecto.Changeset
-  alias Ecto.DateTime
   alias GuardianDb.Token
-  alias Sentinel.Changeset.Registrator
   alias Sentinel.Changeset.PasswordResetter
   alias Sentinel.Ueberauthenticator
 
@@ -58,7 +55,7 @@ defmodule Html.PasswordControllerTest do
 
   test "reset password with a wrong token", %{conn: conn, user: user, auth: auth} do
     {_reset_token, changeset} = auth |> PasswordResetter.create_changeset
-    auth = TestRepo.update!(changeset)
+    TestRepo.update!(changeset)
 
     params = %{user_id: user.id, password_reset_token: "wrong_token", password: "newpassword"}
     conn = put conn, password_path(conn, :update), params
@@ -69,7 +66,6 @@ defmodule Html.PasswordControllerTest do
   end
 
   test "reset password without confirmation", %{conn: conn, user: user, auth: auth} do
-    old_hashed_password = auth.hashed_password
     {reset_token, changeset} = auth |> PasswordResetter.create_changeset
     TestRepo.update!(changeset)
 
@@ -81,7 +77,7 @@ defmodule Html.PasswordControllerTest do
     assert String.contains?(conn.resp_body, Sentinel.Config.router_helper.password_path(Sentinel.Config.endpoint, :new))
   end
 
-  test "reset password with confirmation", %{conn: conn, user: user, auth: auth} do #FIXME FAILING
+  test "reset password with confirmation", %{conn: conn, user: user, auth: auth} do
     old_hashed_password = auth.hashed_password
     {reset_token, changeset} = auth |> PasswordResetter.create_changeset
     TestRepo.update!(changeset)
@@ -100,14 +96,14 @@ defmodule Html.PasswordControllerTest do
     assert (token_count + 1) == length(TestRepo.all(Token))
   end
 
-  test "Reset password when logged in", %{authenticated_conn: conn, user: user, auth: auth} do #FIXME FAILING
+  test "Reset password when logged in", %{authenticated_conn: conn, user: user, auth: auth} do
     old_hashed_password = auth.hashed_password
     user
     |> Sentinel.User.changeset(%{confirmed_at: Ecto.DateTime.utc})
     |> TestRepo.update!
 
     conn = put conn, password_path(conn, :authenticated_update), %{account: %{password: @new_password, password_confirmation: @new_password}}
-    response = response(conn, 302)
+    response(conn, 302)
 
     updated_auth = TestRepo.get!(Sentinel.Ueberauth, auth.id)
     refute updated_auth.hashed_password == old_hashed_password

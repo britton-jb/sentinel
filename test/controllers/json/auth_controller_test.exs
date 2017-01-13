@@ -3,14 +3,9 @@ defmodule Json.AuthControllerTest do
 
   alias GuardianDb.Token
   alias Mix.Config
-  alias Sentinel.Changeset.Registrator
-  alias Sentinel.Changeset.Confirmator
 
   @unknown_email "unknown_email@example.com"
-  @email "user@example.com"
   @password "secret"
-  @headers [{"content-type", "application/json"}]
-  @role "user"
 
   setup do
     conn =

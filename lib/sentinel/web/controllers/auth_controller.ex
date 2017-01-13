@@ -7,11 +7,10 @@ defmodule Sentinel.Controllers.AuthController do
   use Phoenix.Controller
   alias Sentinel.Controllers.Json
   alias Sentinel.Controllers.Html
-  alias Sentinel.Config
 
   plug Ueberauth
   plug Guardian.Plug.VerifyHeader when action in [:delete]
-  plug Guardian.Plug.EnsureAuthenticated, %{handler: Config.auth_handler} when action in [:delete]
+  plug Guardian.Plug.EnsureAuthenticated, %{handler: Sentinel.Config.auth_handler} when action in [:delete]
   plug Guardian.Plug.LoadResource when action in [:delete]
 
   def new(conn, params) do

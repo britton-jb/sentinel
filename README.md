@@ -9,9 +9,11 @@
 [license]: http://opensource.org/licenses/MIT
 
 #### FIXME vv
-- Remove compile time warnings
-- remove FIXMEs
+- add view for password edit html
+
 - manually test
+- add specs for html stuff that fails
+
 - update the README
 #### END FIXME ^^
 

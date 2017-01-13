@@ -2,16 +2,11 @@ defmodule Sentinel.Controllers.Html.AuthController do
   @moduledoc """
   Handles the session create and destroy actions
   """
-
   require Ueberauth
   use Phoenix.Controller
-  alias Plug.Conn
   alias Sentinel.AfterRegistrator
   alias Sentinel.Config
   alias Sentinel.Ueberauthenticator
-  alias Sentinel.UserHelper
-  alias Sentinel.Util
-  alias Ueberauth.Strategy.Helpers
 
   plug Ueberauth
   plug Guardian.Plug.VerifyHeader when action in [:delete]
@@ -31,7 +26,7 @@ defmodule Sentinel.Controllers.Html.AuthController do
       {:ok, %{user: user, confirmation_token: confirmation_token}} ->
         new_user(conn, user, confirmation_token)
       {:ok, user} -> existing_user(conn, user)
-      {:error, errors} ->
+      {:error, _errors} ->
         failed_to_authenticate(conn)
     end
   end
@@ -61,8 +56,6 @@ defmodule Sentinel.Controllers.Html.AuthController do
   end
 
   defp existing_user(conn, user) do
-    permissions = UserHelper.model.permissions(user.id)
-
     conn
     |> Guardian.Plug.sign_in(user)
     |> put_flash(:info, "Logged in")
@@ -96,13 +89,11 @@ defmodule Sentinel.Controllers.Html.AuthController do
 
     case Ueberauthenticator.ueberauthenticate(auth) do
       {:ok, user} ->
-        permissions = UserHelper.model.permissions(user.id)
-
         conn
         |> Guardian.Plug.sign_in(user)
         |> put_flash(:info, "Logged in")
         |> redirect(to: Config.router_helper.account_path(Config.endpoint, :edit))
-      {:error, errors} ->
+      {:error, _errors} ->
         conn
         |> put_flash(:error, "Unknown username or password")
         |> redirect(to: Config.router_helper.auth_path(Config.endpoint, :new))

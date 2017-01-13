@@ -45,7 +45,7 @@ defmodule PasswordResetterTest do
     refute changeset.changes |> Map.get(:hashed_password) |> is_nil
   end
 
-  test "another" do #FIXME wtf is this?
+  test "reset_changeset/2 with ueberauth model struct retursn invalid changeset when creating a new password without a password confirmation" do
     auth = %Sentinel.Ueberauth{
       hashed_password: "$2b$04$zx78eyMSingslyg5Q8Ay4.1qkrWkIFVKT8XUFBDJPpu2WH.2uBaGq",
       hashed_password_reset_token: "$2b$04$89K4euxPq3T3eYPLPZN7luYIf9jx4iwGvevEKLt17IGuSy4EvtKvK",
@@ -63,7 +63,7 @@ defmodule PasswordResetterTest do
     refute changeset.valid?
   end
 
-  test "another another" do #FIXME seriously?
+  test "reset_changeset/2 with ueberauth model struct returns valid changeset when creating a new password with matching password and confirmation" do
     hashed_password = "$2b$04$zx78eyMSingslyg5Q8Ay4.1qkrWkIFVKT8XUFBDJPpu2WH.2uBaGq"
 
     auth = %Sentinel.Ueberauth{
@@ -83,7 +83,7 @@ defmodule PasswordResetterTest do
     changeset = PasswordResetter.reset_changeset(auth, params)
     assert changeset.valid?
     assert {:ok, nil} == Ecto.Changeset.fetch_change(changeset, :hashed_password_reset_token)
-    refute changeset.changes.hashed_password |> is_nil
+    refute is_nil(changeset.changes.hashed_password)
     refute changeset.changes.hashed_password == hashed_password
   end
 end

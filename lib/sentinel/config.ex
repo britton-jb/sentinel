@@ -49,8 +49,7 @@ defmodule Sentinel.Config do
   Wrapper for getting the application config of :error_view
   """
   def error_view do
-    #FIXME provide a default one of these?
-    Application.get_env(:sentinel, :error_view)
+    Application.get_env(:sentinel, :error_view, Sentinel.ErrorView)
   end
 
   @doc """
@@ -106,7 +105,6 @@ defmodule Sentinel.Config do
   Helper method ensuring router helper is properly configured
   """
   def router_helper_configured? do
-    #FIXME raise on this if not configured?
     router && endpoint
   end
 
@@ -114,7 +112,6 @@ defmodule Sentinel.Config do
   Wrapper for getting the application config of :send_address
   """
   def send_address do
-    #FIXME raise on this if not configured?
     Application.get_env(:sentinel, :send_address)
   end
 
@@ -163,7 +160,6 @@ defmodule Sentinel.Config do
   Wrapper for getting the application config of :user_view
   """
   def user_view do
-    #FIXME provide a default of these?
-    Application.get_env(:sentinel, :user_view)
+    Application.get_env(:sentinel, :user_view, Sentinel.UserView)
   end
 end

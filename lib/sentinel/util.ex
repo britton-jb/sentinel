@@ -2,7 +2,6 @@ defmodule Sentinel.Util do
   @moduledoc """
   Utilities for sentinel to format errors and presence validation
   """
-
   import Phoenix.Controller
   import Plug.Conn
 
@@ -61,8 +60,9 @@ defmodule Sentinel.Util do
     |> Enum.join("&")
   end
 
+  #FIXME acutally make into full struct
   def params_to_ueberauth_auth_struct(params, password_reset_token \\ nil) do
-    password_reset_params = %{
+    %{
       password_reset_token: (password_reset_token || params["password_reset_token"]),
       credentials: %{
         other: %{

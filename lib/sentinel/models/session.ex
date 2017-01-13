@@ -28,7 +28,6 @@ defmodule Sentinel.Session do
     |> Session.email_or_username_required
   end
 
-  #FIXME this is ugly
   @doc """
   Changeset validation ensuring that the user has either the username or email
   address defined

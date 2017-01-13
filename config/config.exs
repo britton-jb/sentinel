@@ -16,7 +16,7 @@ config :logger, :console,
 config :comeonin, :bcrypt_log_rounds, 4
 
 config :sentinel,
-  crypto_provider: Comeonin.Bcrypt, #FIXME make this a default
+  crypto_provider: Comeonin.Bcrypt,
   auth_handler: Sentinel.AuthHandler,
   user_view: Sentinel.UserView
 
@@ -28,8 +28,6 @@ config :guardian, Guardian,
   serializer: Sentinel.GuardianSerializer,
   hooks: GuardianDb,
   permissions: Application.get_env(:sentinel, :permissions)#,
-  #issuer: "Sentinel",
-  #secret_key: "guardian_sekret", #FIXME collapse these two
 
 config :guardian_db, GuardianDb,
   repo: Application.get_env(:sentinel, :repo)

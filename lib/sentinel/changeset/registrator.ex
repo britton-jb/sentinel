@@ -1,7 +1,6 @@
 defmodule Sentinel.Changeset.Registrator do
   alias Ecto.Changeset
   alias Ecto.DateTime
-  alias Sentinel.Changeset.HashPassword
   alias Sentinel.Util
   alias Sentinel.UserHelper
 

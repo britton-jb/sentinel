@@ -160,7 +160,7 @@ defmodule Json.UserControllerTest do
 
     db_auth = TestRepo.get_by(Sentinel.Ueberauth, user_id: user.id, provider: "identity")
     {password_reset_token, changeset} = PasswordResetter.create_changeset(db_auth)
-    updated_db_auth = TestRepo.update!(changeset)
+    TestRepo.update!(changeset)
 
     conn = post conn, api_user_path(conn, :invited, user.id), %{confirmation_token: confirmation_token, password_reset_token: password_reset_token, password: params.user.password, password_confirmation: params.user.password}
     response = json_response(conn, 200)

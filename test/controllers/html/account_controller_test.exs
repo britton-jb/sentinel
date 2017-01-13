@@ -54,7 +54,7 @@ defmodule Html.AccountControllerTest do
 
     with_mock Mailer, [:passthrough], [send_new_email_address_email: fn(_, _) -> mocked_mail end] do
       conn = put conn, account_path(conn, :update), %{account: %{email: @new_email}}
-      response = response(conn, 200)
+      response(conn, 200)
 
       assert String.contains?(conn.resp_body, "Successfully updated user account")
 
@@ -71,7 +71,7 @@ defmodule Html.AccountControllerTest do
 
   test "set email to the same email it was before", %{conn: conn, user: user, auth: auth} do
     conn = put conn, account_path(conn, :update), %{account: %{email: @old_email}}
-    response = response(conn, 200)
+    response(conn, 200)
 
     assert String.contains?(conn.resp_body, "Successfully updated user account")
 
@@ -95,7 +95,7 @@ defmodule Html.AccountControllerTest do
     end)
 
     conn = put conn, account_path(conn, :update), %{account: %{password: @new_password}}
-    response = response(conn, 422)
+    response(conn, 422)
 
     assert String.contains?(conn.resp_body, "Failed to update user account")
     {:ok, _} = Ueberauthenticator.ueberauthenticate(%Ueberauth.Auth{

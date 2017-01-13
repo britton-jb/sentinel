@@ -4,6 +4,8 @@ defmodule Sentinel do
   """
 
   defmacro mount_ueberauth do
+    run_compile_time_checks
+
     quote do
       require Ueberauth
 
@@ -16,6 +18,21 @@ defmodule Sentinel do
         get "/:provider/callback", AuthController, :callback
         post "/:provider/callback", AuthController, :callback
       end
+    end
+  end
+
+  defp run_compile_time_checks do
+    if is_nil(Sentinel.Config.send_address) do
+      raise "Must configure :sentinel :send_address"
+    end
+    if is_nil(Sentinel.Config.router) && is_nil(Sentinel.Config.endpoint) do
+      raise "Must configure :sentinel :router and :endpoint"
+    end
+    if is_nil(Sentinel.Config.router) do
+      raise "Must configure :sentinel :router"
+    end
+    if is_nil(Sentinel.Config.endpoint) do
+      raise "Must configure :sentinel :endpoint"
     end
   end
 

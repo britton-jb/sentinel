@@ -9,7 +9,6 @@ defmodule Sentinel.Controllers.Html.AccountController do
   alias Sentinel.Changeset.AccountUpdater
   alias Sentinel.Config
   alias Sentinel.Mailer
-  alias Sentinel.Util
 
   plug Guardian.Plug.VerifyHeader
   plug Guardian.Plug.EnsureAuthenticated, handler: Config.auth_handler

@@ -55,7 +55,7 @@ defmodule Sentinel.Controllers.Html.PasswordController do
   Params should be:
   {user_id: 1, password_reset_token: "abc123"}
   """
-  def update(conn, params = %{"user_id" => user_id}, _headers \\ %{}, _session \\ %{}) do
+  def update(conn, params = %{"user_id" => user_id}, _headers \\ %{}, _session \\ %{}) do # FIXME could extract all of this here, and on json side into another module
     user = Config.repo.get(UserHelper.model, user_id)
     password_reset_params = Util.params_to_ueberauth_auth_struct(params)
 
@@ -65,12 +65,12 @@ defmodule Sentinel.Controllers.Html.PasswordController do
       |> PasswordResetter.reset_changeset(password_reset_params)
 
     case Config.repo.update(changeset) do
-      {:ok, auth} ->
+      {:ok, _auth} ->
         conn
         |> Guardian.Plug.sign_in(user)
         |> put_flash(:info, "Successfully updated password")
         |> redirect(to: Config.router_helper.account_path(Config.endpoint, :edit))
-      {:error, changeset} ->
+      {:error, _changeset} ->
         conn
         |> put_status(422)
         |> put_flash(:error, "Unable to reset your password")

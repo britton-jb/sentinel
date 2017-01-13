@@ -3,8 +3,6 @@ defmodule Html.AuthControllerTest do
 
   alias GuardianDb.Token
   alias Mix.Config
-  alias Sentinel.Changeset.Registrator
-  alias Sentinel.Changeset.Confirmator
 
   @unknown_email "unknown_email@example.com"
   @email "user@example.com"
@@ -38,14 +36,14 @@ defmodule Html.AuthControllerTest do
 
   test "sign in with unknown email", %{conn: conn} do
     conn = post conn, auth_path(conn, :create), %{session: %{email: @unknown_email, password: @password}}
-    response = response(conn, 302)
+    response(conn, 302)
     assert String.contains?(conn.resp_body, Sentinel.Config.router_helper.auth_path(Sentinel.Config.endpoint, :new))
     assert String.contains?(conn.private.phoenix_flash["error"], "Unknown username or password")
   end
 
   test "sign in with wrong password", %{conn: conn, params: params} do
     conn = post conn, auth_path(conn, :create), %{session: %{password: "wrong", email: params.session.email}}
-    response = response(conn, 302)
+    response(conn, 302)
     assert String.contains?(conn.resp_body, Sentinel.Config.router_helper.auth_path(Sentinel.Config.endpoint, :new))
     assert String.contains?(conn.private.phoenix_flash["error"], "Unknown username or password")
   end
@@ -55,7 +53,7 @@ defmodule Html.AuthControllerTest do
     token_count = length(TestRepo.all(Token))
 
     conn = post conn, auth_path(conn, :create), params
-    response = response(conn, 302)
+    response(conn, 302)
     assert String.contains?(conn.resp_body, Sentinel.Config.router_helper.account_path(Sentinel.Config.endpoint, :edit))
     assert String.contains?(conn.private.phoenix_flash["info"], "Logged in")
     assert (token_count + 1) == length(TestRepo.all(Token))
@@ -66,7 +64,7 @@ defmodule Html.AuthControllerTest do
     token_count = length(TestRepo.all(Token))
 
     conn = post conn, auth_path(conn, :create), params
-    response = response(conn, 302)
+    response(conn, 302)
     assert String.contains?(conn.resp_body, Sentinel.Config.router_helper.account_path(Sentinel.Config.endpoint, :edit))
     assert String.contains?(conn.private.phoenix_flash["info"], "Logged in")
     assert (token_count + 1) == length(TestRepo.all(Token))
@@ -76,7 +74,7 @@ defmodule Html.AuthControllerTest do
     Config.persist([sentinel: [confirmable: :required]])
 
     conn = post conn, auth_path(conn, :create), params
-    response = response(conn, 302)
+    response(conn, 302)
     assert String.contains?(conn.resp_body, "/auth/sessions/new")
     assert String.contains?(conn.private.phoenix_flash["error"], "Unknown username or password")
   end
@@ -91,7 +89,7 @@ defmodule Html.AuthControllerTest do
     |> TestRepo.update!
 
     conn = post conn, auth_path(conn, :create), params
-    response = response(conn, 302)
+    response(conn, 302)
 
     assert String.contains?(conn.resp_body, Sentinel.Config.router_helper.account_path(Sentinel.Config.endpoint, :edit))
     assert (token_count + 1) == length(TestRepo.all(Token))
@@ -112,7 +110,7 @@ defmodule Html.AuthControllerTest do
         password: params.session.password
       }
     }
-    response = response(conn, 302)
+    response(conn, 302)
 
     assert String.contains?(conn.resp_body, Sentinel.Config.router_helper.account_path(Sentinel.Config.endpoint, :edit))
     assert String.contains?(conn.private.phoenix_flash["info"], "Logged in")
@@ -123,7 +121,6 @@ defmodule Html.AuthControllerTest do
     user = Factory.insert(:user, confirmed_at: Ecto.DateTime.utc)
     permissions = Sentinel.User.permissions(user.role)
     {:ok, token, _} = Guardian.encode_and_sign(user, :token, permissions)
-    token_count = length(TestRepo.all(Token))
 
     conn =
       conn
@@ -134,7 +131,7 @@ defmodule Html.AuthControllerTest do
 
     conn = delete conn, auth_path(conn, :delete)
 
-    response = response(conn, 302)
+    response(conn, 302)
     assert String.contains?(conn.resp_body, "a href=\"/\"")
   end
 end

@@ -94,7 +94,7 @@ defmodule Json.AccountControllerTest do
 
     conn = put conn, api_account_path(conn, :update), %{account: %{password: @new_password}}
     response = json_response(conn, 422)
-    assert response == %{"errors" => [%{"password" => "too_short"}]} #FIXME this should be a better error
+    assert response == %{"errors" => [%{"password" => "too_short"}]}
     {:ok, _} = Ueberauthenticator.ueberauthenticate(%Ueberauth.Auth{
       uid: @old_email,
       provider: :identity,

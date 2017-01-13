@@ -5,10 +5,7 @@ defmodule Sentinel.Ueberauth do
   """
 
   use Ecto.Schema
-
-  import Ecto
   import Ecto.Changeset
-  import Ecto.Query
 
   alias Sentinel.Config
   alias Sentinel.Changeset.HashPassword

@@ -18,7 +18,7 @@ defmodule Sentinel.Controllers.Json.AuthController do
   plug Guardian.Plug.EnsureAuthenticated, %{handler: Config.auth_handler} when action in [:delete]
   plug Guardian.Plug.LoadResource when action in [:delete]
 
-  def request(conn, params) do
+  def request(conn, _params) do
     json conn, %{callback_url: Helpers.callback_url(conn), providers: Config.ueberauth_providers}
   end
 
@@ -39,7 +39,7 @@ defmodule Sentinel.Controllers.Json.AuthController do
 
     conn
     |> put_status(201)
-    |> json Config.user_view.render("show.json", %{user: user})
+    |> json(Config.user_view.render("show.json", %{user: user}))
   end
 
   defp existing_user(conn, user) do
@@ -49,7 +49,7 @@ defmodule Sentinel.Controllers.Json.AuthController do
       {:ok, token, _encoded_claims} ->
         conn
         |> put_status(201)
-        |> json %{token: token}
+        |> json(%{token: token})
         {:error, :token_storage_failure} -> Util.send_error(conn, %{error: "Failed to store session, please try to login again using your new password"})
         {:error, reason} -> Util.send_error(conn, %{error: reason})
     end

@@ -6,7 +6,7 @@
       <ul>
         <% Enum.each(@changeset.errors, fn (error) -> %>
           <li>
-            <%= String.capitalize(Map.key(error)) %> - <%= Map.value(error) %>
+            <%= elem(error, 0) |> Atom.to_string |> String.capitalize  %> - <%= elem(error, 1) |> elem(0) |> String.capitalize %>
           </li>
         <% end) %>
       </ul>

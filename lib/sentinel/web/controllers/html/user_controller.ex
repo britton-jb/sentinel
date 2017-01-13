@@ -2,14 +2,8 @@ defmodule Sentinel.Controllers.Html.UserController do
   @moduledoc """
   Handles the user create, confirm and invite actions
   """
-
   use Phoenix.Controller
-  alias Sentinel.Changeset.Confirmator
-  alias Sentinel.Changeset.PasswordResetter
   alias Sentinel.Config
-  alias Sentinel.Confirm
-  alias Sentinel.Invited
-  alias Sentinel.Util
 
   @doc """
   Confirm either a new user or an existing user's new email address.
@@ -18,12 +12,12 @@ defmodule Sentinel.Controllers.Html.UserController do
   If the confirmation matches, the user will be confirmed and signed in.
   """
   def confirm(conn, params) do
-    case Confirm.do_confirm(params) do
-      {:ok, user} ->
+    case Sentinel.Confirm.do_confirm(params) do
+      {:ok, _user} ->
         conn
         |> put_flash(:info, "Successfully confirmed your account")
         |> redirect(to: "/")
-      {:error, changeset} ->
+      {:error, _changeset} ->
         conn
         |> put_status(422)
         |> put_flash(:error, "Unable to confirm your account")
@@ -32,7 +26,7 @@ defmodule Sentinel.Controllers.Html.UserController do
   end
 
   def invited(conn, params) do
-    case Invited.do_invited(params) do
+    case Sentinel.Invited.do_invited(params) do
       {:ok, user} ->
         conn
         |> Guardian.Plug.sign_in(user)

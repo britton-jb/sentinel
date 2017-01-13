@@ -155,7 +155,7 @@ defmodule Html.UserControllerTest do
 
     db_auth = TestRepo.get_by(Sentinel.Ueberauth, user_id: user.id, provider: "identity")
     {password_reset_token, changeset} = PasswordResetter.create_changeset(db_auth)
-    updated_db_auth = TestRepo.update!(changeset)
+    TestRepo.update!(changeset)
 
     token_count = length(TestRepo.all(Token))
     conn = post conn, user_path(conn, :invited, user.id), %{
@@ -164,7 +164,7 @@ defmodule Html.UserControllerTest do
       password: params.user.password,
       password_confirmation: params.user.password
     }
-    response = response(conn, 302)
+    response(conn, 302)
 
     assert String.contains?(conn.resp_body, Sentinel.Config.router_helper.account_path(Sentinel.Config.endpoint, :edit))
     updated_user = TestRepo.get!(User, user.id)

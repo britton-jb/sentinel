@@ -164,7 +164,7 @@ defmodule Mix.Tasks.Sentinel.Install do
     File.close(file)
   end
 
-  defp save_config(file, []), do: :ok
+  defp save_config(_file, []), do: :ok
   defp save_config(file, [data|rest]) do
     IO.binwrite(file, data)
     save_config(file, rest)

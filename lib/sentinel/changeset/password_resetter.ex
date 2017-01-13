@@ -1,12 +1,10 @@
 defmodule Sentinel.Changeset.PasswordResetter do
-  alias Ecto.Changeset
-  alias Sentinel.Changeset.HashPassword
-  alias Sentinel.Config
-  alias Sentinel.UserHelper
-
   @moduledoc """
   Module responsible for handling the password reset logic changeset
   """
+  alias Ecto.Changeset
+  alias Sentinel.Changeset.HashPassword
+  alias Sentinel.Config
 
   @doc """
   Adds the changes needed to create a password reset token.

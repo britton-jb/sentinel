@@ -5,7 +5,6 @@ defmodule Sentinel.Invited do
   alias Sentinel.Changeset.Confirmator
   alias Sentinel.Changeset.PasswordResetter
   alias Sentinel.Config
-  alias Sentinel.Ueberauth
   alias Sentinel.Util
 
   def do_invited(%{"id" => id} = params) do

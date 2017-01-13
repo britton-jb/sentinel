@@ -2,17 +2,14 @@ defmodule Sentinel.Authenticator do
   @moduledoc """
   Handles Sentinel authentication logic
   """
-
   alias Sentinel.Config
-  alias Sentinel.Ueberauth
-  alias Sentinel.UserHelper
 
   @doc """
   Compares user password and ensures user is confirmed if applicable
   """
   def authenticate(auth, password) do
     case check_password(auth, password) do
-      {:ok, %Ueberauth{user: %{confirmed_at: nil}}} -> auth.user |> confirmation_required?
+      {:ok, %Sentinel.Ueberauth{user: %{confirmed_at: nil}}} -> auth.user |> confirmation_required?
       {:ok, _} -> {:ok, auth.user}
       error -> error
     end

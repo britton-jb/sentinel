@@ -1,6 +1,8 @@
 - It should raise error at run/compile time if it can't find the
   appropriate root level mounted ueberauth routes
 
+- Enable username rather than email based accounts
+
 - excoveralls
 - code climate
 - ebert?

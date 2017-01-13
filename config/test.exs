@@ -15,7 +15,7 @@ config :sentinel, Sentinel.TestRepo,
 
 config :guardian, Guardian,
   issuer: "Sentinel",
-  secret_key: "guardian_sekret", #FIXME change me
+  secret_key: "guardian_sekret",
   allowed_algos: ["HS512"], # optional
   verify_module: Guardian.JWT,  # optional
   ttl: { 30, :days },

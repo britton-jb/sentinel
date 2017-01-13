@@ -2,7 +2,6 @@ defmodule UeberauthenticatorTest do
   use Sentinel.UnitCase
 
   alias Mix.Config
-  alias Sentinel.User
   alias Sentinel.Ueberauthenticator
   alias Ueberauth.Auth
 
@@ -55,7 +54,7 @@ defmodule UeberauthenticatorTest do
     Config.persist([sentinel: [invitable: true]])
     user = Factory.build(:user)
 
-    assert {:ok, %{user: user = %Sentinel.User{}, confirmation_token: _confirmation_token}} = Ueberauthenticator.ueberauthenticate(%Auth{
+    assert {:ok, %{user: _user = %Sentinel.User{}, confirmation_token: _confirmation_token}} = Ueberauthenticator.ueberauthenticate(%Auth{
       provider: :identity,
       info: %Auth.Info{email: user.email},
       credentials: %Auth.Credentials{
@@ -67,7 +66,7 @@ defmodule UeberauthenticatorTest do
     })
   end
 
-  test "identity provider without email", %{user: user, auth: auth} do
+  test "identity provider without email", %{auth: auth} do
     assert {:error, [email: {"An email is required to login", []}]} = Ueberauthenticator.ueberauthenticate(%Auth{
       provider: :identity,
       credentials: %Auth.Credentials{
@@ -92,7 +91,7 @@ defmodule UeberauthenticatorTest do
   end
 
   test "identity provider with email and pass, user exists, auth exists, is successful", %{user: user, auth: auth} do
-    assert {:ok, user = %Sentinel.User{}} = Ueberauthenticator.ueberauthenticate(%Auth{
+    assert {:ok, _user = %Sentinel.User{}} = Ueberauthenticator.ueberauthenticate(%Auth{
       provider: :identity,
       credentials: %Auth.Credentials{
         other: %{
@@ -121,7 +120,7 @@ defmodule UeberauthenticatorTest do
   test "identity provider with password and confirmation, user DOESN'T exist, auth DOESN'T, creates new user & auth" do
     assert {:ok,
       %{
-        user: user,
+        user: _user,
         confirmation_token: _confirmation_token
       }
     } = Ueberauthenticator.ueberauthenticate(%Auth{
@@ -140,7 +139,7 @@ defmodule UeberauthenticatorTest do
   end
 
   test "authenticate a confirmed user", %{confirmed_user: user, confirmed_auth: auth} do
-    assert {:ok, user = %Sentinel.User{}} = Ueberauthenticator.ueberauthenticate(%Auth{
+    assert {:ok, _user = %Sentinel.User{}} = Ueberauthenticator.ueberauthenticate(%Auth{
       provider: :identity,
       credentials: %Auth.Credentials{
         other: %{
@@ -155,7 +154,7 @@ defmodule UeberauthenticatorTest do
     user = Factory.insert(:user, confirmed_at: Ecto.DateTime.utc)
     auth = Factory.insert(:ueberauth, user: user)
 
-    assert {:ok, user = %Sentinel.User{}} = Ueberauthenticator.ueberauthenticate(%Auth{
+    assert {:ok, _user = %Sentinel.User{}} = Ueberauthenticator.ueberauthenticate(%Auth{
       provider: :identity,
       credentials: %Auth.Credentials{
         other: %{
@@ -169,7 +168,7 @@ defmodule UeberauthenticatorTest do
   test "authenticate an unconfirmed user - confirmable default/optional", %{user: user, auth: auth} do
     Config.persist([sentinel: [confirmable: :optional]])
 
-    assert {:ok, user = %Sentinel.User{}} = Ueberauthenticator.ueberauthenticate(%Auth{
+    assert {:ok, _user = %Sentinel.User{}} = Ueberauthenticator.ueberauthenticate(%Auth{
       provider: :identity,
       credentials: %Auth.Credentials{
         other: %{
@@ -183,7 +182,7 @@ defmodule UeberauthenticatorTest do
   test "authenticate an unconfirmed user - confirmable false", %{user: user, auth: auth} do
     Config.persist([sentinel: [confirmable: :false]])
 
-    assert {:ok, user = %Sentinel.User{}} = Ueberauthenticator.ueberauthenticate(%Auth{
+    assert {:ok, _user = %Sentinel.User{}} = Ueberauthenticator.ueberauthenticate(%Auth{
       provider: :identity,
       credentials: %Auth.Credentials{
         other: %{

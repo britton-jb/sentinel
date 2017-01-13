@@ -4,11 +4,7 @@ defmodule Sentinel.Controllers.Json.UserController do
   """
 
   use Phoenix.Controller
-  alias Sentinel.Changeset.Confirmator
-  alias Sentinel.Changeset.PasswordResetter
   alias Sentinel.Config
-  alias Sentinel.Confirm
-  alias Sentinel.Invited
   alias Sentinel.Util
 
   @doc """
@@ -21,7 +17,7 @@ defmodule Sentinel.Controllers.Json.UserController do
   Responds with status 422 and body {errors: {field: "message"}} otherwise.
   """
   def confirm(conn, params) do
-    case Confirm.do_confirm(params) do
+    case Sentinel.Confirm.do_confirm(params) do
       {:ok, user} ->
         conn
         |> put_status(200)
@@ -36,7 +32,7 @@ defmodule Sentinel.Controllers.Json.UserController do
   and fill in other account information
   """
   def invited(conn, params) do
-    case Invited.do_invited(params) do
+    case Sentinel.Invited.do_invited(params) do
       {:ok, user} ->
         conn
         |> put_status(200)

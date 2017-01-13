@@ -64,7 +64,7 @@ defmodule Sentinel.Controllers.Json.PasswordController do
       |> PasswordResetter.reset_changeset(password_reset_params)
 
     case Config.repo.update(changeset) do
-      {:ok, auth} ->
+      {:ok, _auth} ->
         permissions = UserHelper.model.permissions(user.id)
 
         case Guardian.encode_and_sign(user, :token, permissions) do
