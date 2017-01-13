@@ -10,6 +10,9 @@
 
 #### FIXME vv
 - add view for password edit html
+- Change password controller update thing to not use the user_id, have
+  it use the password reset token to find the user
+- currently working on wrapping up teh password changes
 
 - manually test
 - add specs for html stuff that fails

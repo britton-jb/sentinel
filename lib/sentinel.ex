@@ -57,6 +57,7 @@ defmodule Sentinel do
 
         get "/password/new", Html.PasswordController, :new
         post "/password/new", Html.PasswordController, :create
+        get "/password/edit", Html.PasswordController, :edit
         put "/password", Html.PasswordController, :update
 
         get "/account", Html.AccountController, :edit

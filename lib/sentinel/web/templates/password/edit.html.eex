@@ -1,3 +1,21 @@
 <h2>Change your password</h2>
 
-# FIXME add this
+<%= form_for @conn, Config.router_helper.password_path(@conn, :update), [as: :update], fn f -> %>
+  <%= hidden_input f, :password_reset_token, value: @password_reset_token %>
+
+  <div class="sentinel form-group">
+    <%= label f, :password, class: "sentinel control-label" %><br />
+    <%= password_input f, :password, class: "sentinel form-control" %>
+  </div>
+
+  <div class="sentinel form-group">
+    <%= label f, :password_confirmation, class: "sentinel control-label" %>
+    <%= password_input f, :password_confirmation, class: "sentinel form-control" %>
+  </div>
+
+  <div class="sentinel actions form-group">
+    <%= submit "Change my password" %>
+  </div>
+<% end %>
+
+<%= render(Sentinel.SharedView, "links.html", assigns) %>

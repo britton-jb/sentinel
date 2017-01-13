@@ -46,7 +46,17 @@ defmodule Sentinel.Controllers.Html.PasswordController do
 
   defp send_redirect_and_flash(conn) do
     conn
-    |> put_flash(:info, "You'll receive an email with instructions about how to reset your password in a few minutes. ")
+    |> put_flash(:info, "You'll receive an email with instructions about how to reset your password in a few minutes.")
+    |> redirect(to: "/")
+  end
+
+  def edit(conn, params, headers \\ %{}, session \\ %{})
+  def edit(conn, %{"password_reset_token" => password_reset_token }, _headers, _session) do
+    render(conn, Sentinel.PasswordView, "edit.html", %{conn: conn, password_reset_token: password_reset_token})
+  end
+  def edit(conn, _params, _headers, _session) do
+    conn
+    |> put_flash(:error, "Invalid password reset link. Please try again.")
     |> redirect(to: "/")
   end
 
@@ -55,7 +65,8 @@ defmodule Sentinel.Controllers.Html.PasswordController do
   Params should be:
   {user_id: 1, password_reset_token: "abc123"}
   """
-  def update(conn, params = %{"user_id" => user_id}, _headers \\ %{}, _session \\ %{}) do # FIXME could extract all of this here, and on json side into another module
+  def update(conn, params, _headers, _session)
+  def update(conn, params = %{"user_id" => user_id, password_reset_token: _password_reset_params}, _headers, _session) do # FIXME could extract all of this here, and on json side into another module
     user = Config.repo.get(UserHelper.model, user_id)
     password_reset_params = Util.params_to_ueberauth_auth_struct(params)
 
@@ -76,6 +87,12 @@ defmodule Sentinel.Controllers.Html.PasswordController do
         |> put_flash(:error, "Unable to reset your password")
         |> redirect(to: Config.router_helper.password_path(Config.endpoint, :new))
     end
+  end
+  def update(conn, _params, _headers, _session) do
+    conn
+    |> put_status(422)
+    |> put_flash(:error, "Unable to reset your password")
+    |> redirect(to: Config.router_helper.password_path(Config.endpoint, :new))
   end
 
   def authenticated_update(conn, %{"account" => params}, current_user, _session) do

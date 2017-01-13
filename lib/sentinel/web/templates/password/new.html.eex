@@ -1,5 +1,7 @@
 <h2>Forgot your password?</h2>
 
+<p>Enter your email address and we'll send you a link to reset your password.</p>
+
 <%= form_for @conn, Config.router_helper.password_path(@conn, :create), [as: :create], fn f -> %>
   <div class="field">
     <%= label f, :email, class: "sentinel control-label" %><br />
@@ -7,7 +9,7 @@
   </div>
 
   <div class="actions">
-    <%= submit "Send me reset password instructions" %>
+    <%= submit "Send password reset instructions" %>
   </div>
 <% end %>
 
