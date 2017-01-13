@@ -18,13 +18,9 @@ defmodule Sentinel.Controllers.Html.AuthController do
   plug Guardian.Plug.EnsureAuthenticated, %{handler: Config.auth_handler} when action in [:delete]
   plug Guardian.Plug.LoadResource when action in [:delete]
 
-  def new(conn, _params) do
+  def request(conn, _params) do
     changeset = Sentinel.Session.changeset(%Sentinel.Session{})
     render(conn, Sentinel.SessionView, "new.html", %{conn: conn, changeset: changeset, providers: Config.ueberauth_providers})
-  end
-
-  #FIXME wtf does this do in the example app
-  def request(conn, _params) do
   end
 
   def callback(%{assigns: %{ueberauth_failure: _fails}} = conn, _params) do

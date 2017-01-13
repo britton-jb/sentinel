@@ -1,4 +1,8 @@
 defmodule Sentinel.Ueberauthenticator do
+  @moduledoc """
+  Common authentication logic using the ueberauth underlying layer
+  """
+
   alias Ueberauth.Auth
   alias Sentinel.Authenticator
   alias Sentinel.Changeset.Registrator

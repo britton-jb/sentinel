@@ -18,12 +18,22 @@ defmodule Sentinel.User do
     struct
     |> cast(params, @required_fields ++ @optional_fields)
     |> username_or_email_required
+    |> downcase_email
     |> unique_constraint(:email)
     |> unique_constraint(:username)
   end
 
   def permissions(_user_id) do
     Application.get_env(:sentinel, :permissions)
+  end
+
+  defp downcase_email(changeset) do
+    email = get_change(changeset, :email)
+    if is_nil(email) do
+      changeset
+    else
+      put_change(changeset, :email, String.downcase(email))
+    end
   end
 
   defp username_or_email_required(changeset) do

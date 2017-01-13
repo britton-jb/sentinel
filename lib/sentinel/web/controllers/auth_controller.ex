@@ -16,14 +16,18 @@ defmodule Sentinel.Controllers.AuthController do
 
   def new(conn, params) do
     if conn.private.phoenix_format == "json" do
-      raise "route does not exist"
+      Json.AuthController.request(conn, params)
     else
-      Html.AuthController.new(conn, params)
+      Html.AuthController.request(conn, params)
     end
   end
 
-  #FIXME wtf does this do in the example app
-  def request(conn, _params) do
+  def request(conn, params) do
+    if conn.private.phoenix_format == "json" do
+      Json.AuthController.request(conn, params)
+    else
+      Html.AuthController.request(conn, params)
+    end
   end
 
   def callback(conn, params) do
@@ -54,14 +58,6 @@ defmodule Sentinel.Controllers.AuthController do
       Json.AuthController.create(conn, params)
     else
       Html.AuthController.create(conn, params)
-    end
-  end
-
-  def authorize(conn, params) do
-    if conn.private.phoenix_format == "json" do
-      Json.AuthController.authorize(conn, params)
-    else
-      raise "route does not exist"
     end
   end
 end

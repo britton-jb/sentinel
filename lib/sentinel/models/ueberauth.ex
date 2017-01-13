@@ -1,4 +1,9 @@
 defmodule Sentinel.Ueberauth do
+  @moduledoc """
+  Models the database backed ueberauth data, which allows authentication using
+  a variety of services
+  """
+
   use Ecto.Schema
 
   import Ecto

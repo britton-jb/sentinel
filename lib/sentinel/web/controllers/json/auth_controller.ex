@@ -19,8 +19,7 @@ defmodule Sentinel.Controllers.Json.AuthController do
   plug Guardian.Plug.LoadResource when action in [:delete]
 
   def request(conn, params) do
-    #FIXME send the correct url for the client to make the request
-    json conn, %{callback_url: Helpers.callback_url(conn)}
+    json conn, %{callback_url: Helpers.callback_url(conn), providers: Config.ueberauth_providers}
   end
 
   def callback(%{assigns: %{ueberauth_failure: _fails}} = conn, _params) do

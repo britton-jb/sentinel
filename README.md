@@ -9,16 +9,6 @@
 [license]: http://opensource.org/licenses/MIT
 
 #### FIXME vv
-- Add a route to verify the token is legit and return the user to the
-  json api
-
-- ensure email gets downcased on insert, in the model (see if in
-  other module logic currently also)
-
-- Don't create the model, just the migration for the ueberauths
-- Add required fields to default model changeset in mix task
-
-- Credo
 - Remove compile time warnings
 - remove FIXMEs
 - manually test

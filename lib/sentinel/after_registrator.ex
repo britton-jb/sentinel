@@ -1,4 +1,8 @@
 defmodule Sentinel.AfterRegistrator do
+  @moduledoc """
+  Handles the email sending logic after a new user is registered to the platform
+  """
+
   alias Sentinel.Config
   alias Sentinel.Mailer
   alias Sentinel.Changeset.PasswordResetter

@@ -1,7 +1,10 @@
 defmodule Mix.Tasks.Sentinel.Install do
-  use Mix.Task
-
+  @moduledoc """
+  Used to initially setup and configure sentinel
+  """
   @shortdoc "Used to initially setup and configure sentinel"
+
+  use Mix.Task
 
   def run(_) do
     IO.puts "Creating migrations"
@@ -59,8 +62,22 @@ defmodule Mix.Tasks.Sentinel.Install do
       "unconfirmed_email:string"
     ])
 
-    #FIXME need to add the required fields to the model changeset
-    # starts 9 from bottom?
+    user_path = "web/models/user.ex"
+
+    old_content =
+      user_path
+      |> File.stream!
+      |> Enum.map(fn(line) -> line end)
+      |> Enum.slice(0..19)
+
+    new_content =
+      "deps/sentinel/test/support/sentinel_user.exs"
+      |> File.stream!
+      |> Enum.map(fn(line) -> line end)
+      |> Enum.slice(21..100)
+
+    old_content ++ new_content
+    |> File.write(user_path)
   end
 
   defp create_guardian_token_migration do
@@ -109,19 +126,28 @@ defmodule Mix.Tasks.Sentinel.Install do
   end
 
   defp generate_ueberauth do
-    Mix.Tasks.Phoenix.Gen.Model.run([
-      "Ueberauth",
-      "ueberauths",
-      "provider:string",
-      "uid:string", # references user_id when identity
-      "expires_at:datetime",
-      "hashed_password:text",
-      "hashed_password_reset_token:text",
-      "user_id:references:user",
-    ])
+    Mix.Tasks.Ecto.Gen.Migration.run(["AddUeberauth"])
+    migration_path =
+      "priv/repo/migrations/*.exs"
+      |> Path.wildcard
+      |> Enum.find(fn(migration) ->
+        String.contains?(migration, "ueberauth")
+      end)
 
-    #FIXME need to add the required fields to the model changeset
-    # starts 9 from bottom?
+    migration_content =
+      migration_path
+      |> File.stream!
+      |> Enum.map(fn(line) -> line end)
+      |> Enum.slice(0..2)
+
+    new_content =
+      "deps/sentinel/test/support/migrations/ueberauth_migration.exs"
+      |> File.stream!
+      |> Enum.map(fn(line) -> line end)
+      |> Enum.slice(3..100)
+
+    migration_content ++ new_content
+    |> File.write(migration_path)
   end
 
   defp generate_config do
