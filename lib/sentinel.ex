@@ -3,7 +3,7 @@ defmodule Sentinel do
   Module responsible for the macros that mount the Sentinel routes
   """
 
-  defmacro mount_ueberauth_routes do
+  defmacro mount_ueberauth do
     quote do
       require Ueberauth
 

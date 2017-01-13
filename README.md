@@ -9,20 +9,14 @@
 [license]: http://opensource.org/licenses/MIT
 
 #### FIXME vv
-- It should raise error at run/compile time if it can't find the
-  appropriate root level mounted ueberauth routes
 - Add a route to verify the token is legit and return the user to the
   json api
 
-- on change password kill password reset token
 - ensure email gets downcased on insert, in the model (see if in
   other module logic currently also)
 
 - Don't create the model, just the migration for the ueberauths
 - Add required fields to default model changeset in mix task
-
-- Change route nesting scope to only have `/auth` handle the ueberauth
-  routes?
 
 - Credo
 - Remove compile time warnings

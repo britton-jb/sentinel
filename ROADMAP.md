@@ -1,3 +1,6 @@
+- It should raise error at run/compile time if it can't find the
+  appropriate root level mounted ueberauth routes
+
 - excoveralls
 - code climate
 - ebert?

@@ -14,9 +14,12 @@ defmodule Sentinel.Controllers.AuthController do
   plug Guardian.Plug.EnsureAuthenticated, %{handler: Config.auth_handler} when action in [:delete]
   plug Guardian.Plug.LoadResource when action in [:delete]
 
-  def new(conn, _params) do
-    changeset = Sentinel.Session.changeset(%Sentinel.Session{})
-    render(conn, Sentinel.SessionView, "new.html", %{conn: conn, changeset: changeset, providers: Config.ueberauth_providers})
+  def new(conn, params) do
+    if conn.private.phoenix_format == "json" do
+      raise "route does not exist"
+    else
+      Html.AuthController.new(conn, params)
+    end
   end
 
   #FIXME wtf does this do in the example app
@@ -51,6 +54,14 @@ defmodule Sentinel.Controllers.AuthController do
       Json.AuthController.create(conn, params)
     else
       Html.AuthController.create(conn, params)
+    end
+  end
+
+  def authorize(conn, params) do
+    if conn.private.phoenix_format == "json" do
+      Json.AuthController.authorize(conn, params)
+    else
+      raise "route does not exist"
     end
   end
 end

@@ -22,7 +22,7 @@ defmodule Sentinel.TestRouter do
 
   scope "/" do
     pipe_through :ueberauth
-    Sentinel.mount_ueberauth_routes
+    Sentinel.mount_ueberauth
   end
 
   scope "/" do
