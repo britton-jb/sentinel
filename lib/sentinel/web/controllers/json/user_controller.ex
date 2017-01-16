@@ -19,11 +19,13 @@ defmodule Sentinel.Controllers.Json.UserController do
   def confirm(conn, params) do
     case Sentinel.Confirm.do_confirm(params) do
       {:ok, user} ->
-        conn
-        |> put_status(200)
-        |> render(Config.user_view, "show.json", %{user: user})
+        redirect(conn, external: Util.api_redirect_url(:confirmable))
       {:error, changeset} -> Util.send_error(conn, changeset.errors)
     end
+  end
+
+  def invitation_registration(conn, params) do
+    redirect(conn, external: Util.api_redirect_url(:invitable, params))
   end
 
   @doc """

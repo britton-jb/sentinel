@@ -2,6 +2,7 @@
 
 <%= form_for @conn, Config.router_helper.password_path(@conn, :update), [as: :update], fn f -> %>
   <%= hidden_input f, :password_reset_token, value: @password_reset_token %>
+  <%= hidden_input f, :user_id, value: @user_id %>
 
   <div class="sentinel form-group">
     <%= label f, :password, class: "sentinel control-label" %><br />

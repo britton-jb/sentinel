@@ -47,6 +47,10 @@ defmodule Sentinel.Controllers.Json.PasswordController do
     end
   end
 
+  def edit(conn, params) do
+    redirect(conn, external: Util.api_redirect_url(:password_reset, params))
+  end
+
   @doc """
   Resets a users password if the provided token matches
   Params should be:

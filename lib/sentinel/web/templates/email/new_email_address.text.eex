@@ -1,7 +1,7 @@
 Hello <%= @user.email %>!
 
 We're contacting you to notify you that an email address change was requested.
-<% if !Config.confirmable && Config.router_helper_configured? do %>
+<% if Config.confirmable do %>
 
   Use this URL to confirm email address change: <%= Config.router_helper.user_url(Config.endpoint, :confirm, confirmation_token: @confirmation_token) %>
 <% end %>

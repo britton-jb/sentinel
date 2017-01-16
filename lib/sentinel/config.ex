@@ -67,6 +67,20 @@ defmodule Sentinel.Config do
   end
 
   @doc """
+  Wrapper for getting the application config of :confirmable_redirect_url
+  """
+  def confirmable_redirect_url do
+    Application.get_env(:sentinel, :confirmable_redirect_url)
+  end
+
+  @doc """
+  Wrapper for getting the application config of :password_reset_url
+  """
+  def password_reset_url do
+    Application.get_env(:sentinel, :password_reset_url)
+  end
+
+  @doc """
   Wrapper for getting the application config of :invitation_registration_url
   """
   def invitation_registration_url do

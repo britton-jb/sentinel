@@ -51,8 +51,8 @@ defmodule Sentinel.Controllers.Html.PasswordController do
   end
 
   def edit(conn, params, headers \\ %{}, session \\ %{})
-  def edit(conn, %{"password_reset_token" => password_reset_token }, _headers, _session) do
-    render(conn, Sentinel.PasswordView, "edit.html", %{conn: conn, password_reset_token: password_reset_token})
+  def edit(conn, %{"user_id" => user_id, "password_reset_token" => password_reset_token}, _headers, _session) do
+    render(conn, Sentinel.PasswordView, "edit.html", %{conn: conn, password_reset_token: password_reset_token, user_id: user_id})
   end
   def edit(conn, _params, _headers, _session) do
     conn

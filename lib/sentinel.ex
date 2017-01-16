@@ -4,7 +4,7 @@ defmodule Sentinel do
   """
 
   defmacro mount_ueberauth do
-    run_compile_time_checks
+    run_ueberauth_compile_time_checks
 
     quote do
       require Ueberauth
@@ -21,7 +21,7 @@ defmodule Sentinel do
     end
   end
 
-  defp run_compile_time_checks do
+  defp run_ueberauth_compile_time_checks do
     if is_nil(Sentinel.Config.send_address) do
       raise "Must configure :sentinel :send_address"
     end
@@ -52,7 +52,7 @@ defmodule Sentinel do
         end
         if Sentinel.confirmable? do
           get "/confirmation_instructions", Html.UserController, :confirmation_instructions
-          post "/confirmation", Html.UserController, :confirm
+          get "/confirmation", Html.UserController, :confirm
         end
 
         get "/password/new", Html.PasswordController, :new
@@ -71,19 +71,18 @@ defmodule Sentinel do
   Mount's Sentinel JSON API routes inside your application
   """
   defmacro mount_api do
-    if Sentinel.invitable? && !Sentinel.invitable_configured? do
-      raise "Must configure :sentinel :invitation_registration_url when using sentinel invitable API"
-    end
+    run_api_compile_time_checks
 
     quote do
       require Ueberauth
 
       scope "/", Sentinel.Controllers do
         if Sentinel.invitable? do
+          get "/users/:id/invited", Html.UserController, :invitation_registration
           post "/users/:id/invited", Json.UserController, :invited
         end
         if Sentinel.confirmable? do
-          post "/confirmation", Json.UserController, :confirm
+          get "/confirmation", Json.UserController, :confirm
         end
 
         get "/password/new", Json.PasswordController, :new
@@ -97,6 +96,20 @@ defmodule Sentinel do
     end
   end
 
+  defp run_api_compile_time_checks do
+    unless Sentinel.Config.password_reset_url do
+      raise "Must configure :sentinel :password_reset_url when using sentinel API"
+    end
+
+    if Sentinel.invitable? && !Sentinel.invitable_configured? do
+      raise "Must configure :sentinel :invitation_registration_url when using sentinel invitable API"
+    end
+
+    if Sentinel.confirmable? && !Sentinel.confirmable_configured? do
+      raise "Must configure :sentinel :confirmable_redirect_url when using sentinel confirmable API"
+    end
+  end
+
   def invitable? do
     Sentinel.Config.invitable
   end
@@ -106,6 +119,10 @@ defmodule Sentinel do
   end
 
   def confirmable? do
-    Sentinel.Config.confirmable
+    Sentinel.Config.confirmable != false
+  end
+
+  def confirmable_configured? do
+    Sentinel.Config.confirmable_redirect_url
   end
 end

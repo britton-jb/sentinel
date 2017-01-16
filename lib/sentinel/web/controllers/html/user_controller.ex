@@ -25,6 +25,11 @@ defmodule Sentinel.Controllers.Html.UserController do
     end
   end
 
+  def invitation_registration(conn, params) do
+    # FIXME actually write this
+    render(conn, Sentinel.UserView, "edit.html", %{conn: conn, changeset: changeset})
+  end
+
   def invited(conn, params) do
     case Sentinel.Invited.do_invited(params) do
       {:ok, user} ->

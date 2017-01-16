@@ -39,7 +39,10 @@ config :sentinel,
   router: Sentinel.TestRouter, #FIXME your router
   endpoint: Sentinel.Endpoint, #FIXME your endpoint
   invitable: true,
-  invitation_registration_url: "http://localhost:4000", #for api usage only
+  invitation_registration_url: "http://localhost:4000", # for api usage only
+  confirmable: :optional,
+  confirmable_redirect_url: "http://localhost:4000", # for api usage only
+  password_reset_url: "http://localhost:4000", # for api usage only
   send_emails: true
 
 config :guardian_db, GuardianDb,
