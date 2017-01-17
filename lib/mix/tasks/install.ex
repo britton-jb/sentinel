@@ -10,9 +10,6 @@ defmodule Mix.Tasks.Sentinel.Install do
     IO.puts "Creating migrations"
     create_migrations
 
-    IO.puts "Appending config"
-    generate_config
-
     IO.puts "You should go in and ensure your application is configured correctly"
   end
 
@@ -148,25 +145,5 @@ defmodule Mix.Tasks.Sentinel.Install do
 
     migration_content ++ new_content
     |> File.write(migration_path)
-  end
-
-  defp generate_config do
-    "deps/sentinel/config/test.exs"
-    |> File.stream!
-    |> Enum.map(fn(line) -> line end)
-    |> Enum.slice(15..100)
-    |> append_config
-  end
-
-  defp append_config(config) do
-    {:ok, file} = File.open("config/config.exs", [:append])
-    save_config(file, config)
-    File.close(file)
-  end
-
-  defp save_config(_file, []), do: :ok
-  defp save_config(file, [data|rest]) do
-    IO.binwrite(file, data)
-    save_config(file, rest)
   end
 end

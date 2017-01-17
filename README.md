@@ -8,13 +8,6 @@
 [license-img]: http://img.shields.io/badge/license-MIT-brightgreen.svg
 [license]: http://opensource.org/licenses/MIT
 
-#### FIXME vv
-- manually test
-- add specs for stuff that fails
-
-- update the README
-#### END FIXME ^^
-
 Things I wish [Guardian](https://github.com/ueberauth/guardian) included
 out of the box. Routing, confirmation emails, password reset emails.
 It's just a thin wrapper on Guardian buteverybody shouldn't have to repeat
@@ -23,12 +16,6 @@ this themselves when they build stuff.
 I do my best to follow [semantic versioning](http://semver.org/) with this
 repo.
 
-This will likely be going through some serious changes, and was likley
-incremented to 1.0.0 prematurely. Part of why the semantic versioning is
-important. I currently utilize Sentinel, but
-would say that you should handle it with care, especially the
-HTML section, as noted below.
-
 Suggestions? See the `Contributing/Want something new?` section.
 
 ## Installation
@@ -36,6 +23,13 @@ Here's how to add it to your Phoenix project, and things you need to
 setup:
 
 ```
+def application do
+  [mod: {MyApp, []},
+   applications: [
+     # ...
+     :ueberauth]]
+end
+
 # mix.exs
 {:sentinel, "~> 2.0"},
 
@@ -43,77 +37,7 @@ setup:
 {:guardian_db, "~> 0.7.0"},
 ```
 
-### The User Model
-Your user model must have at least the following fields, and the
-`permissions/1` function must be defined, in order to encode permissions
-into your token, currently even if the function is empty, and you don't
-plan on using [Guardian
-permissions](https://github.com/ueberauth/guardian/#permissions).
-
-# FIXME make this into the generated user model
-```
-t.string :email,              null: false, default: ""
-t.string :encrypted_password, null: false, default: ""
-
-## Recoverable
-t.string   :reset_password_token
-t.datetime :reset_password_sent_at
-
-## Rememberable
-t.datetime :remember_created_at
-
-## Trackable
-t.integer  :sign_in_count, default: 0, null: false
-t.datetime :current_sign_in_at
-t.datetime :last_sign_in_at
-t.inet     :current_sign_in_ip
-t.inet     :last_sign_in_ip
-
-## Confirmable
-t.string   :confirmation_token
-t.datetime :confirmed_at
-t.datetime :confirmation_sent_at
-t.string   :unconfirmed_email # Only if using reconfirmable
-t.datetime :confirmation_reminder_sent_at
-
-## Lockable
-t.integer  :failed_attempts, default: 0, null: false # Only if lock strategy is :failed_attempts
-t.string   :unlock_token # Only if unlock strategy is :email or :both
-t.datetime :locked_at
-
-## Invitable
-t.string :invitation_token
-t.datetime :invitation_sent_at
-
-t.timestamps null: false
-```
-
-```elixir
-defmodule MyApp.User do
-  use Ecto.Schema
-
-  schema "users" do
-    field  :email,                       :string     # or :username
-    field  :role,                        :string
-    field  :hashed_password,             :string
-    field  :hashed_confirmation_token,   :string
-    field  :confirmed_at,                Ecto.DateTime
-    field  :hashed_password_reset_token, :string
-    field  :unconfirmed_email,           :string
-  end
-
-  @required_fields ~w(email)
-  @optional_fields ~w()
-
-  def changeset(struct, params \\ :empty) do
-    struct
-    |> cast(params, @required_fields, @optional_fields)
-  end
-
-  def permissions(role) do
-  end
-end
-```
+[FIXME](do i need to add sentinel and ueberauth etc to applications mix file?)
 
 ### Configure Guardian
 Example config:
@@ -127,92 +51,110 @@ config :guardian, Guardian,
   verify_issuer: true, # optional
   secret_key: "guardian_sekret",
   serializer: Sentinel.GuardianSerializer,
-  hooks: GuardianDb
+  hooks: GuardianDb # optional if using guardiandb
 ```
 
 [More info](https://github.com/ueberauth/guardian#installation)
 
-### Configure GuardianDb
+#### Optionally Configure GuardianDb
 ```
 config :guardian_db, GuardianDb,
   repo: MyApp.Repo
 ```
 
-The database backing for your tokens:
-
-```elixir
-defmodule MyApp.Repo.Migrations.GuardianDb do
-  use Ecto.Migration
-
-  def up do
-    create table(:guardian_tokens, primary_key: false) do
-      add :jti, :string, primary_key: true
-      add :typ, :string
-      add :aud, :string
-      add :iss, :string
-      add :sub, :string
-      add :exp, :bigint
-      add :jwt, :text
-      add :claims, :map
-      timestamps
-    end
-  end
-
-  def down do
-    drop table(:guardian_tokens)
-  end
-end
-```
-
-[More info](https://github.com/hassox/guardian_db)
+The install task which ships with Sentinel, which you will run later in
+this walkthrough, creates the migration for the guardianDb tokens.
 
 ### Configure Sentinel
 ```
 config :sentinel,
   app_name: "Test App",
-  user_model: MyApp.User,
-  email_sender: "test@example.com",
+  user_model: Sentinel.User, # should be your generated model
+  send_address: "test@example.com",
   crypto_provider: Comeonin.Bcrypt,
-  auth_handler: Sentinel.AuthHandler, #optional
-  repo: MyApp.Repo,
-  confirmable: :required, # possible options {:false, :required, :optional}, optional config, defaulting to :optional
-  invitable: :required, # possible options {:false, :true}, optional config, defaulting to false
-  endpoint: MyApp.Endpoint,
-  router: MyApp.Router,
-  user_view: MyApp.UserModel.View,
-  environment: :development
+  repo: Sentinel.TestRepo,
+  ecto_repos: [Sentinel.TestRepo],
+  auth_handler: Sentinel.AuthHandler,
+  user_view: Sentinel.UserView,
+  error_view: Sentinel.ErrorView,
+  router: Sentinel.TestRouter, # your router
+  endpoint: Sentinel.Endpoint, # your endpoint
+  invitable: true,
+  invitation_registration_url: "http://localhost:4000", # for api usage only
+  confirmable: :optional,
+  confirmable_redirect_url: "http://localhost:4000", # for api usage only
+  password_reset_url: "http://localhost:4000", # for api usage only
+  send_emails: true
 ```
 
-See `config/test.exs` for more current examples of configuring Sentinel
+See `config/test.exs` for an example of configuring Sentinel
 
-### Configure Bamboo
+### Configure Ueberauth
+```
+config :ueberauth, Ueberauth,
+  providers: [
+    identity: {
+      Ueberauth.Strategy.Identity,
+      [
+        param_nesting: "user",
+        callback_methods: ["POST"]
+      ]
+    },
+  ]
+```
+
+### Configure Bamboo Mailer
+```
+config :sentinel, Sentinel.Mailer,
+  adapter: Bamboo.TestAdapter
+```
+
 [More info](https://github.com/thoughtbot/bamboo/)
 
-### Routes
-Add the following to your routes file to add default routes, complete
-with protection
 
+### Run the install Mix task
+
+`mix sentinel.install`
+
+This will create a user model if it doesn't already exist, add a
+migration for GuardianDb migration, and add a migration for Ueberauth
+provider credentials.
+
+You may want to delete the GuardianDb migration if you're choosing not
+to use it.
+
+### Mount the desired routes
 ```elixir
 defmodule MyApp.Router do
   use MyApp.Web, :router
   require Sentinel
 
+  # ...
+  # ...
+
+  scope "/" do
+    pipe_through :ueberauth
+    Sentinel.mount_ueberauth
+  end
+
   scope "/" do
     pipe_through :browser
-
     Sentinel.mount_html
   end
 
-  scope "/api" do
+  scope "/api", as: :api do
     pipe_through :api
-
     Sentinel.mount_api
   end
 end
 ```
 
+You may run into an issue here if you set the scope to `scope "/",
+MyApp.Router do`. Something to be aware of.
+
 The generated routes are shown in `/lib/sentinel.ex`:
 
+[######FIXME######](update routes)
 method | path | description
 -------|------|------------
 POST | /api/users | register
@@ -224,9 +166,6 @@ POST | /api/password_resets | request a reset-password-email
 POST | /api/password_resets/reset | reset a password
 GET  | /api/account               | get information about the current user. at the moment this includes only the email address
 PUT  | /api/account               | update the current users email or password
-
-You may run into an issue here if you set the scope to `scope "/api",
-MyApp.Router do`. Something to be aware of.
 
 ## Overriding the Defaults
 
@@ -253,27 +192,10 @@ json
 }
 ```
 
-Note that the `invitable` module requires you to provide your own setup
-your password form at `GET UserController :invited`. In the future when
-Sentinel ships with views it's something I'd like to include. I would
-gladly take PRs for some basic server rendered html forms.
-
 ### Custom Routes
 If you want to customize the routes, or use your own controller
 endpoints you can do that by overriding the individual routes shown
 below:
-
-```elixir
-post  "users",                 Sentinel.Controllers.Users, :create
-post  "users/:id/confirm",     Sentinel.Controllers.Users, :confirm
-post  "users/:id/invited",     Sentinel.Controllers.Users, :invited
-post  "sessions", Sentinel.Controllers.Sessions, :create
-delete  "sessions", Sentinel.Controllers.Sessions, :delete
-post  "password_resets", Sentinel.Controllers.PasswordResets, :create
-post  "password_resets/reset", Sentinel.Controllers.PasswordResets, :reset
-get   "account",               Sentinel.Controllers.Account, :show
-put   "account",               Sentinel.Controllers.Account, :update
-```
 
 ### Auth Error Handler
 If you'd like to write your own custom authorization or authentication
@@ -288,13 +210,6 @@ information about the session.
 2.0.0 attempted to utilize the semantic versioning tradition of
 increasing the major version on breaking changes. There are many
 breaking changes in this update.
-
-Currently the HTML portion needs some serious TLC. I jumped the gun
-trying to release it one weekend. Use it, as with the rest of the
-library at your own risk. Any PRs to help shape it up are appreciated.
-In the meantime if you need a strong Elixir auth library that provides
-great HTML take a look at
-[Coherence](https://github.com/smpallen99/coherence).
 
 ## Contributing/Want something new?
 Create an issue. Preferably with a PR. If you're super awesome

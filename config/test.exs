@@ -3,6 +3,7 @@ use Mix.Config
 config :logger, level: :warn
 config :sentinel, Sentinel.Endpoint,
   secret_key_base: "DOInS/rFmVWzmcHaoYAXX8moniIGldPCvtGcYv+GY5XE5xS8aQKRH4Aw6gDUmncd"
+
 config :sentinel, Sentinel.TestRepo,
   username: "postgres",
   password: "postgres",
@@ -24,8 +25,8 @@ config :guardian, Guardian,
   hooks: GuardianDb,
   permissions: Application.get_env(:sentinel, :permissions)
 
+# Only relevant to test ^^
 
-# imported by mix install task
 config :sentinel,
   app_name: "Test App",
   user_model: Sentinel.User, #FIXME should be your generated model
