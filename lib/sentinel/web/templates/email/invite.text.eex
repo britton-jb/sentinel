@@ -2,4 +2,4 @@ Hello <%= @user.email %>!
 
 You've been invited to <%= Config.app_name %>
 
-Use this URL to setup your account: <%= Config.router_helper.user_url(Config.endpoint, :invitation_registration, password_reset_token: @password_reset_token, confirmation_token: @confirmation_token) %>
+Use this URL to setup your account: <%= Config.router_helper.user_url(Config.endpoint, :invitation_registration, @user.id, password_reset_token: @password_reset_token, confirmation_token: @confirmation_token) %>

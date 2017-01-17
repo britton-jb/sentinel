@@ -213,7 +213,7 @@ defmodule Json.UserControllerTest do
       |> Confirmator.confirmation_needed_changeset
     TestRepo.insert!(changeset)
 
-    conn = post conn, api_user_path(conn, :confirm), %{email: params.email, confirmation_token: "bad_token"}
+    conn = get conn, api_user_path(conn, :confirm), %{email: params.email, confirmation_token: "bad_token"}
     response = json_response(conn, 422)
     assert response == %{"errors" => [%{"confirmation_token" => "invalid"}]}
   end
@@ -225,8 +225,8 @@ defmodule Json.UserControllerTest do
       |> Confirmator.confirmation_needed_changeset
     user = TestRepo.insert!(changeset)
 
-    conn = post conn, api_user_path(conn, :confirm), %{email: params.email, confirmation_token: token}
-    assert json_response(conn, 200)
+    conn = get conn, api_user_path(conn, :confirm), %{email: params.email, confirmation_token: token}
+    assert response(conn, 302)
 
     updated_user = TestRepo.get! User, user.id
     assert updated_user.hashed_confirmation_token == nil
@@ -248,8 +248,8 @@ defmodule Json.UserControllerTest do
     {token, updater_changeset} = AccountUpdater.changeset(user, %{"email" => "new@example.com"})
     updated_user = TestRepo.update!(updater_changeset)
 
-    conn = post conn, api_user_path(conn, :confirm), %{email: updated_user.email, confirmation_token: token}
-    assert json_response(conn, 200)
+    conn = get conn, api_user_path(conn, :confirm), %{email: updated_user.email, confirmation_token: token}
+    assert response(conn, 302)
 
     updated_user = TestRepo.get! User, user.id
     assert updated_user.hashed_confirmation_token == nil

@@ -213,7 +213,7 @@ defmodule Html.UserControllerTest do
       |> Confirmator.confirmation_needed_changeset
     TestRepo.insert!(changeset)
 
-    conn = post conn, user_path(conn, :confirm), %{email: params.email, confirmation_token: "bad_token"}
+    conn = get conn, user_path(conn, :confirm), %{email: params.email, confirmation_token: "bad_token"}
     response(conn, 422)
 
     assert String.contains?(conn.private.phoenix_flash["error"], "Unable to confirm your account")
@@ -227,7 +227,7 @@ defmodule Html.UserControllerTest do
       |> Confirmator.confirmation_needed_changeset
     user = TestRepo.insert!(changeset)
 
-    conn = post conn, user_path(conn, :confirm), %{email: params.email, confirmation_token: token}
+    conn = get conn, user_path(conn, :confirm), %{email: params.email, confirmation_token: token}
     response(conn, 302)
 
     updated_user = TestRepo.get! User, user.id
@@ -252,7 +252,7 @@ defmodule Html.UserControllerTest do
     {token, updater_changeset} = AccountUpdater.changeset(user, %{"email" => "new@example.com"})
     updated_user = TestRepo.update!(updater_changeset)
 
-    conn = post conn, user_path(conn, :confirm), %{email: updated_user.email, confirmation_token: token}
+    conn = get conn, user_path(conn, :confirm), %{email: updated_user.email, confirmation_token: token}
     response(conn, 302)
 
     updated_user = TestRepo.get! User, user.id

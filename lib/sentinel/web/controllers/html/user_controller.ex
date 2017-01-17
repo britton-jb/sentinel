@@ -25,9 +25,25 @@ defmodule Sentinel.Controllers.Html.UserController do
     end
   end
 
-  def invitation_registration(conn, params) do
-    # FIXME actually write this
-    render(conn, Sentinel.UserView, "edit.html", %{conn: conn, changeset: changeset})
+  def invitation_registration(conn, %{"id" => id, "password_reset_token" => password_reset_token, "confirmation_token" => confirmation_token}) do
+    changeset =
+      Config.user_model
+      |> Config.repo.get(id)
+      |> Config.user_model.changeset(%{})
+
+    render(conn, Sentinel.UserView, "invitation_registration.html", %{
+      conn: conn,
+      changeset: changeset,
+      user_id: id,
+      password_reset_token: password_reset_token,
+      confirmation_token: confirmation_token
+    })
+  end
+  def invitation_registration(conn, _params) do
+    conn
+    |> put_status(422)
+    |> put_flash(:error, "Invalid invitation tokens")
+    |> redirect(to: "/")
   end
 
   def invited(conn, params) do

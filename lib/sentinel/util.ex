@@ -5,10 +5,11 @@ defmodule Sentinel.Util do
   import Phoenix.Controller
   import Plug.Conn
 
+  alias Sentinel.Config
   alias Sentinel.Util
 
   def api_redirect_url(:confirmable) do
-    Config.confirmable_redirect_url
+    "#{Config.confirmable_redirect_url}"
   end
   def api_redirect_url(:invitable, params) do
     "#{Config.invitation_registration_url}?#{mapped_params(params)}"

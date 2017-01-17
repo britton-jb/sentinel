@@ -3,7 +3,7 @@
 <p>You've been invited to <%= Config.app_name %></p>
 
 <p>
-<a href="<%= Config.router_helper.user_url(Config.endpoint, :invitation_registration, password_reset_token: @password_reset_token, confirmation_token: @confirmation_token) %>">
+<a href="<%= Config.router_helper.user_url(Config.endpoint, :invitation_registration, @user.id, password_reset_token: @password_reset_token, confirmation_token: @confirmation_token) %>">
     Click here to setup your account
   </a>
 </p>

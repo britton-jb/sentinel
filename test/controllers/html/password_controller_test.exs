@@ -35,7 +35,7 @@ defmodule Html.PasswordControllerTest do
     response(conn, 302)
 
     assert String.contains?(conn.private.phoenix_flash["info"],
-      "You'll receive an email with instructions about how to reset your password in a few minutes. ")
+      "You'll receive an email with instructions about how to reset your password in a few minutes.")
     refute_delivered_email Sentinel.Mailer.PasswordReset.build(%User{email: @email}, "token")
   end
 

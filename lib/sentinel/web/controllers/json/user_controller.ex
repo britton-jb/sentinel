@@ -18,8 +18,7 @@ defmodule Sentinel.Controllers.Json.UserController do
   """
   def confirm(conn, params) do
     case Sentinel.Confirm.do_confirm(params) do
-      {:ok, user} ->
-        redirect(conn, external: Util.api_redirect_url(:confirmable))
+      {:ok, _user} -> redirect(conn, external: Util.api_redirect_url(:confirmable))
       {:error, changeset} -> Util.send_error(conn, changeset.errors)
     end
   end

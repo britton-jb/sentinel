@@ -9,8 +9,6 @@
 [license]: http://opensource.org/licenses/MIT
 
 #### FIXME vv
-- Need to actually setup the invitation thing on the HTML side
-
 - manually test
 - add specs for stuff that fails
 

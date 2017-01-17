@@ -5,8 +5,8 @@ defmodule Sentinel.Controllers.AuthController do
 
   require Ueberauth
   use Phoenix.Controller
-  alias Sentinel.Controllers.Json
   alias Sentinel.Controllers.Html
+  alias Sentinel.Controllers.Json
 
   plug Ueberauth
   plug Guardian.Plug.VerifyHeader when action in [:delete]

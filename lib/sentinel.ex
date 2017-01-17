@@ -43,26 +43,26 @@ defmodule Sentinel do
     quote do
       require Ueberauth
 
-      scope "/", Sentinel.Controllers do
-        get "/users/new", Html.UserController, :new
-        post "/users", Html.UserController, :create
+      scope "/", Sentinel.Controllers.Html do
+        get "/user/new", UserController, :new
+        post "/user", UserController, :create
         if Sentinel.invitable? do
-          get "/users/:id/invited", Html.UserController, :invitation_registration
-          post "/users/:id/invited", Html.UserController, :invited
+          get "/user/:id/invited", UserController, :invitation_registration
+          post "/user/:id/invited", UserController, :invited
         end
         if Sentinel.confirmable? do
-          get "/confirmation_instructions", Html.UserController, :confirmation_instructions
-          get "/confirmation", Html.UserController, :confirm
+          get "/user/confirmation_instructions", UserController, :confirmation_instructions
+          get "/user/confirmation", UserController, :confirm
         end
 
-        get "/password/new", Html.PasswordController, :new
-        post "/password/new", Html.PasswordController, :create
-        get "/password/edit", Html.PasswordController, :edit
-        put "/password", Html.PasswordController, :update
+        get "/password/new", PasswordController, :new
+        post "/password/new", PasswordController, :create
+        get "/password/edit", PasswordController, :edit
+        put "/password", PasswordController, :update
 
-        get "/account", Html.AccountController, :edit
-        put "/account", Html.AccountController, :update
-        put "/account/password", Html.PasswordController, :authenticated_update
+        get "/account", AccountController, :edit
+        put "/account", AccountController, :update
+        put "/account/password", PasswordController, :authenticated_update
       end
     end
   end
@@ -76,22 +76,22 @@ defmodule Sentinel do
     quote do
       require Ueberauth
 
-      scope "/", Sentinel.Controllers do
+      scope "/", Sentinel.Controllers.Json do
         if Sentinel.invitable? do
-          get "/users/:id/invited", Html.UserController, :invitation_registration
-          post "/users/:id/invited", Json.UserController, :invited
+          get "/user/:id/invited", UserController, :invitation_registration
+          post "/user/:id/invited", UserController, :invited
         end
         if Sentinel.confirmable? do
-          get "/confirmation", Json.UserController, :confirm
+          get "/user/confirmation", UserController, :confirm
         end
 
-        get "/password/new", Json.PasswordController, :new
-        post "/password", Json.PasswordController, :create
-        put "/password", Json.PasswordController, :update
+        get "/password/new", PasswordController, :new
+        post "/password", PasswordController, :create
+        put "/password", PasswordController, :update
 
-        get "/account", Json.AccountController, :show
-        put "/account", Json.AccountController, :update
-        put "/account/password", Json.PasswordController, :authenticated_update
+        get "/account", AccountController, :show
+        put "/account", AccountController, :update
+        put "/account/password", PasswordController, :authenticated_update
       end
     end
   end
