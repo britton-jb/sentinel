@@ -51,8 +51,8 @@ defmodule Sentinel do
           post "/user/:id/invited", UserController, :invited
         end
         if Sentinel.confirmable? do
-          get "/user/confirmation_instructions", UserController, :confirmation_instructions #FIXME impl
-          post "/user/confirmation_instructions", UserController, :resend_confirmation_instructions #FIXME impl
+          get "/user/confirmation_instructions", UserController, :confirmation_instructions
+          post "/user/confirmation_instructions", UserController, :resend_confirmation_instructions
           get "/user/confirmation", UserController, :confirm
         end
 
@@ -83,12 +83,12 @@ defmodule Sentinel do
           post "/user/:id/invited", UserController, :invited
         end
         if Sentinel.confirmable? do
-          post "/user/confirmation_instructions", UserController, :resend_confirmation_instructions #FIXME impl
+          post "/user/confirmation_instructions", UserController, :resend_confirmation_instructions
           get "/user/confirmation", UserController, :confirm
         end
 
         get "/password/new", PasswordController, :new
-        post "/password", PasswordController, :create
+        get "/password/edit", PasswordController, :edit
         put "/password", PasswordController, :update
 
         get "/account", AccountController, :show

@@ -75,7 +75,7 @@ defmodule Html.AuthControllerTest do
 
     conn = post conn, auth_path(conn, :create), params
     response(conn, 302)
-    assert String.contains?(conn.resp_body, "/auth/sessions/new")
+    assert String.contains?(conn.resp_body, Sentinel.Config.router_helper.auth_path(Sentinel.Config.endpoint, :new))
     assert String.contains?(conn.private.phoenix_flash["error"], "Unknown username or password")
   end
 

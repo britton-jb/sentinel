@@ -8,7 +8,6 @@ defmodule Sentinel.Controllers.Html.PasswordController do
   alias Sentinel.Changeset.PasswordResetter
   alias Sentinel.Config
   alias Sentinel.Mailer
-  alias Sentinel.UserHelper
   alias Sentinel.Util
 
   plug Guardian.Plug.VerifyHeader when action in [:authenticated_update]
@@ -18,7 +17,7 @@ defmodule Sentinel.Controllers.Html.PasswordController do
     render(conn, Sentinel.PasswordView, "new.html", %{conn: conn})
   end
 
-  def create(conn, %{"email" => email}, _headers \\ %{}, _session \\ %{}) do
+  def create(conn, %{"email" => email}, _headers \\ %{}, _session \\ %{}) do # FIXME could extract all of this here, and on json side into another module
     user = Config.repo.get_by(Config.user_model, email: email)
 
     if is_nil(user) do
@@ -66,16 +65,10 @@ defmodule Sentinel.Controllers.Html.PasswordController do
   {user_id: 1, password_reset_token: "abc123"}
   """
   def update(conn, params, _headers \\ %{}, _session \\ %{})
-  def update(conn, params = %{"user_id" => user_id, "password_reset_token" => _password_reset_params}, _headers, _session) do # FIXME could extract all of this here, and on json side into another module
-    user = Config.repo.get(UserHelper.model, user_id)
-    password_reset_params = Util.params_to_ueberauth_auth_struct(params)
+  def update(conn, params = %{"user_id" => user_id, "password_reset_token" => _password_reset_params}, _headers, _session) do
+    user = Config.repo.get(Config.user_model, user_id)
 
-    changeset =
-      Sentinel.Ueberauth
-      |> Config.repo.get_by!(user_id: user.id, provider: "identity")
-      |> PasswordResetter.reset_changeset(password_reset_params)
-
-    case Config.repo.update(changeset) do
+    case Sentinel.Update.update_password(user_id, params) do
       {:ok, _auth} ->
         conn
         |> Guardian.Plug.sign_in(user)
@@ -95,7 +88,7 @@ defmodule Sentinel.Controllers.Html.PasswordController do
     |> redirect(to: Config.router_helper.password_path(Config.endpoint, :new))
   end
 
-  def authenticated_update(conn, %{"account" => params}, current_user, _session) do
+  def authenticated_update(conn, %{"account" => params}, current_user, _session) do # FIXME could extract all of this here and on json side into another module
     auth = Config.repo.get_by(Sentinel.Ueberauth, user_id: current_user.id, provider: "identity")
     {password_reset_token, changeset} = auth |> PasswordResetter.create_changeset
     updated_auth = Config.repo.update!(changeset)

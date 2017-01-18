@@ -21,7 +21,7 @@ defmodule Sentinel.Changeset.Registrator do
   def changeset(params) do
     updated_params = params |> atomize_params |> downcase_email
 
-    UserHelper.model
+    Sentinel.Config.user_model
     |> struct
     |> UserHelper.model.changeset(updated_params)
     |> Changeset.cast(updated_params, ~w(email), ~w())

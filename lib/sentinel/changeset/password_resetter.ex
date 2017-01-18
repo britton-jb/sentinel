@@ -44,7 +44,7 @@ defmodule Sentinel.Changeset.PasswordResetter do
   def reset_changeset(_auth, _params) do
     %Sentinel.Ueberauth{}
     |> Changeset.cast(%{}, [], ~w())
-    |> Changeset.add_error(:id, "unknown")
+    |> Changeset.add_error(:uid, "unknown")
   end
 
   @doc """

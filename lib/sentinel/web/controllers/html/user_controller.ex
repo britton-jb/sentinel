@@ -5,10 +5,9 @@ defmodule Sentinel.Controllers.Html.UserController do
   use Phoenix.Controller
   alias Sentinel.Config
 
-  def resend_confirmation_instructions(conn, params) do
+  def confirmation_instructions(conn, _params) do
     render(conn, Sentinel.UserView, "confirmation_instructions.html", %{conn: conn})
   end
-
   def resend_confirmation_instructions(conn, params) do
     Sentinel.Confirm.send_confirmation_instructions(params)
 

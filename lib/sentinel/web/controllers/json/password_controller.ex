@@ -8,7 +8,6 @@ defmodule Sentinel.Controllers.Json.PasswordController do
   alias Sentinel.Changeset.PasswordResetter
   alias Sentinel.Config
   alias Sentinel.Mailer
-  alias Sentinel.UserHelper
   alias Sentinel.Util
 
   plug Guardian.Plug.VerifyHeader when action in [:authenticated_update]
@@ -59,17 +58,11 @@ defmodule Sentinel.Controllers.Json.PasswordController do
   Responds with status 422 and body {errors: [messages]} otherwise.
   """
   def update(conn, params = %{"user_id" => user_id}, _headers \\ %{}, _session \\ %{}) do
-    user = Config.repo.get(UserHelper.model, user_id)
-    password_reset_params = Util.params_to_ueberauth_auth_struct(params)
+    user = Config.repo.get(Config.user_model, user_id)
 
-    changeset =
-      Sentinel.Ueberauth
-      |> Config.repo.get_by!(user_id: user.id, provider: "identity")
-      |> PasswordResetter.reset_changeset(password_reset_params)
-
-    case Config.repo.update(changeset) do
+    case Sentinel.Update.update_password(user_id, params) do
       {:ok, _auth} ->
-        permissions = UserHelper.model.permissions(user.id)
+        permissions = Config.user_model.permissions(user.id)
 
         case Guardian.encode_and_sign(user, :token, permissions) do
           {:ok, token, _encoded_claims} -> json conn, %{token: token}

@@ -6,10 +6,9 @@ defmodule Sentinel.Controllers.Json.AccountController do
   use Phoenix.Controller
   use Guardian.Phoenix.Controller
 
-  alias Sentinel.Changeset.AccountUpdater
   alias Sentinel.Config
-  alias Sentinel.Mailer
   alias Sentinel.Util
+  alias Sentinel.Update
 
   plug Guardian.Plug.VerifyHeader
   plug Guardian.Plug.EnsureAuthenticated, handler: Config.auth_handler
@@ -30,20 +29,12 @@ defmodule Sentinel.Controllers.Json.AccountController do
   Responds with status 200 and the updated user if successfull.
   """
   def update(conn, %{"account" => params}, current_user, _claims) do
-    {confirmation_token, changeset} = current_user |> AccountUpdater.changeset(params)
-
-    case Config.repo.update(changeset) do
-      {:ok, updated_user} ->
-        send_new_email_address_confirmation_email(updated_user, confirmation_token)
+    case Update.update(current_user, params) do
+      {:ok, %{user: updated_user, auth: _auth, confirmation_token: confirmation_token}} ->
+        Update.maybe_send_new_email_address_confirmation_email(updated_user, confirmation_token)
         json conn, Config.user_view.render("show.json", %{user: updated_user})
-      _ ->
+      {:error, changeset} ->
         Util.send_error(conn, changeset.errors)
-    end
-  end
-
-  defp send_new_email_address_confirmation_email(user, confirmation_token) do
-    if confirmation_token != nil do
-      user |> Mailer.send_new_email_address_email(confirmation_token)
     end
   end
 end

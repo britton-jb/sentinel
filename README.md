@@ -8,18 +8,6 @@
 [license-img]: http://img.shields.io/badge/license-MIT-brightgreen.svg
 [license]: http://opensource.org/licenses/MIT
 
-# FIXME
-Add spec for new confirmation method added related to new endpoints to
-ensure it actually works.
-
-Fix the one now somehow red spec
-
-Why did we split out account update vs authenticated update? Is there a
-use case for this? Is this superfluous? Or was this supposed to account
-for the invited post action? Either way this needs to be sorted before
-v2rc1
-# END FIXME
-
 Things I wish [Guardian](https://github.com/ueberauth/guardian) included
 out of the box. Routing, confirmation emails, password reset emails.
 It's just a thin wrapper on Guardian buteverybody shouldn't have to repeat
@@ -201,8 +189,8 @@ GET | /user/new | New user page
 POST | /user | Create new user
 GET | /user/:id/invited | Invited user registration form
 POST | /user/:id/invited | Complete user invitation flow
-GET | /user/confirmation_instructions | Request resending confirmation instructions page [FIXME](implement)
-POST | /user/confirmation_instructions | Request resending confirmation instructions [FIXME](implement)
+GET | /user/confirmation_instructions | Request resending confirmation instructions page
+POST | /user/confirmation_instructions | Request confirmation instructions email
 GET | /user/confirmation | Confirm user email address from email
 GET | /password/new | Forgot password page
 POST | /password/new | Request password reset email
@@ -210,7 +198,6 @@ GET | /password/edit | Password reset page
 PUT | /password | Reset password
 GET | /account | Basic user edit page
 PUT | /account | Update user information
-PUT | /account/password | Update user password [FIXME](do we actually want this?)
 
 #### Sentinel.mount_api
 
@@ -220,12 +207,12 @@ GET | /user/:id/invited | Redirect user from email link to invited user registra
 POST | /user/:id/invited | Complete user invitation flow
 GET | /user/confirmation_instructions | Request resending confirmation instructions
 GET | /user/confirmation | Confirm user email address from email
-GET | /password/new | Request password reset email [FIXME](Is this how we want to do this?)
-POST | /password | Request password reset email [FIXME](This doesn't appear to exist on the JSON side)
+GET | /password/new | Request password reset email
+GET | /password/edit | Request password reset page from email
 PUT | /password | Reset password
 GET | /account | Requests user account
 PUT | /account | Update user information
-PUT | /account/password | Update user password [FIXME](do we actually want this?)
+PUT | /account/password | Update user password separately
 
 ## Overriding the Defaults
 
@@ -258,8 +245,7 @@ endpoints you can do that by overriding the individual routes listed.
 ### Auth Error Handler
 If you'd like to write your own custom authorization or authentication
 handler change the `auth_handler` Sentinel configuration option
-to the module name of your handler. [FIXME](or could they just override
-the default one?)
+to the module name of your handler.
 
 It must define two functions, `unauthorized/2`, and `unauthenticated/2`,
 where the first parameter is the connection, and the second is

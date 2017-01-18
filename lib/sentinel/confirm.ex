@@ -4,25 +4,24 @@ defmodule Sentinel.Confirm do
   """
   alias Sentinel.Changeset.Confirmator
   alias Sentinel.Config
+  alias Sentinel.Mailer
 
-  def send_confirmation_instructions(params) do
-    user = Config.repo.get_by(Config.user_model, email: params["email"])
-    if user do
-      ueberauth = Config.repo.get_by(Sentinel.Ueberauth, provider: "identity", user_id: user.id)
+  def send_confirmation_instructions(%{"email" => email} = params) do
+    user = Config.repo.get_by(Config.user_model, email: email)
+    unless is_nil(user) do
+      {confirmation_token, changeset} =
+        params
+        |> Sentinel.Changeset.Registrator.changeset
+        |> Confirmator.confirmation_needed_changeset
 
-      if ueberauth do
-        {confirmation_token, changeset} =
-          ueberauth
-          |> Registrator.changeset
-          |> Confirmator.confirmation_needed_changeset
+      Config.repo.insert(changeset)
 
-        Config.repo.insert(changeset)
-
-        user
-        |> Mailer.send_welcome_email(confirmation_token)
-        |> Mailer.managed_deliver
-      end
+      user
+      |> Mailer.send_welcome_email(confirmation_token)
+      |> Mailer.managed_deliver
     end
+  end
+  def send_confirmation_instructions(_params) do
   end
 
   def do_confirm(params) do
