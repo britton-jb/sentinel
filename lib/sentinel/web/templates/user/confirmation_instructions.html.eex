@@ -1,6 +1,6 @@
 <h2>Resend confirmation instructions</h2>
 
-<%= form_for @conn, Config.router_helper.user_path(@conn, :confirm), [as: :confirm], fn f -> %>
+<%= form_for @conn, Config.router_helper.user_path(@conn, :confirmation_instructions), [as: :confirm], fn f -> %>
   <div class="field">
     <%= label f, :email, class: "sentinel control-label" %><br />
     <%= email_input f, :email, class: "sentinel form-control" %>

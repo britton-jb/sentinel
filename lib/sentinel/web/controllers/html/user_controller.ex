@@ -5,6 +5,18 @@ defmodule Sentinel.Controllers.Html.UserController do
   use Phoenix.Controller
   alias Sentinel.Config
 
+  def resend_confirmation_instructions(conn, params) do
+    render(conn, Sentinel.UserView, "confirmation_instructions.html", %{conn: conn})
+  end
+
+  def resend_confirmation_instructions(conn, params) do
+    Sentinel.Confirm.send_confirmation_instructions(params)
+
+    conn
+    |> put_flash(:info, "Sent confirmation instructions")
+    |> redirect(to: "/")
+  end
+
   @doc """
   Confirm either a new user or an existing user's new email address.
   Parameter "id" should be the user's id.

@@ -32,7 +32,7 @@ defmodule Sentinel.Controllers.Html.AccountController do
 
     case Config.repo.update(changeset) do
       {:ok, updated_user} ->
-        send_new_email_address_confirmation_email(updated_user, confirmation_token)
+        maybe_send_new_email_address_confirmation_email(updated_user, confirmation_token)
         new_changeset = Config.user_model.changeset(updated_user, %{})
 
         conn
@@ -46,7 +46,7 @@ defmodule Sentinel.Controllers.Html.AccountController do
     end
   end
 
-  defp send_new_email_address_confirmation_email(user, confirmation_token) do
+  defp maybe_send_new_email_address_confirmation_email(user, confirmation_token) do
     if confirmation_token != nil do
       user |> Mailer.send_new_email_address_email(confirmation_token)
     end

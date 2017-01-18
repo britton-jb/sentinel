@@ -1,15 +1,13 @@
 defmodule Sentinel.Mixfile do
   use Mix.Project
 
-  #FIXME
-  @version "1.0.3" # if you just fix the email issue on json
-  @version "1.1.0" # if you add the route to fix the email issue on html
+  @version "2.0.0" # if you add the route to fix the email issue on html
   @source_url "https://github.com/britton-jb/sentinel"
 
   def project do
     [app: :sentinel,
       version: @version,
-      elixir: "~> 1.1",
+      elixir: "~> 1.3",
       elixirc_paths: elixirc_paths(Mix.env),
       compilers: [:phoenix] ++ Mix.compilers,
       package: package,
@@ -22,9 +20,6 @@ defmodule Sentinel.Mixfile do
   defp elixirc_paths(:test), do: ["lib", "test/support"]
   defp elixirc_paths(_),     do: ["lib"]
 
-  # Configuration for the OTP application
-  #
-  # Type `mix help compile.app` for more information
   def application do
     [applications: applications(Mix.env)]
   end
@@ -58,15 +53,6 @@ defmodule Sentinel.Mixfile do
     """
   end
 
-  # Dependencies can be Hex packages:
-  #
-  #   {:mydep, "~> 0.3.0"}
-  #
-  # Or git/path repositories:
-  #
-  #   {:mydep, git: "https://github.com/elixir-lang/mydep.git", tag: "0.1.0"}
-  #
-  # Type `mix help deps` for more examples and options
   defp deps do
     [
       {:guardian, "~> 0.12"},
@@ -84,7 +70,7 @@ defmodule Sentinel.Mixfile do
       {:jose, "~> 1.4"},
 
       {:ueberauth, "~> 0.4"},
-      {:ueberauth_identity, "~> 0.2"}, #FIXME optional?
+      {:ueberauth_identity, "~> 0.2"},
 
       # DEV
       {:credo, "~> 0.5", only: [:dev, :test]},

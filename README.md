@@ -8,6 +8,18 @@
 [license-img]: http://img.shields.io/badge/license-MIT-brightgreen.svg
 [license]: http://opensource.org/licenses/MIT
 
+# FIXME
+Add spec for new confirmation method added related to new endpoints to
+ensure it actually works.
+
+Fix the one now somehow red spec
+
+Why did we split out account update vs authenticated update? Is there a
+use case for this? Is this superfluous? Or was this supposed to account
+for the invited post action? Either way this needs to be sorted before
+v2rc1
+# END FIXME
+
 Things I wish [Guardian](https://github.com/ueberauth/guardian) included
 out of the box. Routing, confirmation emails, password reset emails.
 It's just a thin wrapper on Guardian buteverybody shouldn't have to repeat
@@ -19,10 +31,13 @@ repo.
 Suggestions? See the `Contributing/Want something new?` section.
 
 ## Installation
+
 Here's how to add it to your Phoenix project, and things you need to
 setup:
 
-```
+``` elixir
+# Requires Elixir ~> 1.3
+
 def application do
   [mod: {MyApp, []},
    applications: [
@@ -37,12 +52,10 @@ end
 {:guardian_db, "~> 0.7.0"},
 ```
 
-[FIXME](do i need to add sentinel and ueberauth etc to applications mix file?)
-
 ### Configure Guardian
 Example config:
 
-```
+``` elixir
 config :guardian, Guardian,
   allowed_algos: ["HS512"], # optional
   verify_module: Guardian.JWT,  # optional
@@ -57,7 +70,7 @@ config :guardian, Guardian,
 [More info](https://github.com/ueberauth/guardian#installation)
 
 #### Optionally Configure GuardianDb
-```
+``` elixir
 config :guardian_db, GuardianDb,
   repo: MyApp.Repo
 ```
@@ -66,7 +79,7 @@ The install task which ships with Sentinel, which you will run later in
 this walkthrough, creates the migration for the guardianDb tokens.
 
 ### Configure Sentinel
-```
+``` elixir
 config :sentinel,
   app_name: "Test App",
   user_model: Sentinel.User, # should be your generated model
@@ -89,8 +102,15 @@ config :sentinel,
 
 See `config/test.exs` for an example of configuring Sentinel
 
+`invitation_registration_url`, `confirmable_redirect_url`, and
+`password_reset_url` are three configuration settings that must be set
+if using the API routing in order to have some place to be directed to
+after completing the relevant server action. In most cases I'd
+anticipate this being a page of a SPA, Mobile App, or other client
+interface.
+
 ### Configure Ueberauth
-```
+``` elixir
 config :ueberauth, Ueberauth,
   providers: [
     identity: {
@@ -104,7 +124,7 @@ config :ueberauth, Ueberauth,
 ```
 
 ### Configure Bamboo Mailer
-```
+``` elixir
 config :sentinel, Sentinel.Mailer,
   adapter: Bamboo.TestAdapter
 ```
@@ -114,7 +134,9 @@ config :sentinel, Sentinel.Mailer,
 
 ### Run the install Mix task
 
-`mix sentinel.install`
+``` elixir
+mix sentinel.install
+```
 
 This will create a user model if it doesn't already exist, add a
 migration for GuardianDb migration, and add a migration for Ueberauth
@@ -149,23 +171,61 @@ defmodule MyApp.Router do
 end
 ```
 
+Be aware that the `Sentinel.mount_ueberauth` mounted routes must be
+mounted on the of the URL, for reasons relating to the way Ueberauth is
+made. To illustrate the route for requesting a given provider must be
+`/auth/:provider`. If it is `/api/auth/:provider` Ueberauth will not
+properly register requests.
+
 You may run into an issue here if you set the scope to `scope "/",
 MyApp.Router do`. Something to be aware of.
 
 The generated routes are shown in `/lib/sentinel.ex`:
 
-[######FIXME######](update routes)
+#### Sentinel.mount_ueberauth
+
 method | path | description
 -------|------|------------
-POST | /api/users | register
-POST | /api/users/:id/confirm | confirm account
-POST | /api/users/:id/invited | set password on invited account
-POST | /api/sessions | login, will return a token as JSON
-DELETE |  /api/sessions | logout, invalidated the users current authentication token
-POST | /api/password_resets | request a reset-password-email
-POST | /api/password_resets/reset | reset a password
-GET  | /api/account               | get information about the current user. at the moment this includes only the email address
-PUT  | /api/account               | update the current users email or password
+GET | /auth/session/new | Login page
+POST | /auth/session | Request authentication
+DELETE | /auth/session | Request logout
+GET | /auth/:provider | Request specific Ueberauth provider login page
+GET | /auth/:provider/callback | Callback URL for Ueberauth provider
+POST | /auth/:provider/callback | Callback URL for Ueberauth provider
+
+#### Sentinel.mount_html
+
+method | path | description
+-------|------|------------
+GET | /user/new | New user page
+POST | /user | Create new user
+GET | /user/:id/invited | Invited user registration form
+POST | /user/:id/invited | Complete user invitation flow
+GET | /user/confirmation_instructions | Request resending confirmation instructions page [FIXME](implement)
+POST | /user/confirmation_instructions | Request resending confirmation instructions [FIXME](implement)
+GET | /user/confirmation | Confirm user email address from email
+GET | /password/new | Forgot password page
+POST | /password/new | Request password reset email
+GET | /password/edit | Password reset page
+PUT | /password | Reset password
+GET | /account | Basic user edit page
+PUT | /account | Update user information
+PUT | /account/password | Update user password [FIXME](do we actually want this?)
+
+#### Sentinel.mount_api
+
+method | path | description
+-------|------|------------
+GET | /user/:id/invited | Redirect user from email link to invited user registration form
+POST | /user/:id/invited | Complete user invitation flow
+GET | /user/confirmation_instructions | Request resending confirmation instructions
+GET | /user/confirmation | Confirm user email address from email
+GET | /password/new | Request password reset email [FIXME](Is this how we want to do this?)
+POST | /password | Request password reset email [FIXME](This doesn't appear to exist on the JSON side)
+PUT | /password | Reset password
+GET | /account | Requests user account
+PUT | /account | Update user information
+PUT | /account/password | Update user password [FIXME](do we actually want this?)
 
 ## Overriding the Defaults
 
@@ -183,8 +243,7 @@ without a password you can set the `invitable` configuration field to
 `GET users/:id/invited`, which you can complete by posting to the same
 URL, with the following params:
 
-json
-```
+``` json
 {
   confirmation_token: confirmation_token_from_email_provided_as_url_param,
   password_reset_token: password_reset_token_from_email_provided_as_url_param,
@@ -194,22 +253,17 @@ json
 
 ### Custom Routes
 If you want to customize the routes, or use your own controller
-endpoints you can do that by overriding the individual routes shown
-below:
+endpoints you can do that by overriding the individual routes listed.
 
 ### Auth Error Handler
 If you'd like to write your own custom authorization or authentication
 handler change the `auth_handler` Sentinel configuration option
-to the module name of your handler.
+to the module name of your handler. [FIXME](or could they just override
+the default one?)
 
 It must define two functions, `unauthorized/2`, and `unauthenticated/2`,
 where the first parameter is the connection, and the second is
 information about the session.
-
-## Notes
-2.0.0 attempted to utilize the semantic versioning tradition of
-increasing the major version on breaking changes. There are many
-breaking changes in this update.
 
 ## Contributing/Want something new?
 Create an issue. Preferably with a PR. If you're super awesome

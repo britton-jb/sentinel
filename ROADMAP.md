@@ -1,10 +1,21 @@
-- It should raise error at run/compile time if it can't find the
-  appropriate root level mounted ueberauth routes
+# Roadmap
+This is less of a roadmap and more notes about things that I'd like to
+change.
+
+## Features
+- able to disable registerable module (includes registerable module
+  extration)
+- lockable
+- Trackable
+- unconfirmed access number of days
 
 - Enable username rather than email based accounts
 
+## Cleanup
+- It should raise error at run/compile time if it can't find the
+  appropriate root level mounted ueberauth routes
+
 - excoveralls
-- code climate
 - ebert?
 - typespecs?
 
@@ -14,12 +25,4 @@
 
 - Rather than util send error use render view
 
-- able to disable registerable module (includes registerable module
-  extration)
-- able to disable ueberauthable module (which disables only the social
-  sides. Although just not configuring that should be good enough
-- lockable
-- Trackable
-- unconfirmed access number of days
-
-- improve docs
+- improve generated docs

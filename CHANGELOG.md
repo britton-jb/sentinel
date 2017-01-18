@@ -1,4 +1,8 @@
 # Changelog
+## 2.0.0
+Too many changes to list. For the user should be considered a total
+rewrite.
+
 ## 1.0.0
 `Sentinel.AuthHandler` returns `401` instead of `403` - because I forgot
 how to HTTP when writing this library initially

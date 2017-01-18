@@ -10,9 +10,9 @@ defmodule Sentinel do
       require Ueberauth
 
       scope "/auth", Sentinel.Controllers do
-        get "/sessions/new", AuthController, :new
-        post "/sessions", AuthController, :create
-        delete "/sessions", AuthController, :delete
+        get "/session/new", AuthController, :new
+        post "/session", AuthController, :create
+        delete "/session", AuthController, :delete
 
         get "/:provider", AuthController, :request
         get "/:provider/callback", AuthController, :callback
@@ -51,7 +51,8 @@ defmodule Sentinel do
           post "/user/:id/invited", UserController, :invited
         end
         if Sentinel.confirmable? do
-          get "/user/confirmation_instructions", UserController, :confirmation_instructions
+          get "/user/confirmation_instructions", UserController, :confirmation_instructions #FIXME impl
+          post "/user/confirmation_instructions", UserController, :resend_confirmation_instructions #FIXME impl
           get "/user/confirmation", UserController, :confirm
         end
 
@@ -82,6 +83,7 @@ defmodule Sentinel do
           post "/user/:id/invited", UserController, :invited
         end
         if Sentinel.confirmable? do
+          post "/user/confirmation_instructions", UserController, :resend_confirmation_instructions #FIXME impl
           get "/user/confirmation", UserController, :confirm
         end
 

@@ -7,6 +7,11 @@ defmodule Sentinel.Controllers.Json.UserController do
   alias Sentinel.Config
   alias Sentinel.Util
 
+  def resend_confirmation_instructions(conn, params) do
+    Sentinel.Confirm.send_confirmation_instructions(params)
+    json conn, :ok
+  end
+
   @doc """
   Confirm either a new user or an existing user's new email address.
   Parameter "id" should be the user's id.
