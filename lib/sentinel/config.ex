@@ -143,9 +143,8 @@ defmodule Sentinel.Config do
   Retrieves list of tuples of {ueberauth_provider, auth_url}
   """
   def ueberauth_providers do
-    [_config, {_module, [providers: ueberauth_config]}] = Application.get_all_env(:ueberauth)
-
-    ueberauth_config
+    Application.get_all_env(:ueberauth)
+    |> ueberauth_providers_erl_version_handler
     |> Enum.filter(fn provider_config ->
       {provider, _config} = provider_config
       provider != :identity
@@ -154,6 +153,12 @@ defmodule Sentinel.Config do
       {provider, _details} = provider_config
       {Atom.to_string(provider), router_helper.auth_url(endpoint, :request, provider)}
     end)
+  end
+  defp ueberauth_providers_erl_version_handler([_config, {_module, [providers: ueberauth_config]}]) do
+    ueberauth_config
+  end
+  defp ueberauth_providers_erl_version_handler([{_module, [providers: ueberauth_config]}, _]) do
+    ueberauth_config
   end
 
   @doc """
