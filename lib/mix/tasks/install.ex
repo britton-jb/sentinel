@@ -73,8 +73,8 @@ defmodule Mix.Tasks.Sentinel.Install do
       |> Enum.map(fn(line) -> line end)
       |> Enum.slice(21..100)
 
-    old_content ++ new_content
-    |> File.write(user_path)
+    user_path
+    |> File.write!(old_content ++ new_content)
   end
 
   defp create_guardian_token_migration do
@@ -108,8 +108,8 @@ defmodule Mix.Tasks.Sentinel.Install do
       |> Enum.map(fn(line) -> line end)
       |> Enum.slice(3..100)
 
-    migration_content ++ new_content
-    |> File.write(migration_path)
+    migration_path
+    |> File.write!(migration_content ++ new_content)
   end
 
   defp create_ueberauth_migration do
@@ -143,7 +143,7 @@ defmodule Mix.Tasks.Sentinel.Install do
       |> Enum.map(fn(line) -> line end)
       |> Enum.slice(3..100)
 
-    migration_content ++ new_content
-    |> File.write(migration_path)
+    migration_path  
+    |> File.write!(migration_content ++ new_content)
   end
 end
