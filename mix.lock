@@ -3,7 +3,7 @@
   "blacksmith": {:git, "git://github.com/batate/blacksmith.git", "b728480b4990f4e65d24d1245e0b2c1673299126", []},
   "bunt": {:hex, :bunt, "0.1.6", "5d95a6882f73f3b9969fdfd1953798046664e6f77ec4e486e6fafc7caad97c6f", [:mix], []},
   "certifi": {:hex, :certifi, "0.4.0", "a7966efb868b179023618d29a407548f70c52466bf1849b9e8ebd0e34b7ea11f", [:rebar3], []},
-  "comeonin": {:hex, :comeonin, "2.5.1", "b39cc11fa7fde5c4498dc822ddf8db9319921ea29286784cd499c4d2618018e1", [:make, :make, :mix], []},
+  "comeonin": {:hex, :comeonin, "2.0.3", "8703e407c5cd8c173c9c3b9421b5d9079d0c90a6de67a1a563973c3cb02fd4d3", [:make, :make, :mix], []},
   "connection": {:hex, :connection, "1.0.3", "3145f7416be3df248a4935f24e3221dc467c1e3a158d62015b35bd54da365786", [:mix], []},
   "cowboy": {:hex, :cowboy, "1.0.4", "a324a8df9f2316c833a470d918aaf73ae894278b8aa6226ce7a9bf699388f878", [:make, :rebar], [{:cowlib, "~> 1.0.0", [hex: :cowlib, optional: false]}, {:ranch, "~> 1.0", [hex: :ranch, optional: false]}]},
   "cowlib": {:hex, :cowlib, "1.0.2", "9d769a1d062c9c3ac753096f868ca121e2730b9a377de23dec0f7e08b1df84ee", [:make], []},

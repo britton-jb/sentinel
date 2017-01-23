@@ -8,6 +8,23 @@
 [license-img]: http://img.shields.io/badge/license-MIT-brightgreen.svg
 [license]: http://opensource.org/licenses/MIT
 
+# FIXME
+Upgrade guardian, and comeonin, as it looks like they have some breaking
+  changes
+
+Mix Install
+  - does something weird with the migrations. Have it sleep for a few seconds?
+  - utc_datetime instead of datetime
+  - Add fixme your repo note next to sentinel repo in config
+  - Update user model casting thing, ensure it includes the email
+    downcaser
+  - Mix install sets up user that has a required username and other
+    fields. Fix that.
+  - Mix install doesn't properly generate the ueberauth migration
+  - Add optional note to guardiandb hook in config
+
+# END FIXME
+
 Things I wish [Guardian](https://github.com/ueberauth/guardian) included
 out of the box. Routing, confirmation emails, password reset emails.
 It's just a thin wrapper on Guardian buteverybody shouldn't have to repeat

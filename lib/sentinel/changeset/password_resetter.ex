@@ -15,7 +15,7 @@ defmodule Sentinel.Changeset.PasswordResetter do
 
     changeset =
       auth
-      |> Changeset.cast(%{}, [], ~w())
+      |> Changeset.cast(%{}, [])
       |> Changeset.put_change(:hashed_password_reset_token, hashed_password_reset_token)
 
     {password_reset_token, changeset}
@@ -35,7 +35,7 @@ defmodule Sentinel.Changeset.PasswordResetter do
   """
   def reset_changeset(%Sentinel.Ueberauth{provider: "identity"} = auth, params) do
     auth
-    |> Changeset.cast(params, [], ~w())
+    |> Changeset.cast(params, [])
     |> Changeset.put_change(:hashed_password_reset_token, nil)
     |> validate_token
     |> validate_password_and_confirmation_match
@@ -43,7 +43,7 @@ defmodule Sentinel.Changeset.PasswordResetter do
   end
   def reset_changeset(_auth, _params) do
     %Sentinel.Ueberauth{}
-    |> Changeset.cast(%{}, [], ~w())
+    |> Changeset.cast(%{}, [])
     |> Changeset.add_error(:uid, "unknown")
   end
 

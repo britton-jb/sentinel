@@ -14,7 +14,7 @@ defmodule Sentinel.Changeset.AccountUpdater do
   """
   def changeset(user, params) do
     user
-    |> Changeset.cast(params, ~w(), ~w())
+    |> Changeset.cast(params, [])
     |> UserHelper.validator
     |> HashPassword.changeset(params)
     |> apply_email_change

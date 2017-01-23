@@ -143,7 +143,7 @@ defmodule Mix.Tasks.Sentinel.Install do
       |> Enum.map(fn(line) -> line end)
       |> Enum.slice(3..100)
 
-    migration_path  
+    migration_path
     |> File.write!(migration_content ++ new_content)
   end
 end

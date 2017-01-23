@@ -24,7 +24,8 @@ defmodule Sentinel.Changeset.Registrator do
     Sentinel.Config.user_model
     |> struct
     |> UserHelper.model.changeset(updated_params)
-    |> Changeset.cast(updated_params, ~w(email), ~w())
+    |> Changeset.cast(updated_params, [:email])
+    |> Changeset.validate_required([:email])
     |> Changeset.validate_change(:email, &Util.presence_validator/2)
     |> Changeset.unique_constraint(:email)
     |> changeset_helper
@@ -34,7 +35,7 @@ defmodule Sentinel.Changeset.Registrator do
     UserHelper.model
     |> struct
     |> UserHelper.model.changeset(params)
-    |> Changeset.cast(params, ~w(username), ~w())
+    |> Changeset.cast(params, [:username])
     |> Changeset.validate_change(:username, &Util.presence_validator/2)
     |> Changeset.unique_constraint(:username)
     |> Changeset.put_change(:hashed_confirmation_token, nil)

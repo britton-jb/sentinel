@@ -18,21 +18,15 @@ defmodule Sentinel.AfterRegistrator do
           |> PasswordResetter.create_changeset
         Config.repo.update!(changeset)
 
-        user
-        |> Mailer.send_invite_email({confirmation_token, password_reset_token})
-        |> Mailer.managed_deliver
+        Mailer.send_invite_email(user, {confirmation_token, password_reset_token})
         {:ok, user}
 
       {:required, _invitable} -> # must be confirmed
-        user
-        |> Mailer.send_welcome_email(confirmation_token)
-        |> Mailer.managed_deliver
+        Mailer.send_welcome_email(user, confirmation_token)
         {:ok, user}
 
       {_confirmable_default, _invitable} -> # default behavior, optional confirmable, not invitable
-        user
-        |> Mailer.send_welcome_email(confirmation_token)
-        |> Mailer.managed_deliver
+        Mailer.send_welcome_email(user, confirmation_token)
         {:ok, user}
     end
   end

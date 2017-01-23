@@ -10,7 +10,7 @@ defmodule Sentinel.Controllers.Html.AccountController do
   alias Sentinel.Update
 
   plug Guardian.Plug.VerifyHeader
-  plug Guardian.Plug.EnsureAuthenticated, handler: Config.auth_handler
+  plug Guardian.Plug.EnsureAuthenticated, handler: Config.auth_handler #FIXME do we actually want this everywehre?
   plug Guardian.Plug.LoadResource
 
   @doc """

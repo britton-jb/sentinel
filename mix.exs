@@ -55,10 +55,10 @@ defmodule Sentinel.Mixfile do
 
   defp deps do
     [
-      {:guardian, "~> 0.12"},
+      {:guardian, "~> 0.12.0"},
       {:guardian_db, "~> 0.7", optional: true},
       {:secure_random, "~> 0.2"},
-      {:comeonin, "~> 2.0"},
+      {:comeonin, "~> 2.0.0"},
       {:bamboo, "~> 0.7"},
 
       {:cowboy, "~> 1.0.0"},

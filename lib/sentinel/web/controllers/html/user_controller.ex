@@ -5,6 +5,11 @@ defmodule Sentinel.Controllers.Html.UserController do
   use Phoenix.Controller
   alias Sentinel.Config
 
+  def new(conn, _params) do
+    changeset = Config.user_model.changeset(struct(Config.user_model), %{})
+    render(conn, Sentinel.UserView, "new.html", %{conn: conn, changeset: changeset})
+  end
+
   def confirmation_instructions(conn, _params) do
     render(conn, Sentinel.UserView, "confirmation_instructions.html", %{conn: conn})
   end

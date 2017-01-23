@@ -37,13 +37,13 @@ defmodule Sentinel.Changeset.Confirmator do
   """
   def confirmation_changeset(user = %{confirmed_at: nil}, params) do
     user
-    |> Changeset.cast(params, [], ~w())
+    |> Changeset.cast(params, [])
     |> successfully_confirm
     |> validate_token
   end
   def confirmation_changeset(user = %{unconfirmed_email: unconfirmed_email}, params) when unconfirmed_email != nil do
     user
-    |> Changeset.cast(params, [], ~w())
+    |> Changeset.cast(params, [])
     |> successfully_confirm
     |> Changeset.put_change(:email, unconfirmed_email)
     |> validate_token
