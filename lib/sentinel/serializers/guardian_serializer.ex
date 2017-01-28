@@ -11,7 +11,7 @@ defmodule Sentinel.GuardianSerializer do
   @doc """
   Serializes user for a token
   """
-  def for_token(user) when user != "" and user != nil, do: {:ok, "User:#{user.id}"}
+  def for_token(user) when is_map(user), do: {:ok, "User:#{user.id}"}
   def for_token(_), do: {:error, "Unknown resource type"}
 
   @doc """

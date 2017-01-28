@@ -56,7 +56,7 @@ defmodule UeberauthTest do
 
   test "identity changeset is invalid if user_id is not set" do
     changeset = Sentinel.Ueberauth.changeset(%Sentinel.Ueberauth{}, %{provider: :identity, uid: "1"})
-    assert changeset.errors[:user_id] == {"can't be blank", []}
+    assert changeset.errors[:user_id] == {"can't be blank", [validation: :required]}
   end
 
   test "non-identity changeset cannont have password reset token" do
@@ -69,6 +69,6 @@ defmodule UeberauthTest do
 
   test "non-identity changeset must include uid" do
     changeset = Sentinel.Ueberauth.changeset(%Sentinel.Ueberauth{}, %{provider: :facebook})
-    assert changeset.errors[:uid] == {"can't be blank", []}
+    assert changeset.errors[:uid] == {"can't be blank", [validation: :required]}
   end
 end

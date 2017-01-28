@@ -29,6 +29,7 @@ defmodule Sentinel.Mixfile do
     :bamboo,
     :comeonin,
     :ecto,
+    :guardian,
     :logger,
     :phoenix,
     :phoenix_html,
@@ -55,17 +56,17 @@ defmodule Sentinel.Mixfile do
 
   defp deps do
     [
-      {:guardian, "~> 0.12.0"},
-      {:guardian_db, "~> 0.7", optional: true},
+      {:guardian, "~> 0.14.2"},
+      {:guardian_db, "~> 0.8.0", optional: true},
       {:secure_random, "~> 0.2"},
-      {:comeonin, "~> 2.0.0"},
       {:bamboo, "~> 0.7"},
+      {:comeonin, "~> 2.0.0"},
 
       {:cowboy, "~> 1.0.0"},
       {:phoenix, "~> 1.1"},
       {:phoenix_html, "~> 2.2"},
       {:phoenix_ecto, "~> 3.0"},
-      {:ecto, "~> 2.0"},
+      {:ecto, "~> 2.1", override: true},
       {:postgrex, ">= 0.11.1"},
       {:jose, "~> 1.4"},
 

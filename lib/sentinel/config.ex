@@ -143,7 +143,8 @@ defmodule Sentinel.Config do
   Retrieves list of tuples of {ueberauth_provider, auth_url}
   """
   def ueberauth_providers do
-    Application.get_all_env(:ueberauth)
+    :ueberauth
+    |> Application.get_all_env
     |> ueberauth_providers_erl_version_handler
     |> Enum.filter(fn provider_config ->
       {provider, _config} = provider_config

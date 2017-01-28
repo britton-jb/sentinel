@@ -22,7 +22,7 @@ config :guardian, Guardian,
   ttl: { 30, :days },
   verify_issuer: true, # optional
   serializer: Sentinel.GuardianSerializer,
-  hooks: GuardianDb,
+  hooks: GuardianDb, # optional - only needed if using guardian db
   permissions: Application.get_env(:sentinel, :permissions)
 
 # Only relevant to test ^^
@@ -32,7 +32,7 @@ config :sentinel,
   user_model: Sentinel.User, #FIXME should be your generated model
   send_address: "test@example.com",
   crypto_provider: Comeonin.Bcrypt,
-  repo: Sentinel.TestRepo,
+  repo: Sentinel.TestRepo, #FIXME should be your repo
   ecto_repos: [Sentinel.TestRepo],
   auth_handler: Sentinel.AuthHandler,
   user_view: Sentinel.UserView,

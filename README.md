@@ -9,25 +9,17 @@
 [license]: http://opensource.org/licenses/MIT
 
 # FIXME
+Update user mix task stuff
+
 Upgrade guardian, and comeonin, as it looks like they have some breaking
   changes
 
-Mix Install
-  - does something weird with the migrations. Have it sleep for a few seconds?
-  - utc_datetime instead of datetime
-  - Add fixme your repo note next to sentinel repo in config
-  - Update user model casting thing, ensure it includes the email
-    downcaser
-  - Mix install sets up user that has a required username and other
-    fields. Fix that.
-  - Mix install doesn't properly generate the ueberauth migration
-  - Add optional note to guardiandb hook in config
-
+Param nesting?
 # END FIXME
 
 Things I wish [Guardian](https://github.com/ueberauth/guardian) included
 out of the box. Routing, confirmation emails, password reset emails.
-It's just a thin wrapper on Guardian buteverybody shouldn't have to repeat
+It's just a thin wrapper on Guardian but everybody shouldn't have to repeat
 this themselves when they build stuff.
 
 I do my best to follow [semantic versioning](http://semver.org/) with this
@@ -41,6 +33,8 @@ Here's how to add it to your Phoenix project, and things you need to
 setup:
 
 ``` elixir
+# mix.exs
+
 # Requires Elixir ~> 1.3
 
 def application do
@@ -50,17 +44,20 @@ def application do
      :ueberauth]]
 end
 
-# mix.exs
-{:sentinel, "~> 2.0"},
-
-# If you'd like to database back your tokens, and prevent replayability
-{:guardian_db, "~> 0.7.0"},
+defp deps do
+  # ...
+  {:sentinel, "~> 2.0"},
+  {:guardian_db, "~> 0.7.0"}, # If you'd like to database back your tokens, and prevent replayability
+  # ...
+end
 ```
 
 ### Configure Guardian
 Example config:
 
 ``` elixir
+# config/config.exs
+
 config :guardian, Guardian,
   allowed_algos: ["HS512"], # optional
   verify_module: Guardian.JWT,  # optional
@@ -81,10 +78,12 @@ config :guardian_db, GuardianDb,
 ```
 
 The install task which ships with Sentinel, which you will run later in
-this walkthrough, creates the migration for the guardianDb tokens.
+this walkthrough, creates the migration for the GuardianDb tokens.
 
 ### Configure Sentinel
 ``` elixir
+# config/config.exs
+
 config :sentinel,
   app_name: "Test App",
   user_model: Sentinel.User, # should be your generated model
@@ -116,6 +115,8 @@ interface.
 
 ### Configure Ueberauth
 ``` elixir
+# config/config.exs
+
 config :ueberauth, Ueberauth,
   providers: [
     identity: {
@@ -130,6 +131,8 @@ config :ueberauth, Ueberauth,
 
 ### Configure Bamboo Mailer
 ``` elixir
+# config/config.exs
+
 config :sentinel, Sentinel.Mailer,
   adapter: Bamboo.TestAdapter
 ```
@@ -176,14 +179,15 @@ defmodule MyApp.Router do
 end
 ```
 
-Be aware that the `Sentinel.mount_ueberauth` mounted routes must be
-mounted on the of the URL, for reasons relating to the way Ueberauth is
-made. To illustrate the route for requesting a given provider must be
-`/auth/:provider`. If it is `/api/auth/:provider` Ueberauth will not
-properly register requests.
+Be aware that the routes mounted by the macro `Sentinel.mount_ueberauth`
+must be mounted on ther root of your URL, due to the way Ueberauth
+matches against routes.
+To illustrate, the route for requesting a given provider must be
+`example.com/auth/:provider`. If it is `example.com/api/auth/:provider`
+Ueberauth will not properly register requests.
 
-You may run into an issue here if you set the scope to `scope "/",
-MyApp.Router do`. Something to be aware of.
+**NOTE:** You will run into an issue here if you set the scope to
+`scope "/", MyApp.Router do`.
 
 The generated routes are shown in `/lib/sentinel.ex`:
 

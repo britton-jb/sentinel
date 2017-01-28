@@ -6,18 +6,20 @@ defmodule ConfirmatorTest do
   alias Sentinel.Changeset.Confirmator
 
   test "confirmation_needed_changeset adds the hashed token" do
-    {token, user} = Factory.build(:user)
-                    |> Ecto.Changeset.cast(%{}, [], [])
-                    |> Confirmator.confirmation_needed_changeset()
+    {token, user} =
+      Factory.build(:user)
+      |> Ecto.Changeset.cast(%{}, [])
+      |> Confirmator.confirmation_needed_changeset()
     hashed_confirmation_token = Ecto.Changeset.get_change(user, :hashed_confirmation_token)
 
     assert Config.crypto_provider.checkpw(token, hashed_confirmation_token)
   end
 
   test "confirmation_changeset adds an error if the token does not match" do
-    {_token, user} = Factory.build(:user, hashed_confirmation_token: "123secret")
-                      |> Ecto.Changeset.cast(%{}, [], ~w())
-                      |> Confirmator.confirmation_needed_changeset
+    {_token, user} =
+      Factory.build(:user, hashed_confirmation_token: "123secret")
+      |> Ecto.Changeset.cast(%{}, [])
+      |> Confirmator.confirmation_needed_changeset
     user = Ecto.Changeset.apply_changes(user)
 
     changeset = Confirmator.confirmation_changeset(user, %{"confirmation_token" => "wrong"})
@@ -29,9 +31,10 @@ defmodule ConfirmatorTest do
   test "confirmation_changeset clears the saved token and sets confirmed at if the token matches" do
     mocked_date = Ecto.DateTime.utc
     with_mock Ecto.DateTime, [:passthrough], [utc: fn -> mocked_date end] do
-      {token, user} = Factory.build(:user, hashed_confirmation_token: "123secret")
-                      |> Ecto.Changeset.cast(%{}, [], ~w())
-                      |> Confirmator.confirmation_needed_changeset
+      {token, user} =
+        Factory.build(:user, hashed_confirmation_token: "123secret")
+        |> Ecto.Changeset.cast(%{}, [])
+        |> Confirmator.confirmation_needed_changeset
       user = Ecto.Changeset.apply_changes(user)
 
       changeset = Confirmator.confirmation_changeset(user, %{"confirmation_token" => token})

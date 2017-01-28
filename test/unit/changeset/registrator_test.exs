@@ -11,17 +11,16 @@ defmodule RegistratorTest do
 
   @valid_params %{"email" => "unique@example.com"}
   @case_insensitive_valid_params %{"email" => "Unique@example.com"}
-  @valid_username_params %{"username" => "unique@example.com"}
 
   test "changeset validates presence of email" do
     changeset = Registrator.changeset(%{})
-    assert changeset.errors[:email] == {"can't be blank", []}
+    assert changeset.errors[:email] == {"can't be blank", [validation: :required]}
 
     changeset = Registrator.changeset(%{"email" => ""})
-    assert changeset.errors[:email] == {"can't be blank", []}
+    assert changeset.errors[:email] == {"can't be blank", [validation: :required]}
 
     changeset = Registrator.changeset(%{"email" => nil})
-    assert changeset.errors[:email] == {"can't be blank", []}
+    assert changeset.errors[:email] == {"can't be blank", [validation: :required]}
   end
 
   test "changeset validates uniqueness of email" do
@@ -46,19 +45,5 @@ defmodule RegistratorTest do
 
     assert !changeset.valid?
     assert changeset.errors[:email] == {"custom_error", []}
-  end
-
-  test "changeset is valid with username" do
-    changeset = Registrator.changeset(@valid_username_params)
-
-    assert changeset.valid?
-  end
-
-  test "changeset validates uniqueness of username" do
-    user = Factory.insert(:user)
-    {:error, changeset} = Registrator.changeset(%{@valid_username_params | "username" => user.username})
-                          |> TestRepo.insert
-
-    assert changeset.errors[:username] == {"has already been taken", []}
   end
 end

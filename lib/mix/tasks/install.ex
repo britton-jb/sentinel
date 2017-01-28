@@ -53,9 +53,8 @@ defmodule Mix.Tasks.Sentinel.Install do
       "User",
       "users",
       "email:string",
-      "username:string",
       "hashed_confirmation_token:text",
-      "confirmed_at:datetime",
+      "confirmed_at:utc_datetime",
       "unconfirmed_email:string"
     ])
 
@@ -75,6 +74,8 @@ defmodule Mix.Tasks.Sentinel.Install do
 
     user_path
     |> File.write!(old_content ++ new_content)
+
+    Process.sleep(2)
   end
 
   defp create_guardian_token_migration do
@@ -110,6 +111,8 @@ defmodule Mix.Tasks.Sentinel.Install do
 
     migration_path
     |> File.write!(migration_content ++ new_content)
+
+    Process.sleep(2)
   end
 
   defp create_ueberauth_migration do
@@ -145,5 +148,7 @@ defmodule Mix.Tasks.Sentinel.Install do
 
     migration_path
     |> File.write!(migration_content ++ new_content)
+
+    Process.sleep(2)
   end
 end

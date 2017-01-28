@@ -9,7 +9,7 @@ defmodule UsersMigration do
       add :password, :string #why have?
       add :hashed_password, :text
       add :hashed_confirmation_token, :text
-      add :confirmed_at, :datetime
+      add :confirmed_at, :utc_datetime
       add :hashed_password_reset_token, :text
       add :unconfirmed_email,    :text
     end

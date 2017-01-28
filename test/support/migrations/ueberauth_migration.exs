@@ -5,7 +5,7 @@ defmodule UeberauthMigration do
     create table(:ueberauths) do
       add :provider, :string
       add :uid, :string
-      add :expires_at, :datetime
+      add :expires_at, :utc_datetime
       add :hashed_password, :text
       add :hashed_password_reset_token, :text
       add :user_id, :integer

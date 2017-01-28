@@ -4,7 +4,6 @@ defmodule Sentinel.Factory do
   def user_factory do
     %Sentinel.User{
       email: sequence(:email, &"user#{&1}@example.com"),
-      username: sequence(:username, &"user#{&1}@example.com"),
       role: "user",
       confirmed_at: nil,
     }
