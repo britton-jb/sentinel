@@ -16,6 +16,7 @@ defmodule Sentinel.User do
   def changeset(struct, params \\ %{}) do
     struct
     |> cast(params, @required_fields ++ @optional_fields)
+    |> validate_required([:email])
     |> downcase_email
     |> unique_constraint(:email)
   end

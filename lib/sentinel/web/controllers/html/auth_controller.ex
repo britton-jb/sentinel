@@ -9,7 +9,7 @@ defmodule Sentinel.Controllers.Html.AuthController do
   alias Sentinel.Ueberauthenticator
 
   plug Ueberauth
-  plug Guardian.Plug.VerifyHeader when action in [:delete]
+  plug Guardian.Plug.VerifySession when action in [:delete]
   plug Guardian.Plug.EnsureAuthenticated, %{handler: Config.auth_handler} when action in [:delete]
   plug Guardian.Plug.LoadResource when action in [:delete]
 

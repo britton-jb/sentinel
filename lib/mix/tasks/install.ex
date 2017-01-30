@@ -54,9 +54,10 @@ defmodule Mix.Tasks.Sentinel.Install do
       "users",
       "email:string",
       "hashed_confirmation_token:text",
-      "confirmed_at:utc_datetime",
+      "confirmed_at:datetime",
       "unconfirmed_email:string"
     ])
+    Process.sleep(1001)
 
     user_path = "web/models/user.ex"
 
@@ -64,18 +65,16 @@ defmodule Mix.Tasks.Sentinel.Install do
       user_path
       |> File.stream!
       |> Enum.map(fn(line) -> line end)
-      |> Enum.slice(0..19)
+      |> Enum.slice(0..17)
 
     new_content =
       "deps/sentinel/test/support/sentinel_user.exs"
       |> File.stream!
       |> Enum.map(fn(line) -> line end)
-      |> Enum.slice(21..100)
+      |> Enum.slice(18..100)
 
     user_path
     |> File.write!(old_content ++ new_content)
-
-    Process.sleep(2)
   end
 
   defp create_guardian_token_migration do
@@ -90,6 +89,9 @@ defmodule Mix.Tasks.Sentinel.Install do
 
   defp generate_token_migration do
     Mix.Tasks.Ecto.Gen.Migration.run(["AddGuardianDbTokens"])
+
+    Process.sleep(1001)
+
     migration_path =
       "priv/repo/migrations/*.exs"
       |> Path.wildcard
@@ -111,8 +113,6 @@ defmodule Mix.Tasks.Sentinel.Install do
 
     migration_path
     |> File.write!(migration_content ++ new_content)
-
-    Process.sleep(2)
   end
 
   defp create_ueberauth_migration do
@@ -127,6 +127,9 @@ defmodule Mix.Tasks.Sentinel.Install do
 
   defp generate_ueberauth do
     Mix.Tasks.Ecto.Gen.Migration.run(["AddUeberauth"])
+
+    Process.sleep(1001)
+
     migration_path =
       "priv/repo/migrations/*.exs"
       |> Path.wildcard
@@ -148,7 +151,5 @@ defmodule Mix.Tasks.Sentinel.Install do
 
     migration_path
     |> File.write!(migration_content ++ new_content)
-
-    Process.sleep(2)
   end
 end

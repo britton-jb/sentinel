@@ -10,7 +10,7 @@ defmodule Sentinel.Controllers.Html.PasswordController do
   alias Sentinel.Mailer
   alias Sentinel.Util
 
-  plug Guardian.Plug.VerifyHeader when action in [:authenticated_update]
+  plug Guardian.Plug.VerifySession when action in [:authenticated_update]
   plug Guardian.Plug.LoadResource when action in [:authenticated_update]
 
   def new(conn, _params, _headers \\ %{}, _session \\ %{}) do

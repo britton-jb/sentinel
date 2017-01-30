@@ -1,21 +1,9 @@
 # Sentinel
-[![Build Status][travis-img]][travis] [![Hex Version][hex-img]][hex]
-[![License][license-img]][license]
+[![Build Status][travis-img]][travis] [![License][license-img]][license]
 [travis-img]: https://travis-ci.org/britton-jb/sentinel.svg?branch=master
 [travis]: https://travis-ci.org/britton-jb/sentinel
-[hex-img]: https://img.shields.io/hexpm/v/sentinel.svg
-[hex]: https://hex.pm/packages/sentinel
 [license-img]: http://img.shields.io/badge/license-MIT-brightgreen.svg
 [license]: http://opensource.org/licenses/MIT
-
-# FIXME
-Update user mix task stuff
-
-Upgrade guardian, and comeonin, as it looks like they have some breaking
-  changes
-
-Param nesting?
-# END FIXME
 
 Things I wish [Guardian](https://github.com/ueberauth/guardian) included
 out of the box. Routing, confirmation emails, password reset emails.
@@ -128,6 +116,10 @@ config :ueberauth, Ueberauth,
     },
   ]
 ```
+
+Currently Sentinel is designed in such a way that the Identity Strategy
+must set `params_nesting` as `"user"`. This is something that I would
+like to modify in future versions.
 
 ### Configure Bamboo Mailer
 ``` elixir
@@ -253,9 +245,9 @@ URL, with the following params:
 
 ``` json
 {
-  confirmation_token: confirmation_token_from_email_provided_as_url_param,
-  password_reset_token: password_reset_token_from_email_provided_as_url_param,
-  password: newly_defined_user_password
+  "confirmation_token": "confirmation_token_from_email_provided_as_url_param",
+  "password_reset_token": "password_reset_token_from_email_provided_as_url_param",
+  "password": "newly_defined_user_password"
 }
 ```
 
