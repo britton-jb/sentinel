@@ -1,6 +1,6 @@
 <h2>Edit Account</h2>
 
-<%= form_for @changeset, Config.router_helper.account_path(@conn, :update), fn f -> %>
+<%= form_for @changeset, Config.router_helper.account_path(@conn, :update), [method: :put, as: "account"], fn f -> %>
   <%= if @changeset.action do %>
     <div class="alert alert-danger">
       <ul>

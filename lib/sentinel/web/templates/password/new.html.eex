@@ -2,7 +2,7 @@
 
 <p>Enter your email address and we'll send you a link to reset your password.</p>
 
-<%= form_for @conn, Config.router_helper.password_path(@conn, :create), [as: :create], fn f -> %>
+<%= form_for @conn, Config.router_helper.password_path(@conn, :create), [as: :password], fn f -> %>
   <div class="field">
     <%= label f, :email, class: "sentinel control-label" %><br />
     <%= email_input f, :email, class: "sentinel form-control" %>

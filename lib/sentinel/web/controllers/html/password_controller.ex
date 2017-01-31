@@ -17,7 +17,7 @@ defmodule Sentinel.Controllers.Html.PasswordController do
     render(conn, Sentinel.PasswordView, "new.html", %{conn: conn})
   end
 
-  def create(conn, %{"email" => email}, _headers \\ %{}, _session \\ %{}) do # FIXME could extract all of this here, and on json side into another module
+  def create(conn, %{"password" => %{"email" => email}}, _headers \\ %{}, _session \\ %{}) do # FIXME could extract all of this here, and on json side into another module
     user = Config.repo.get_by(Config.user_model, email: email)
 
     if is_nil(user) do
@@ -65,7 +65,7 @@ defmodule Sentinel.Controllers.Html.PasswordController do
   {user_id: 1, password_reset_token: "abc123"}
   """
   def update(conn, params, _headers \\ %{}, _session \\ %{})
-  def update(conn, params = %{"user_id" => user_id, "password_reset_token" => _password_reset_params}, _headers, _session) do
+  def update(conn, %{"password" => %{"user_id" => user_id, "password_reset_token" => _password_reset_params} = params}, _headers, _session) do
     user = Config.repo.get(Config.user_model, user_id)
 
     case Sentinel.Update.update_password(user_id, params) do

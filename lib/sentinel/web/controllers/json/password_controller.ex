@@ -57,7 +57,8 @@ defmodule Sentinel.Controllers.Json.PasswordController do
   Responds with status 200 and body {token: token} if successfull. Use this token in subsequent requests as authentication.
   Responds with status 422 and body {errors: [messages]} otherwise.
   """
-  def update(conn, params = %{"user_id" => user_id}, _headers \\ %{}, _session \\ %{}) do
+  def update(conn, params, headers \\ %{}, session \\ %{})
+  def update(conn, params = %{"user_id" => user_id}, _headers, _session) do
     user = Config.repo.get(Config.user_model, user_id)
 
     case Sentinel.Update.update_password(user_id, params) do

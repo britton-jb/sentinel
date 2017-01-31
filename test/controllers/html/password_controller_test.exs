@@ -31,7 +31,7 @@ defmodule Html.PasswordControllerTest do
   end
 
   test "request a reset token for an unknown email", %{conn: conn} do
-    conn = post conn, password_path(conn, :create), %{email: @email}
+    conn = post conn, password_path(conn, :create), %{password: %{email: @email}}
     response(conn, 302)
 
     assert String.contains?(conn.private.phoenix_flash["info"],
@@ -44,7 +44,7 @@ defmodule Html.PasswordControllerTest do
     mocked_mail = Mailer.send_password_reset_email(user, mocked_reset_token)
 
     with_mock Sentinel.Mailer, [:passthrough], [send_password_reset_email: fn(_, _) -> mocked_mail end] do
-      conn = post conn, password_path(conn, :create), %{email: user.email}
+      conn = post conn, password_path(conn, :create), %{password: %{email: user.email}}
       response(conn, 302)
 
       updated_auth = TestRepo.get_by!(Sentinel.Ueberauth, user_id: user.id, provider: "identity")
@@ -84,7 +84,7 @@ defmodule Html.PasswordControllerTest do
     token_count = length(TestRepo.all(Token))
 
     params = %{user_id: user.id, password_reset_token: reset_token, password: @new_password, password_confirmation: @new_password}
-    conn = put conn, password_path(conn, :update), params
+    conn = put conn, password_path(conn, :update), %{password: params}
     response(conn, 302)
 
     assert String.contains?(conn.private.phoenix_flash["info"], "Successfully updated password")

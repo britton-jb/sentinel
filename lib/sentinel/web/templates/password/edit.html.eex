@@ -1,6 +1,6 @@
 <h2>Change your password</h2>
 
-<%= form_for @conn, Config.router_helper.password_path(@conn, :update), [as: :update], fn f -> %>
+<%= form_for @conn, Config.router_helper.password_path(@conn, :update), [method: :put, as: :password], fn f -> %>
   <%= hidden_input f, :password_reset_token, value: @password_reset_token %>
   <%= hidden_input f, :user_id, value: @user_id %>
 
@@ -10,7 +10,7 @@
   </div>
 
   <div class="sentinel form-group">
-    <%= label f, :password_confirmation, class: "sentinel control-label" %>
+    <%= label f, :password_confirmation, class: "sentinel control-label" %><br />
     <%= password_input f, :password_confirmation, class: "sentinel form-control" %>
   </div>
 
