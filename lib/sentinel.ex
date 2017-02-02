@@ -48,7 +48,7 @@ defmodule Sentinel do
         post "/user", UserController, :create
         if Sentinel.invitable? do
           get "/user/:id/invited", UserController, :invitation_registration
-          post "/user/:id/invited", UserController, :invited
+          put "/user/:id/invited", UserController, :invited
         end
         if Sentinel.confirmable? do
           get "/user/confirmation_instructions", UserController, :confirmation_instructions
@@ -80,7 +80,7 @@ defmodule Sentinel do
       scope "/", Sentinel.Controllers.Json do
         if Sentinel.invitable? do
           get "/user/:id/invited", UserController, :invitation_registration
-          post "/user/:id/invited", UserController, :invited
+          put "/user/:id/invited", UserController, :invited
         end
         if Sentinel.confirmable? do
           post "/user/confirmation_instructions", UserController, :resend_confirmation_instructions

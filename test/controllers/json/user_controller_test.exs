@@ -166,7 +166,7 @@ defmodule Json.UserControllerTest do
     {password_reset_token, changeset} = PasswordResetter.create_changeset(db_auth)
     TestRepo.update!(changeset)
 
-    conn = post conn, api_user_path(conn, :invited, user.id), %{confirmation_token: confirmation_token, password_reset_token: password_reset_token, password: params.user.password, password_confirmation: params.user.password}
+    conn = put conn, api_user_path(conn, :invited, user.id), %{confirmation_token: confirmation_token, password_reset_token: password_reset_token, password: params.user.password, password_confirmation: params.user.password}
     response = json_response(conn, 200)
     %{"email" => email} = response
     assert email == user.email

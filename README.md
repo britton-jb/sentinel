@@ -6,10 +6,6 @@
 [license]: http://opensource.org/licenses/MIT
 
 # FIXME
-Invitable flow issue with actually completing the invitation HTML side
-
-Check setting up a new email confirmable flow
-
 Datetime complainer? Look up how to handle that with ecto and phoenix.
 # END FIXME
 
@@ -211,7 +207,7 @@ method | path | description
 GET | /user/new | New user page
 POST | /user | Create new user
 GET | /user/:id/invited | Invited user registration form
-POST | /user/:id/invited | Complete user invitation flow
+PUT | /user/:id/invited | Complete user invitation flow
 GET | /user/confirmation_instructions | Request resending confirmation instructions page
 POST | /user/confirmation_instructions | Request confirmation instructions email
 GET | /user/confirmation | Confirm user email address from email
@@ -227,7 +223,7 @@ PUT | /account | Update user information
 method | path | description
 -------|------|------------
 GET | /user/:id/invited | Redirect user from email link to invited user registration form
-POST | /user/:id/invited | Complete user invitation flow
+PUT | /user/:id/invited | Complete user invitation flow
 GET | /user/confirmation_instructions | Request resending confirmation instructions
 GET | /user/confirmation | Confirm user email address from email
 GET | /password/new | Request password reset email

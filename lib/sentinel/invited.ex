@@ -7,7 +7,14 @@ defmodule Sentinel.Invited do
   alias Sentinel.Config
   alias Sentinel.Util
 
+  def do_invited(%{"id" => id, "user" => user_params} = params) do
+    handler(id, user_params)
+  end
   def do_invited(%{"id" => id} = params) do
+    handler(id, params)
+  end
+
+  defp handler(id, params) do
     user = Config.repo.get(Config.user_model, id)
     auth = Config.repo.get_by(Sentinel.Ueberauth, provider: "identity", user_id: user.id)
 

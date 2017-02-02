@@ -161,7 +161,7 @@ defmodule Html.UserControllerTest do
     TestRepo.update!(changeset)
 
     token_count = length(TestRepo.all(Token))
-    conn = post conn, user_path(conn, :invited, user.id), %{
+    conn = put conn, user_path(conn, :invited, user.id), %{
       confirmation_token: confirmation_token,
       password_reset_token: password_reset_token,
       password: params.user.password,
