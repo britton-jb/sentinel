@@ -7,8 +7,8 @@ defmodule Sentinel.Invited do
   alias Sentinel.Config
   alias Sentinel.Util
 
-  def do_invited(%{"id" => id, "user" => user_params} = params) do
-    handler(id, user_params)
+  def do_invited(%{"id" => id, "user" => params}) do
+    handler(id, params)
   end
   def do_invited(%{"id" => id} = params) do
     handler(id, params)
