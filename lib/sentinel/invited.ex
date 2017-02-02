@@ -7,11 +7,11 @@ defmodule Sentinel.Invited do
   alias Sentinel.Config
   alias Sentinel.Util
 
-  def do_invited(%{"id" => id, "user" => params}) do
-    handler(id, params)
-  end
   def do_invited(%{"id" => id} = params) do
-    handler(id, params)
+    # handled this way rather than with two functions with pattern matching
+    # due to what appears to be an Erlang 18.0 bug
+    user_params = params["user"] || params
+    handler(id, user_params)
   end
 
   defp handler(id, params) do
