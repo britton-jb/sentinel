@@ -5,10 +5,6 @@
 [license-img]: http://img.shields.io/badge/license-MIT-brightgreen.svg
 [license]: http://opensource.org/licenses/MIT
 
-# FIXME
-Datetime complainer? Look up how to handle that with ecto and phoenix.
-# END FIXME
-
 Things I wish [Guardian](https://github.com/ueberauth/guardian) included
 out of the box. Routing, confirmation emails, password reset emails.
 It's just a thin wrapper on Guardian but everybody shouldn't have to repeat
@@ -148,8 +144,19 @@ This will create a user model if it doesn't already exist, add a
 migration for GuardianDb migration, and add a migration for Ueberauth
 provider credentials.
 
-You may want to delete the GuardianDb migration if you're choosing not
+You will want to delete the GuardianDb migration if you're choosing not
 to use it.
+
+Currently the install task outputs the following warning:
+
+```
+warning: the :datetime type in migrations is deprecated, please use
+:utc_datetime or :naive_datetime instead
+```
+
+This is due to the fact that Phoenix's generators don't appear to
+support `utc_datetime` being passed in. Please modify the generated
+migration accordingly.
 
 ### Mount the desired routes
 ```elixir
