@@ -182,4 +182,12 @@ defmodule Sentinel.Config do
   def user_view do
     Application.get_env(:sentinel, :user_view, Sentinel.UserView)
   end
+
+  def layout_view do
+    Application.get_env(:sentinel, :layout_view, Sentinel.LayoutView)
+  end
+
+  def layout do
+    Application.get_env(:sentinel, :layout, "app.html")
+  end
 end

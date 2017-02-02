@@ -5,6 +5,14 @@
 [license-img]: http://img.shields.io/badge/license-MIT-brightgreen.svg
 [license]: http://opensource.org/licenses/MIT
 
+# FIXME
+Invitable flow issue with actually completing the invitation HTML side
+
+Check setting up a new email confirmable flow
+
+Datetime complainer? Look up how to handle that with ecto and phoenix.
+# END FIXME
+
 Things I wish [Guardian](https://github.com/ueberauth/guardian) included
 out of the box. Routing, confirmation emails, password reset emails.
 It's just a thin wrapper on Guardian but everybody shouldn't have to repeat
@@ -80,6 +88,8 @@ config :sentinel,
   repo: Sentinel.TestRepo,
   ecto_repos: [Sentinel.TestRepo],
   auth_handler: Sentinel.AuthHandler,
+  layout_view: MyApp.Layout, # your layout
+  layout_view: :app,
   user_view: Sentinel.UserView,
   error_view: Sentinel.ErrorView,
   router: Sentinel.TestRouter, # your router

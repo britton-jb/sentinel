@@ -48,10 +48,21 @@ defmodule Sentinel.Controllers.Html.AuthController do
       |> put_flash(:info, "Successfully invited user")
       |> redirect(to: Config.router_helper.user_path(Config.endpoint, :new))
     else
-      conn
-      |> Guardian.Plug.sign_in(user)
-      |> put_flash(:info, "Signed up")
-      |> redirect(to: Config.router_helper.account_path(Config.endpoint, :edit))
+      case Config.confirmable do
+        :required ->
+          conn
+          |> put_flash(:info, "You must confirm your account to continue. You will receive an email with instructions for how to confirm your email address in a few minutes.")
+          |> redirect(to: "/")
+        :false ->
+          conn
+          |> Guardian.Plug.sign_in(user)
+          |> put_flash(:info, "Signed up")
+          |> redirect(to: Config.router_helper.account_path(Config.endpoint, :edit))
+        _ ->
+          conn
+          |> put_flash(:info, "You will receive an email with instructions for how to confirm your email address in a few minutes.")
+          |> redirect(to: Config.router_helper.account_path(Config.endpoint, :edit))
+      end
     end
   end
 

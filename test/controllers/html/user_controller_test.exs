@@ -35,7 +35,11 @@ defmodule Html.UserControllerTest do
       %Sentinel.User{
         email: params.user.email,
         id: 1
-      }, {mocked_confirmation_token, mocked_password_reset_token})
+      },
+      %{
+        confirmation_token: mocked_confirmation_token,
+        password_reset_token: mocked_password_reset_token
+      })
 
     {
       :ok,
@@ -61,7 +65,7 @@ defmodule Html.UserControllerTest do
 
       refute is_nil(user.hashed_confirmation_token)
       assert_delivered_email mocked_mail
-      assert String.contains?(conn.private.phoenix_flash["info"], "Signed up")
+      assert String.contains?(conn.private.phoenix_flash["info"], "You will receive an email with instructions for how to confirm your email address in a few minutes.")
       assert String.contains?(conn.resp_body, Sentinel.Config.router_helper.account_path(Sentinel.Config.endpoint, :edit))
     end
   end
@@ -78,8 +82,7 @@ defmodule Html.UserControllerTest do
 
       refute is_nil(user.hashed_confirmation_token)
       assert_delivered_email mocked_mail
-      assert String.contains?(conn.private.phoenix_flash["info"], "Signed up")
-      assert String.contains?(conn.resp_body, Sentinel.Config.router_helper.account_path(Sentinel.Config.endpoint, :edit))
+      assert String.contains?(conn.private.phoenix_flash["info"], "You must confirm your account to continue. You will receive an email with instructions for how to confirm your email address in a few minutes.")
     end
   end
 
@@ -211,9 +214,9 @@ defmodule Html.UserControllerTest do
       params
       |> Registrator.changeset
       |> Confirmator.confirmation_needed_changeset
-    TestRepo.insert!(changeset)
+    user = TestRepo.insert!(changeset)
 
-    conn = get conn, user_path(conn, :confirm), %{email: params.email, confirmation_token: "bad_token"}
+    conn = get conn, user_path(conn, :confirm), %{id: user.id, confirmation_token: "bad_token"}
     response(conn, 422)
 
     assert String.contains?(conn.private.phoenix_flash["error"], "Unable to confirm your account")
@@ -227,7 +230,7 @@ defmodule Html.UserControllerTest do
       |> Confirmator.confirmation_needed_changeset
     user = TestRepo.insert!(changeset)
 
-    conn = get conn, user_path(conn, :confirm), %{email: params.email, confirmation_token: token}
+    conn = get conn, user_path(conn, :confirm), %{id: user.id, confirmation_token: token}
     response(conn, 302)
 
     updated_user = TestRepo.get! User, user.id
@@ -252,7 +255,7 @@ defmodule Html.UserControllerTest do
     {token, updater_changeset} = AccountUpdater.changeset(user, %{"email" => "new@example.com"})
     updated_user = TestRepo.update!(updater_changeset)
 
-    conn = get conn, user_path(conn, :confirm), %{email: updated_user.email, confirmation_token: token}
+    conn = get conn, user_path(conn, :confirm), %{id: updated_user.id, confirmation_token: token}
     response(conn, 302)
 
     updated_user = TestRepo.get! User, user.id

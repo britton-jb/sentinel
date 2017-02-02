@@ -12,7 +12,10 @@ defmodule Mailer.InviteTest do
     user = Factory.insert(:user, email: to_email)
     mocked_mail = Sentinel.Mailer.Invite.build(
       user,
-      {mocked_confirmation_token, mocked_password_reset_token}
+      %{
+        confirmation_token: mocked_confirmation_token,
+        password_reset_token: mocked_password_reset_token
+      }
     ) |> Sentinel.Mailer.managed_deliver
 
     {:ok, %{mocked_mail: mocked_mail}}

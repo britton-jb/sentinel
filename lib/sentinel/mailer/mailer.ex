@@ -92,9 +92,9 @@ defmodule Sentinel.Mailer do
   @doc """
   Thin wrapper around the Sentinel.Mailer.Invite module
   """
-  def send_invite_email(user, {confirmation_token, password_reset_token}) do
+  def send_invite_email(user, %{confirmation_token: confirmation_token, password_reset_token: password_reset_token}) do
     user
-    |> Sentinel.Mailer.Invite.build({confirmation_token, password_reset_token})
+    |> Sentinel.Mailer.Invite.build(%{confirmation_token: confirmation_token, password_reset_token: password_reset_token})
     |> Mailer.managed_deliver
   end
 

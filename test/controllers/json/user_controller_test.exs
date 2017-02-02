@@ -38,7 +38,11 @@ defmodule Json.UserControllerTest do
       %Sentinel.User{
         email: params.user.email,
         id: 1
-      }, {mocked_confirmation_token, mocked_password_reset_token})
+      },
+      %{
+        confirmation_token: mocked_confirmation_token,
+        password_reset_token: mocked_password_reset_token
+      })
 
     {
       :ok,
@@ -211,9 +215,9 @@ defmodule Json.UserControllerTest do
       params
       |> Registrator.changeset
       |> Confirmator.confirmation_needed_changeset
-    TestRepo.insert!(changeset)
+    user = TestRepo.insert!(changeset)
 
-    conn = get conn, api_user_path(conn, :confirm), %{email: params.email, confirmation_token: "bad_token"}
+    conn = get conn, api_user_path(conn, :confirm), %{id: user.id, confirmation_token: "bad_token"}
     response = json_response(conn, 422)
     assert response == %{"errors" => [%{"confirmation_token" => "invalid"}]}
   end
@@ -225,7 +229,7 @@ defmodule Json.UserControllerTest do
       |> Confirmator.confirmation_needed_changeset
     user = TestRepo.insert!(changeset)
 
-    conn = get conn, api_user_path(conn, :confirm), %{email: params.email, confirmation_token: token}
+    conn = get conn, api_user_path(conn, :confirm), %{id: user.id, confirmation_token: token}
     assert response(conn, 302)
 
     updated_user = TestRepo.get! User, user.id
@@ -248,7 +252,7 @@ defmodule Json.UserControllerTest do
     {token, updater_changeset} = AccountUpdater.changeset(user, %{"email" => "new@example.com"})
     updated_user = TestRepo.update!(updater_changeset)
 
-    conn = get conn, api_user_path(conn, :confirm), %{email: updated_user.email, confirmation_token: token}
+    conn = get conn, api_user_path(conn, :confirm), %{id: updated_user.id, confirmation_token: token}
     assert response(conn, 302)
 
     updated_user = TestRepo.get! User, user.id

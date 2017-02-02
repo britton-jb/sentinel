@@ -9,6 +9,7 @@ defmodule Sentinel.Controllers.Html.AccountController do
   alias Sentinel.Config
   alias Sentinel.Update
 
+  plug :put_layout, {Config.layout_view, Config.layout}
   plug Guardian.Plug.VerifySession
   plug Guardian.Plug.EnsureAuthenticated, handler: Config.auth_handler
   plug Guardian.Plug.LoadResource

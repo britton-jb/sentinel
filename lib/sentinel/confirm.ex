@@ -24,9 +24,9 @@ defmodule Sentinel.Confirm do
   def send_confirmation_instructions(_params) do
   end
 
-  def do_confirm(params) do
+  def do_confirm(params = %{"id" => id}) do
     Config.user_model
-    |> Config.repo.get_by(email: params["email"])
+    |> Config.repo.get(id)
     |> Config.user_model.changeset(params)
     |> Confirmator.confirmation_changeset
     |> Config.repo.update
