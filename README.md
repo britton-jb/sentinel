@@ -6,8 +6,10 @@
 [license]: http://opensource.org/licenses/MIT
 
 Things I wish [Guardian](https://github.com/ueberauth/guardian) included
-out of the box. Routing, confirmation emails, password reset emails.
-It's just a thin wrapper on Guardian but everybody shouldn't have to repeat
+out of the box, like [Ueberauth](
+https://github.com/ueberauth/ueberauth) integration, routing,
+invitation flow, confirmation emails, and, password reset emails.
+It's just a thin wrapper on Guardian but everybody shouldn't have to roll
 this themselves when they build stuff.
 
 I do my best to follow [semantic versioning](http://semver.org/) with this
@@ -185,7 +187,7 @@ end
 ```
 
 Be aware that the routes mounted by the macro `Sentinel.mount_ueberauth`
-must be mounted on ther root of your URL, due to the way Ueberauth
+must be mounted on the root of your URL, due to the way Ueberauth
 matches against routes.
 To illustrate, the route for requesting a given provider must be
 `example.com/auth/:provider`. If it is `example.com/api/auth/:provider`
