@@ -65,8 +65,8 @@ defmodule Sentinel.Mixfile do
       {:cowboy, "~> 1.0.0"},
       {:phoenix, "~> 1.1"},
       {:phoenix_html, "~> 2.2"},
-      {:phoenix_ecto, "~> 3.0"},
-      {:ecto, "~> 2.1", override: true},
+      {:phoenix_ecto, "~> 3.1"},
+      {:ecto, "~> 2.1"},
       {:postgrex, ">= 0.11.1"},
       {:jose, "~> 1.4"},
 
