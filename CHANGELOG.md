@@ -3,6 +3,16 @@
 Too many changes to list. For the user should be considered a total
 rewrite.
 
+## 1.0.2
+Thanks to commits from @Draiken
+
+Added a debug log for the confirmation token to make working in dev
+easier
+
+Added a get route for user confirmation
+
+Updated session controller bug failing to re-render new with errors
+
 ## 1.0.0
 `Sentinel.AuthHandler` returns `401` instead of `403` - because I forgot
 how to HTTP when writing this library initially

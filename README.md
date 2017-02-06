@@ -15,7 +15,8 @@ this themselves when they build stuff.
 I do my best to follow [semantic versioning](http://semver.org/) with this
 repo.
 
-Suggestions? See the `Contributing/Want something new?` section.
+Suggestions? See the [Contributing/Want something new?](#contributingwant-something-new)
+section.
 
 ## Installation
 

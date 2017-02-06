@@ -1,7 +1,7 @@
 defmodule Sentinel.Mixfile do
   use Mix.Project
 
-  @version "2.0.0" # if you add the route to fix the email issue on html
+  @version "2.0.0"
   @source_url "https://github.com/britton-jb/sentinel"
 
   def project do
