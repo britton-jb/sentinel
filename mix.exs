@@ -75,6 +75,7 @@ defmodule Sentinel.Mixfile do
 
       # DEV
       {:credo, "~> 0.5", only: [:dev, :test]},
+      {:ex_doc, ">= 0.0.0", only: :dev},
       # TESTING
       {:mock, "~> 0.1", only: :test},
       {:ex_machina, "~> 1.0", only: :test},
