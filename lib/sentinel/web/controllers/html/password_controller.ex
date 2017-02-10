@@ -10,6 +10,7 @@ defmodule Sentinel.Controllers.Html.PasswordController do
   alias Sentinel.Mailer
   alias Sentinel.Util
 
+  plug :put_layout, {Config.layout_view, Config.layout}
   plug Guardian.Plug.VerifySession when action in [:authenticated_update]
   plug Guardian.Plug.LoadResource when action in [:authenticated_update]
 

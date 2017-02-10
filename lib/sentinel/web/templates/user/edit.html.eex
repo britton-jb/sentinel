@@ -36,5 +36,3 @@
     <%= submit "Submit", class: "sentinel btn btn-primary" %>
   </div>
 <% end %>
-
-<%= link "Back", to: :back %>

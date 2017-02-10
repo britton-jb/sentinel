@@ -98,7 +98,7 @@ defmodule Json.AuthControllerTest do
 
     token_count = length(TestRepo.all(Token))
     conn = conn |> Plug.Conn.put_req_header("authorization", token)
-    conn = delete conn, auth_path(conn, :delete)
+    conn = delete conn, "/auth/session"
 
     assert json_response(conn, 200)
     assert (token_count - 1) == length(TestRepo.all(Token))

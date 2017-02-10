@@ -68,7 +68,7 @@ defmodule Mix.Tasks.Sentinel.Install do
       |> Enum.slice(0..17)
 
     new_content =
-      "deps/sentinel/test/support/sentinel_user.exs"
+      "deps/sentinel/lib/mix/templates/user_template.ex"
       |> File.stream!
       |> Enum.map(fn(line) -> line end)
       |> Enum.slice(18..100)
@@ -106,7 +106,7 @@ defmodule Mix.Tasks.Sentinel.Install do
       |> Enum.slice(0..2)
 
     new_content =
-      "deps/sentinel/test/support/migrations/guardian_db_migration.exs"
+      "deps/sentinel/lib/mix/templates/guardian_db_migration_template.ex"
       |> File.stream!
       |> Enum.map(fn(line) -> line end)
       |> Enum.slice(3..100)
@@ -144,7 +144,7 @@ defmodule Mix.Tasks.Sentinel.Install do
       |> Enum.slice(0..2)
 
     new_content =
-      "deps/sentinel/test/support/migrations/ueberauth_migration.exs"
+      "deps/sentinel/lib/mix/templates/ueberauth_migration_template.ex"
       |> File.stream!
       |> Enum.map(fn(line) -> line end)
       |> Enum.slice(3..100)

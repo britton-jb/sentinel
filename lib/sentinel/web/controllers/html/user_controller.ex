@@ -5,6 +5,8 @@ defmodule Sentinel.Controllers.Html.UserController do
   use Phoenix.Controller
   alias Sentinel.Config
 
+  plug :put_layout, {Config.layout_view, Config.layout}
+
   def new(conn, _params) do
     changeset = Config.user_model.changeset(struct(Config.user_model), %{})
     render(conn, Sentinel.UserView, "new.html", %{conn: conn, changeset: changeset})

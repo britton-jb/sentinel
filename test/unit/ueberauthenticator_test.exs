@@ -7,6 +7,7 @@ defmodule UeberauthenticatorTest do
 
   setup do
     on_exit fn ->
+      Config.persist([sentinel: [confirmable: :optional]])
       Config.persist([sentinel: [invitable: true]])
     end
 

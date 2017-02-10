@@ -1,15 +1,16 @@
-<% if assigns.conn.private[:phoenix_controller] != Sentinel.Controllers.Html.Password do %>
+<%= if assigns.conn.private[:phoenix_controller] != Sentinel.Controllers.AuthController do %>
+
   <%= link "Log in", to: Config.router_helper.auth_path(@conn, :new) %><br />
 <% end %>
+<%= if assigns.conn.private[:phoenix_controller] != Sentinel.Controllers.Html.UserController do %>
 
-<% if assigns.conn.private[:phoenix_controller] != Sentinel.Controllers.Html.User do %>
   <%= link "Sign up", to: Config.router_helper.user_path(@conn, :new) %><br />
 <% end %>
+<%= if assigns.conn.private[:phoenix_controller] != Sentinel.Controllers.Html.UserController && assigns.conn.private[:phoenix_controller] != Sentinel.Controllers.Html.PasswordController do %>
 
-<% if assigns.conn.private[:phoenix_controller] != Sentinel.Controllers.Html.User && assigns.conn.private[:phoenix_controller] != Sentinel.Controllers.Html.Password do %>
   <%= link "Forgot your password?", to: Config.router_helper.password_path(@conn, :new) %><br />
 <% end %>
+<%= if Config.confirmable != :false && assigns.conn.private[:phoenix_controller] != Sentinel.Controllers.Html.UserController do %>
 
-<% if Config.confirmable != :false && assigns.conn.private[:phoenix_controller] != Sentinel.Controllers.Html.User do %>
   <%= link "Didn't receive confirmation instructions?", to: Config.router_helper.user_path(@conn, :confirmation_instructions) %><br />
 <% end %>

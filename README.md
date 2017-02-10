@@ -18,6 +18,9 @@ repo.
 Suggestions? See the [Contributing/Want something new?](#contributingwant-something-new)
 section.
 
+Want an example app? Checkout [Sentinel
+Example](https://github.com/britton-jb/sentinel_example).
+
 ## Installation
 
 Here's how to add it to your Phoenix project, and things you need to
@@ -28,17 +31,10 @@ setup:
 
 # Requires Elixir ~> 1.3
 
-def application do
-  [mod: {MyApp, []},
-   applications: [
-     # ...
-     :ueberauth]]
-end
-
 defp deps do
   # ...
   {:sentinel, "~> 2.0"},
-  {:guardian_db, "~> 0.7.0"}, # If you'd like to database back your tokens, and prevent replayability
+  {:guardian_db, "~> 0.8.0"}, # If you'd like to database back your tokens, and prevent replayability
   # ...
 end
 ```
@@ -126,6 +122,9 @@ Currently Sentinel is designed in such a way that the Identity Strategy
 must set `params_nesting` as `"user"`. This is something that I would
 like to modify in future versions.
 
+You'd also want to add other Ueberauth provider configurations at this
+point, as described in the respective provider documentation.
+
 ### Configure Bamboo Mailer
 ``` elixir
 # config/config.exs
@@ -138,6 +137,7 @@ config :sentinel, Sentinel.Mailer,
 
 
 ### Run the install Mix task
+Create the database using Ecto if it doesn't yet exist.
 
 ``` elixir
 mix sentinel.install
@@ -171,7 +171,9 @@ defmodule MyApp.Router do
   # ...
 
   scope "/" do
-    pipe_through :ueberauth
+    # pipe_through, browser, api, or your own pipeline depending on your needs
+    # pipe_through :browser
+    # pipe_through :api
     Sentinel.mount_ueberauth
   end
 
@@ -203,6 +205,8 @@ The generated routes are shown in `/lib/sentinel.ex`:
 
 method | path | description
 -------|------|------------
+GET | /login | Login page
+GET | /logout | Request logout
 GET | /auth/session/new | Login page
 POST | /auth/session | Request authentication
 DELETE | /auth/session | Request logout

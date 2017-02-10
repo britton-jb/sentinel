@@ -145,7 +145,7 @@ defmodule Sentinel.Config do
   def ueberauth_providers do
     :ueberauth
     |> Application.get_all_env
-    |> ueberauth_providers_erl_version_handler
+    |> ueberauth_env_filter
     |> Enum.filter(fn provider_config ->
       {provider, _config} = provider_config
       provider != :identity
@@ -155,10 +155,16 @@ defmodule Sentinel.Config do
       {Atom.to_string(provider), router_helper.auth_url(endpoint, :request, provider)}
     end)
   end
-  defp ueberauth_providers_erl_version_handler([_config, {_module, [providers: ueberauth_config]}]) do
-    ueberauth_config
+
+  defp ueberauth_env_filter([head|tail]) do
+    {module, _other} = head
+    if module == Ueberauth do
+      ueberauth_env_filter(head)
+    else
+      ueberauth_env_filter(tail)
+    end
   end
-  defp ueberauth_providers_erl_version_handler([{_module, [providers: ueberauth_config]}, _]) do
+  defp ueberauth_env_filter({_module, [providers: ueberauth_config]}) do
     ueberauth_config
   end
 
@@ -188,6 +194,6 @@ defmodule Sentinel.Config do
   end
 
   def layout do
-    Application.get_env(:sentinel, :layout, "app.html")
+    Application.get_env(:sentinel, :layout, :app)
   end
 end

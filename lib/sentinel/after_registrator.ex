@@ -14,11 +14,10 @@ defmodule Sentinel.AfterRegistrator do
       {_confirmable, :true} ->
         ueberauth = Config.repo.get_by!(
           Sentinel.Ueberauth,
-          provider: "identity",
           user_id: user.id
         )
 
-        if is_nil(ueberauth.hashed_password) do
+        if ueberauth.provider == "identity" && is_nil(ueberauth.hashed_password) do
           {password_reset_token, changeset} =
           ueberauth
           |> PasswordResetter.create_changeset

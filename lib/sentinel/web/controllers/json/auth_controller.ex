@@ -11,7 +11,6 @@ defmodule Sentinel.Controllers.Json.AuthController do
   alias Sentinel.Ueberauthenticator
   alias Sentinel.UserHelper
   alias Sentinel.Util
-  alias Ueberauth.Strategy.Helpers
 
   plug Ueberauth
   plug Guardian.Plug.VerifyHeader when action in [:delete]
@@ -19,7 +18,7 @@ defmodule Sentinel.Controllers.Json.AuthController do
   plug Guardian.Plug.LoadResource when action in [:delete]
 
   def request(conn, _params) do
-    json conn, %{callback_url: Helpers.callback_url(conn), providers: Config.ueberauth_providers}
+    json conn, %{providers: Config.ueberauth_providers}
   end
 
   def callback(%{assigns: %{ueberauth_failure: _fails}} = conn, _params) do

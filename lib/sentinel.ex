@@ -9,6 +9,11 @@ defmodule Sentinel do
     quote do
       require Ueberauth
 
+      scope "/", Sentinel.Controllers do
+        get "/login", AuthController, :new
+        get "/logout", AuthController, :delete
+      end
+
       scope "/auth", Sentinel.Controllers do
         get "/session/new", AuthController, :new
         post "/session", AuthController, :create

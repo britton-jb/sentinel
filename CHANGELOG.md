@@ -1,4 +1,8 @@
 # Changelog
+## 2.0.1
+Updates documentation in README, and corrects mix install issue, and
+fixes bug allowing users to login with multiple ueberauth strategies.
+
 ## 2.0.0
 Too many changes to list. For the user should be considered a total
 rewrite.

@@ -1,7 +1,7 @@
 defmodule Sentinel.Mixfile do
   use Mix.Project
 
-  @version "2.0.0"
+  @version "2.0.1"
   @source_url "https://github.com/britton-jb/sentinel"
 
   def project do
@@ -60,9 +60,9 @@ defmodule Sentinel.Mixfile do
       {:guardian_db, "~> 0.8.0", optional: true},
       {:secure_random, "~> 0.2"},
       {:bamboo, "~> 0.7"},
-      {:comeonin, "~> 2.0.0"},
+      {:comeonin, "~> 2.0"},
 
-      {:cowboy, "~> 1.0.0"},
+      {:cowboy, "~> 1.0"},
       {:phoenix, "~> 1.1"},
       {:phoenix_html, "~> 2.2"},
       {:phoenix_ecto, "~> 3.1"},

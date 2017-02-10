@@ -129,7 +129,7 @@ defmodule Html.AuthControllerTest do
       |> Sentinel.ConnCase.run_plug(Guardian.Plug.VerifySession)
       |> Sentinel.ConnCase.run_plug(Guardian.Plug.LoadResource)
 
-    conn = delete conn, auth_path(conn, :delete)
+    conn = delete conn, "/auth/session"
 
     response(conn, 302)
     assert String.contains?(conn.resp_body, "a href=\"/\"")

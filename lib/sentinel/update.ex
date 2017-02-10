@@ -9,11 +9,30 @@ defmodule Sentinel.Update do
   alias Sentinel.Mailer
   alias Sentinel.Util
 
-  def update(current_user, %{"password" => _password} = params) do
+  def update(current_user, %{"password" => password} = params) do
     Config.repo.transaction(fn ->
       {updated_user, confirmation_token} = update_user(current_user, params)
 
       auth = Config.repo.get_by(Sentinel.Ueberauth, user_id: current_user.id, provider: "identity")
+      auth =
+        if is_nil(auth) do
+          auth_struct = %Ueberauth.Auth{
+            provider: "identity",
+            credentials: %Ueberauth.Auth.Credentials{
+              other: %{
+                password: password
+              }
+            },
+            uid: current_user.email
+          }
+
+          %Sentinel.Ueberauth{uid: current_user.id, user_id: current_user.id}
+          |> Sentinel.Ueberauth.changeset(Map.from_struct(auth_struct))
+          |> Config.repo.insert!
+        else
+          auth
+        end
+
       {password_reset_token, password_changeset} = auth |> PasswordResetter.create_changeset
       updated_auth =
         case Config.repo.update(password_changeset) do

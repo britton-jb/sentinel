@@ -9,6 +9,7 @@ defmodule Sentinel.Controllers.Html.AuthController do
   alias Sentinel.Ueberauthenticator
 
   plug Ueberauth
+  plug :put_layout, {Config.layout_view, Config.layout}
   plug Guardian.Plug.VerifySession when action in [:delete]
   plug Guardian.Plug.EnsureAuthenticated, %{handler: Config.auth_handler} when action in [:delete]
   plug Guardian.Plug.LoadResource when action in [:delete]
@@ -41,9 +42,9 @@ defmodule Sentinel.Controllers.Html.AuthController do
 
   defp new_user(conn, user, confirmation_token) do
     {:ok, user} = AfterRegistrator.confirmable_and_invitable(user, confirmation_token)
-    ueberauth = Config.repo.get_by(Sentinel.Ueberauth, provider: "identity", user_id: user.id)
+    ueberauth = Config.repo.get_by(Sentinel.Ueberauth, user_id: user.id)
 
-    if is_nil(ueberauth.hashed_password) do
+    if ueberauth.provider == "identity" && is_nil(ueberauth.hashed_password) do
       conn
       |> put_flash(:info, "Successfully invited user")
       |> redirect(to: Config.router_helper.user_path(Config.endpoint, :new))
@@ -60,6 +61,7 @@ defmodule Sentinel.Controllers.Html.AuthController do
           |> redirect(to: Config.router_helper.account_path(Config.endpoint, :edit))
         _ ->
           conn
+          |> Guardian.Plug.sign_in(user)
           |> put_flash(:info, "You will receive an email with instructions for how to confirm your email address in a few minutes.")
           |> redirect(to: Config.router_helper.account_path(Config.endpoint, :edit))
       end

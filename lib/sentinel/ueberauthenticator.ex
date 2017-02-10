@@ -51,13 +51,29 @@ defmodule Sentinel.Ueberauthenticator do
     |> Config.repo.get_by(email: String.downcase(uid))
     |> find_auth_and_authenticate(password)
   end
-  def ueberauthenticate(%Auth{uid: uid} = auth) do
-    user = Config.repo.get_by(Sentinel.Ueberauth, uid: uid)
+  def ueberauthenticate(%Auth{uid: uid} = auth_params) do
+    auth =
+      Sentinel.Ueberauth
+      |> Config.repo.get_by(uid: uid)
+      |> Config.repo.preload([:user])
 
-    if is_nil(user) do
-      create_user_and_auth(auth)
+    if is_nil(auth) do
+      user = Config.repo.get_by(Config.user_model, email: auth.info.email)
+      if is_nil(user) do
+        create_user_and_auth(auth_params)
+      else
+        updated_auth = auth_params |> Map.put(:provider, Atom.to_string(auth_params.provider))
+        auth_changeset =
+          %Sentinel.Ueberauth{uid: user.id, user_id: user.id}
+          |> Sentinel.Ueberauth.changeset(Map.from_struct(updated_auth))
+
+        case Config.repo.insert(auth_changeset) do
+          {:ok, _auth} -> {:ok, user}
+          {:error, error} -> {:error, error}
+        end
+      end
     else
-      {:ok, user}
+      {:ok, auth.user}
     end
   end
 
