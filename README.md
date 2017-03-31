@@ -90,7 +90,8 @@ config :sentinel,
   confirmable: :optional,
   confirmable_redirect_url: "http://localhost:4000", # for api usage only
   password_reset_url: "http://localhost:4000", # for api usage only
-  send_emails: true
+  send_emails: true,
+  registrator_callback: {Sentinel.RegistratorCallback, :run} # your callback function
 ```
 
 See `config/test.exs` for an example of configuring Sentinel
