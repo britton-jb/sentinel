@@ -7,6 +7,7 @@ defmodule Sentinel.Controllers.Html.AuthController do
   alias Sentinel.AfterRegistrator
   alias Sentinel.Config
   alias Sentinel.Ueberauthenticator
+  alias Sentinel.Util
 
   plug Ueberauth
   plug :put_layout, {Config.layout_view, Config.layout}
@@ -41,29 +42,31 @@ defmodule Sentinel.Controllers.Html.AuthController do
   end
 
   defp new_user(conn, user, confirmation_token) do
-    {:ok, user} = AfterRegistrator.confirmable_and_invitable(user, confirmation_token)
-    ueberauth = Config.repo.get_by(Sentinel.Ueberauth, user_id: user.id)
+    with {:ok, user} <- AfterRegistrator.confirmable_and_invitable(user, confirmation_token),
+         {:ok, user} <- Util.run_registrator_callback(user) do
+      ueberauth = Config.repo.get_by(Sentinel.Ueberauth, user_id: user.id)
 
-    if ueberauth.provider == "identity" && is_nil(ueberauth.hashed_password) do
-      conn
-      |> put_flash(:info, "Successfully invited user")
-      |> redirect(to: Config.router_helper.user_path(Config.endpoint, :new))
-    else
-      case Config.confirmable do
-        :required ->
-          conn
-          |> put_flash(:info, "You must confirm your account to continue. You will receive an email with instructions for how to confirm your email address in a few minutes.")
-          |> redirect(to: "/")
-        :false ->
-          conn
-          |> Guardian.Plug.sign_in(user)
-          |> put_flash(:info, "Signed up")
-          |> redirect(to: Config.router_helper.account_path(Config.endpoint, :edit))
-        _ ->
-          conn
-          |> Guardian.Plug.sign_in(user)
-          |> put_flash(:info, "You will receive an email with instructions for how to confirm your email address in a few minutes.")
-          |> redirect(to: Config.router_helper.account_path(Config.endpoint, :edit))
+      if ueberauth.provider == "identity" && is_nil(ueberauth.hashed_password) do
+        conn
+        |> put_flash(:info, "Successfully invited user")
+        |> redirect(to: Config.router_helper.user_path(Config.endpoint, :new))
+      else
+        case Config.confirmable do
+          :required ->
+            conn
+            |> put_flash(:info, "You must confirm your account to continue. You will receive an email with instructions for how to confirm your email address in a few minutes.")
+            |> redirect(to: "/")
+          :false ->
+            conn
+            |> Guardian.Plug.sign_in(user)
+            |> put_flash(:info, "Signed up")
+            |> redirect(to: Config.router_helper.account_path(Config.endpoint, :edit))
+          _ ->
+            conn
+            |> Guardian.Plug.sign_in(user)
+            |> put_flash(:info, "You will receive an email with instructions for how to confirm your email address in a few minutes.")
+            |> redirect(to: Config.router_helper.account_path(Config.endpoint, :edit))
+        end
       end
     end
   end

@@ -34,11 +34,12 @@ defmodule Sentinel.Controllers.Json.AuthController do
   end
 
   defp new_user(conn, user, confirmation_token) do
-    {:ok, _} = AfterRegistrator.confirmable_and_invitable(user, confirmation_token)
-
-    conn
-    |> put_status(201)
-    |> json(Config.user_view.render("show.json", %{user: user}))
+    with {:ok, user} <- AfterRegistrator.confirmable_and_invitable(user, confirmation_token),
+         {:ok, user} <- Util.run_registrator_callback(user) do
+      conn
+      |> put_status(201)
+      |> json(Config.user_view.render("show.json", %{user: user}))
+    end
   end
 
   defp existing_user(conn, user) do
