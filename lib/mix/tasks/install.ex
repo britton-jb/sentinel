@@ -8,7 +8,7 @@ defmodule Mix.Tasks.Sentinel.Install do
 
   def run(_) do
     IO.puts "Creating migrations"
-    create_migrations
+    create_migrations()
 
     IO.puts "You should go in and ensure your application is configured correctly"
   end
@@ -20,29 +20,29 @@ defmodule Mix.Tasks.Sentinel.Install do
       migrations
       |> Enum.find(fn(migration) ->
         String.contains?(migration, "create_user")
-      end) |> create_user_migration
+      end) |> create_user_migration()
 
       migrations
       |> Enum.find(fn(migration) ->
         String.contains?(migration, "guardian")
-      end) |> create_guardian_token_migration
+      end) |> create_guardian_token_migration()
 
       migrations
       |> Enum.find(fn(migration) ->
         String.contains?(migration, "ueberauth")
-      end) |> create_ueberauth_migration
+      end) |> create_ueberauth_migration()
     else
-      create_user_migration
-      create_guardian_token_migration
-      create_ueberauth_migration
+      create_user_migration()
+      create_guardian_token_migration()
+      create_ueberauth_migration()
     end
   end
 
   defp create_user_migration do
-    generate_user_migration
+    generate_user_migration()
   end
   defp create_user_migration(nil) do
-    generate_user_migration
+    generate_user_migration()
   end
   defp create_user_migration(_) do
     IO.puts "A user creation migration appears to already exist"
@@ -78,10 +78,10 @@ defmodule Mix.Tasks.Sentinel.Install do
   end
 
   defp create_guardian_token_migration do
-    generate_token_migration
+    generate_token_migration()
   end
   defp create_guardian_token_migration(nil) do
-    generate_token_migration
+    generate_token_migration()
   end
   defp create_guardian_token_migration(_migration) do
     IO.puts "A guardian token migration appears to already exist"
@@ -116,10 +116,10 @@ defmodule Mix.Tasks.Sentinel.Install do
   end
 
   defp create_ueberauth_migration do
-    generate_ueberauth
+    generate_ueberauth()
   end
   defp create_ueberauth_migration(nil) do
-    generate_ueberauth
+    generate_ueberauth()
   end
   defp create_ueberauth_migration(_migration) do
     IO.puts "An ueberuath migration appears to already exist"
