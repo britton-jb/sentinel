@@ -30,6 +30,6 @@ defmodule Sentinel.AuthHandler do
     Util.send_error(conn, %{base: "Unknown email or password"}, 403)
   end
   def unauthorized(conn, _) do
-    render(conn, Config.error_view, "403.html", %{conn: conn})
+    render(conn, Config.views.error, "403.html", %{conn: conn})
   end
 end

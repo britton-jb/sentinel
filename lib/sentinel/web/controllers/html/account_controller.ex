@@ -19,7 +19,7 @@ defmodule Sentinel.Controllers.Html.AccountController do
   """
   def edit(conn, _params, current_user, _claims \\ %{}) do
     changeset = Config.user_model.changeset(current_user, %{})
-    render(conn, Config.user_view, "edit.html", %{conn: conn, user: current_user, changeset: changeset})
+    render(conn, Config.views.user, "edit.html", %{conn: conn, user: current_user, changeset: changeset})
   end
 
   @doc """
@@ -35,12 +35,12 @@ defmodule Sentinel.Controllers.Html.AccountController do
 
         conn
         |> put_flash(:info, "Successfully updated user account")
-        |> render(Config.user_view, "edit.html", %{conn: conn, user: updated_user, changeset: new_changeset})
+        |> render(Config.views.user, "edit.html", %{conn: conn, user: updated_user, changeset: new_changeset})
       {:error, changeset} ->
         conn
         |> put_status(422)
         |> put_flash(:error, "Failed to update user account")
-        |> render(Config.user_view, "edit.html", %{conn: conn, user: current_user, changeset: changeset})
+        |> render(Config.views.user, "edit.html", %{conn: conn, user: current_user, changeset: changeset})
     end
   end
 end

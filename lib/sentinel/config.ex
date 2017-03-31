@@ -46,13 +46,6 @@ defmodule Sentinel.Config do
   end
 
   @doc """
-  Wrapper for getting the application config of :error_view
-  """
-  def error_view do
-    Application.get_env(:sentinel, :error_view, Sentinel.ErrorView)
-  end
-
-  @doc """
   Wrapper for getting the application config of :invitable
   """
   def invitable do
@@ -182,18 +175,41 @@ defmodule Sentinel.Config do
     Application.get_env(:sentinel, :user_model_validator)
   end
 
+  ### View configs
+  #
   @doc """
-  Wrapper for getting the application config of :user_view
+  Wrapper for getting the application config of :layout_view
   """
-  def user_view do
-    Application.get_env(:sentinel, :user_view, Sentinel.UserView)
-  end
-
   def layout_view do
     Application.get_env(:sentinel, :layout_view, Sentinel.LayoutView)
   end
 
+  @doc """
+  Wrapper for getting the application config of :layout
+  """
   def layout do
     Application.get_env(:sentinel, :layout, :app)
+  end
+
+  @doc """
+  Wrapper for getting and merging the application config of :views
+  """
+  def views do
+    Map.merge(default_views(), custom_views())
+  end
+
+  defp default_views do
+    %{
+      email: Sentinel.EmailView,
+      error: Sentinel.ErrorView,
+      password: Sentinel.PasswordView,
+      session: Sentinel.SessionView,
+      shared: Sentinel.SharedView,
+      user: Sentinel.UserView
+    }
+  end
+
+  defp custom_views do
+    Application.get_env(:sentinel, :views, %{})
   end
 end

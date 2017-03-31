@@ -25,6 +25,6 @@ defmodule Sentinel.UserView do
   end
 
   defp user_view do
-    Config.user_view
+    Config.views.user
   end
 end

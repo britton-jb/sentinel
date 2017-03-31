@@ -42,7 +42,7 @@ defmodule Sentinel.Controllers.Json.UserController do
       {:ok, user} ->
         conn
         |> put_status(200)
-        |> render(Config.user_view, "show.json", %{user: user})
+        |> render(Config.views.user, "show.json", %{user: user})
       {:error, changeset} -> Util.send_error(conn, changeset.errors)
     end
   end

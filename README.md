@@ -80,9 +80,15 @@ config :sentinel,
   ecto_repos: [Sentinel.TestRepo],
   auth_handler: Sentinel.AuthHandler,
   layout_view: MyApp.Layout, # your layout
-  layout_view: :app,
-  user_view: Sentinel.UserView,
-  error_view: Sentinel.ErrorView,
+  layout: :app,
+  views: %{
+    email: Sentinel.EmailView, # your email view (optional)
+    error: Sentinel.ErrorView, # your error view (optional)
+    password: Sentinel.PasswordView, # your password view (optional)
+    session: Sentinel.SessionView, # your session view (optional)
+    shared: Sentinel.SharedView, # your shared view (optional)
+    user: Sentinel.UserView # your user view (optional)
+  },
   router: Sentinel.TestRouter, # your router
   endpoint: Sentinel.Endpoint, # your endpoint
   invitable: true,

@@ -18,7 +18,6 @@ config :comeonin, :bcrypt_log_rounds, 4
 config :sentinel,
   crypto_provider: Comeonin.Bcrypt,
   auth_handler: Sentinel.AuthHandler,
-  user_view: Sentinel.UserView
 
 config :guardian, Guardian,
   allowed_algos: ["HS512"], # optional
