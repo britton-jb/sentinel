@@ -196,4 +196,11 @@ defmodule Sentinel.Config do
   def layout do
     Application.get_env(:sentinel, :layout, :app)
   end
+
+  @doc """
+  Wrapper for getting the application config of :registrator_callback
+  """
+  def registrator_callback do
+    Application.get_env(:sentinel, :registrator_callback, {Sentinel.RegistratorCallback, :run})
+  end
 end
