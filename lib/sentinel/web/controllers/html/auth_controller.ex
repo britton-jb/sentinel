@@ -6,8 +6,8 @@ defmodule Sentinel.Controllers.Html.AuthController do
   use Phoenix.Controller
   alias Sentinel.AfterRegistrator
   alias Sentinel.Config
+  alias Sentinel.RegistratorHelper
   alias Sentinel.Ueberauthenticator
-  alias Sentinel.Util
 
   plug Ueberauth
   plug :put_layout, {Config.layout_view, Config.layout}
@@ -43,7 +43,7 @@ defmodule Sentinel.Controllers.Html.AuthController do
 
   defp new_user(conn, user, confirmation_token) do
     with {:ok, user} <- AfterRegistrator.confirmable_and_invitable(user, confirmation_token),
-         {:ok, user} <- Util.run_registrator_callback(user) do
+         {:ok, user} <- RegistratorHelper.callback(user) do
       ueberauth = Config.repo.get_by(Sentinel.Ueberauth, user_id: user.id)
 
       if ueberauth.provider == "identity" && is_nil(ueberauth.hashed_password) do

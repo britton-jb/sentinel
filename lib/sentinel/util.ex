@@ -96,12 +96,4 @@ defmodule Sentinel.Util do
   def presence_validator(field, nil), do: [{field, "can't be blank"}]
   def presence_validator(field, ""), do: [{field, "can't be blank"}]
   def presence_validator(_field, _), do: []
-
-  @doc """
-  Runs the registrator callback with the given user
-  """
-  def run_registrator_callback(user) do
-    {module, function} = Config.registrator_callback
-    Kernel.apply(module, function, [user])
-  end
 end
