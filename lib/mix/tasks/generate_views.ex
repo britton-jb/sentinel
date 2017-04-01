@@ -23,6 +23,17 @@ defmodule Mix.Tasks.Sentinel.GenerateViews do
 
     Mix.Phoenix.copy_from paths(), "lib/sentinel/web/templates", "", binding,
       template_files(templates_path, binding[:singular])
+
+   Mix.shell.info """
+
+    Update config.exs to set your custom views:
+
+        config :sentinel,
+          views: %{
+            session: MyApp.Web.SessionView,
+            user: MyApp.Web.UserView
+          }
+    """
   end
 
   @spec raise_with_help() :: no_return()
