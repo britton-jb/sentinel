@@ -38,7 +38,7 @@ defmodule Sentinel.Controllers.Json.AuthController do
 
     conn
     |> put_status(201)
-    |> json(Config.user_view.render("show.json", %{user: user}))
+    |> json(Config.views.user.render("show.json", %{user: user}))
   end
 
   defp existing_user(conn, user) do
