@@ -1,4 +1,4 @@
-defmodule Mix.Tasks.Sentinel.GenerateViews do
+defmodule Mix.Tasks.Sentinel.Gen.Views do
   @moduledoc """
   Used to generate sentinel views for customization
   """
