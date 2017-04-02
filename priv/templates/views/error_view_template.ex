@@ -1,5 +1,5 @@
 defmodule <%= module %> do
-  use Phoenix.View
+  use Phoenix.View, root: "<%= templates_path %>"
   use Phoenix.HTML
 
   def render("404.html", _assigns) do

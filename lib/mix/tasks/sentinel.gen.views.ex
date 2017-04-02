@@ -2,7 +2,6 @@ defmodule Mix.Tasks.Sentinel.Gen.Views do
   @moduledoc """
   Used to generate sentinel views for customization
   """
-  @shortdoc "Used to copy and configure sentinel views"
 
   use Mix.Task
 
@@ -14,6 +13,7 @@ defmodule Mix.Tasks.Sentinel.Gen.Views do
     templates_path = Mix.Phoenix.web_path("templates")
     binding = Mix.Phoenix.inflect(view_module)
     binding = Keyword.put(binding, :module, "#{binding[:web_module]}.#{binding[:scoped]}")
+    binding = Keyword.put(binding, :templates_path, templates_path)
 
     Mix.Phoenix.check_module_name_availability!(binding[:module])
 
