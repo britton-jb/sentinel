@@ -8,6 +8,7 @@ defmodule Sentinel.User do
     field  :hashed_confirmation_token,   :string
     field  :confirmed_at,                Ecto.DateTime
     field  :unconfirmed_email,           :string
+    field  :my_attr,                     :string, virtual: true
   end
 
   @required_fields [:email]

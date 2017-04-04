@@ -46,4 +46,13 @@ defmodule RegistratorTest do
     assert !changeset.valid?
     assert changeset.errors[:email] == {"custom_error", []}
   end
+
+  test "changeset runs with a custom user_model_validator module function" do
+    Application.put_env(:sentinel, :user_model_validator, {Sentinel.TestValidator, :custom_changeset})
+
+    changeset = Registrator.changeset(@valid_params)
+
+    assert !changeset.valid?
+    assert changeset.errors[:my_attr] == {"can't be blank", [validation: :required]}
+  end
 end
