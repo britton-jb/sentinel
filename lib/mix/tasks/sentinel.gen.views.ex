@@ -8,21 +8,17 @@ defmodule Mix.Tasks.Sentinel.Gen.Views do
   def run(args) do
     view_name = validate_arg!(args)
     view_module = view_module(view_name)
-
-    views_path = Mix.Phoenix.web_path("views")
-    templates_path = Mix.Phoenix.web_path("templates")
-    binding = Mix.Phoenix.inflect(view_module)
-    binding = Keyword.put(binding, :module, "#{binding[:web_module]}.#{binding[:scoped]}")
-    binding = Keyword.put(binding, :templates_path, templates_path)
+    legacy = !Kernel.function_exported?(Mix.Phoenix, :web_path, 1)
+    binding = set_bindings(view_module, legacy)
 
     Mix.Phoenix.check_module_name_availability!(binding[:module])
 
     Mix.Phoenix.copy_from paths(), "priv/templates/views", "", binding, [
-      {:eex, "#{binding[:singular]}_template.ex", Path.join(views_path, "#{binding[:path]}.ex")}
+      {:eex, "#{binding[:singular]}_template.ex", Path.join(views_path(legacy), "#{binding[:path]}.ex")}
     ]
 
     Mix.Phoenix.copy_from paths(), "lib/sentinel/web/templates", "", binding,
-      template_files(templates_path, binding[:singular])
+      template_files(templates_path(legacy), binding[:singular])
 
    Mix.shell.info """
 
@@ -36,6 +32,37 @@ defmodule Mix.Tasks.Sentinel.Gen.Views do
     """
   end
 
+  defp set_bindings(view_module, legacy) do
+    binding = Mix.Phoenix.inflect(view_module)
+
+    binding =
+      if legacy do
+        binding
+      else
+        Keyword.put(binding, :module, "#{binding[:web_module]}.#{binding[:scoped]}")
+      end
+
+    binding = Keyword.put(binding, :templates_path, templates_path(legacy))
+
+    binding
+  end
+
+  defp views_path(legacy) do
+    if legacy do
+      "web/views"
+    else
+      Mix.Phoenix.web_path("views")
+    end
+  end
+
+  defp templates_path(legacy) do
+    if legacy do
+      "web/templates"
+    else
+      Mix.Phoenix.web_path("templates")
+    end
+  end
+
   @spec raise_with_help() :: no_return()
   defp raise_with_help do
     Mix.raise """
@@ -47,12 +74,13 @@ defmodule Mix.Tasks.Sentinel.Gen.Views do
   end
 
   defp validate_arg!([arg] = args) do
-    if length(args) == 1 && Enum.find(valid_values, fn(x) -> x == arg end) do
+    if length(args) == 1 && Enum.find(valid_values(), fn(x) -> x == arg end) do
       arg
     else
       raise_with_help()
     end
   end
+  defp validate_arg!(_), do: raise_with_help()
 
   defp valid_values do
     ["email", "error", "password", "session", "shared", "user"]
@@ -68,7 +96,7 @@ defmodule Mix.Tasks.Sentinel.Gen.Views do
   defp view_module(name), do: view_module(to_string(name))
 
   defp paths do
-    Mix.Phoenix.generator_paths() ++ ["deps/sentinel", :sentinel]
+    [".", :phoenix, "deps/sentinel", :sentinel]
   end
 
   defp template_files(templates_path, "email_view") do
@@ -107,5 +135,5 @@ defmodule Mix.Tasks.Sentinel.Gen.Views do
       {:text, "user/new.html.eex", Path.join(templates_path, "user/new.html.eex")}
     ]
   end
-  defp template_files(templates_path, _), do: []
+  defp template_files(_templates_path, _), do: []
 end
