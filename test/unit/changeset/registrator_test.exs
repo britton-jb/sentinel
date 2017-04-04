@@ -38,7 +38,7 @@ defmodule RegistratorTest do
   end
 
   test "changeset runs user_model_validator from config" do
-    Application.put_env(:sentinel, :user_model_validator, fn changeset ->
+    Application.put_env(:sentinel, :user_model_validator, fn (changeset, %{}) ->
       Ecto.Changeset.add_error(changeset, :email, "custom_error")
     end)
     changeset = Registrator.changeset(@valid_params)

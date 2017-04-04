@@ -199,7 +199,7 @@ defmodule Html.UserControllerTest do
     Config.persist([sentinel: [confirmable: :optional]])
     Config.persist([sentinel: [invitable: false]])
 
-    Application.put_env(:sentinel, :user_model_validator, fn changeset ->
+    Application.put_env(:sentinel, :user_model_validator, fn (changeset, params) ->
       Ecto.Changeset.add_error(changeset, :password, "too short")
     end)
 

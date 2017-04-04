@@ -90,11 +90,13 @@ defmodule Html.AccountControllerTest do
   end
 
   test "update account with custom validations", %{conn: conn, user: user, auth: auth} do
-    Application.put_env(:sentinel, :user_model_validator, fn changeset ->
+    params = %{account: %{password: @new_password}}
+  
+    Application.put_env(:sentinel, :user_model_validator, fn (changeset, params) ->
       Changeset.add_error(changeset, :password, "too_short")
     end)
 
-    conn = put conn, account_path(conn, :update), %{account: %{password: @new_password}}
+    conn = put conn, account_path(conn, :update), params
     response(conn, 422)
 
     assert String.contains?(conn.resp_body, "Failed to update user account")

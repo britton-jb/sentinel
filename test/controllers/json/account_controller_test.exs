@@ -88,11 +88,13 @@ defmodule Json.AccountControllerTest do
   end
 
   test "update account with custom validations", %{conn: conn, user: user, auth: auth} do
-    Application.put_env(:sentinel, :user_model_validator, fn changeset ->
+    params = %{account: %{password: @new_password}}
+
+    Application.put_env(:sentinel, :user_model_validator, fn (changeset, params) ->
       Changeset.add_error(changeset, :password, "too_short")
     end)
 
-    conn = put conn, api_account_path(conn, :update), %{account: %{password: @new_password}}
+    conn = put conn, api_account_path(conn, :update), params
     response = json_response(conn, 422)
     assert response == %{"errors" => [%{"password" => "too_short"}]}
     {:ok, _} = Ueberauthenticator.ueberauthenticate(%Ueberauth.Auth{
