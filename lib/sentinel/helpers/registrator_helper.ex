@@ -1,6 +1,6 @@
 defmodule Sentinel.RegistratorHelper do
   @moduledoc """
-  Registrator helper for Sentinel, pulling in a few query helper methods
+  Registrator helper for Sentinel
   """
   alias Sentinel.Config
 
