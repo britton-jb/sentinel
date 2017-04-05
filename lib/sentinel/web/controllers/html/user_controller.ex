@@ -13,7 +13,7 @@ defmodule Sentinel.Controllers.Html.UserController do
   end
 
   def confirmation_instructions(conn, _params) do
-    render(conn, Sentinel.UserView, "confirmation_instructions.html", %{conn: conn})
+    render(conn, Config.views.user, "confirmation_instructions.html", %{conn: conn})
   end
   def resend_confirmation_instructions(conn, params) do
     Sentinel.Confirm.send_confirmation_instructions(params)

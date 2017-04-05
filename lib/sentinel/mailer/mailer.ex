@@ -1,6 +1,6 @@
 defmodule Sentinel.Mailer do
   use Bamboo.Mailer, otp_app: :sentinel
-  use Bamboo.Phoenix, view: Sentinel.EmailView
+  use Bamboo.Phoenix, view: Sentinel.Config.views.email
 
   alias Sentinel.Mailer
 

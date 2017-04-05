@@ -15,7 +15,7 @@ defmodule Sentinel.Controllers.Html.PasswordController do
   plug Guardian.Plug.LoadResource when action in [:authenticated_update]
 
   def new(conn, _params, _headers \\ %{}, _session \\ %{}) do
-    render(conn, Sentinel.PasswordView, "new.html", %{conn: conn})
+    render(conn, Config.views.password, "new.html", %{conn: conn})
   end
 
   def create(conn, %{"password" => %{"email" => email}}, _headers \\ %{}, _session \\ %{}) do # FIXME could extract all of this here, and on json side into another module
@@ -52,7 +52,7 @@ defmodule Sentinel.Controllers.Html.PasswordController do
 
   def edit(conn, params, headers \\ %{}, session \\ %{})
   def edit(conn, %{"user_id" => user_id, "password_reset_token" => password_reset_token}, _headers, _session) do
-    render(conn, Sentinel.PasswordView, "edit.html", %{conn: conn, password_reset_token: password_reset_token, user_id: user_id})
+    render(conn, Config.views.password, "edit.html", %{conn: conn, password_reset_token: password_reset_token, user_id: user_id})
   end
   def edit(conn, _params, _headers, _session) do
     conn
@@ -106,7 +106,7 @@ defmodule Sentinel.Controllers.Html.PasswordController do
         |> put_flash(:info, "Update successful")
         |> redirect(to: Config.router_helper.account_path(Config.endpoint, :edit))
       {:error, changeset} ->
-        render(conn, Sentinel.AccountView, "edit.html", %{conn: conn, user: current_user, changeset: changeset})
+        render(conn, Config.views.password, "edit.html", %{conn: conn, user: current_user, changeset: changeset})
     end
   end
 end

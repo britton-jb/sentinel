@@ -13,4 +13,4 @@
   </div>
 <% end %>
 
-<%= render(Sentinel.SharedView, "links.html", assigns) %>
+<%= render(Sentinel.Config.views.shared, "links.html", assigns) %>

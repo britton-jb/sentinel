@@ -20,7 +20,7 @@ defmodule Sentinel.AuthHandler do
     conn
     |> put_status(401)
     |> put_flash(:error, "Failed to authenticate")
-    |> render(Sentinel.SessionView, "new.html", %{conn: conn, changeset: changeset, providers: Config.ueberauth_providers})
+    |> render(Config.views.session, "new.html", %{conn: conn, changeset: changeset, providers: Config.ueberauth_providers})
   end
 
   @doc """
