@@ -281,6 +281,25 @@ URL, with the following params:
 If you want to customize the routes, or use your own controller
 endpoints you can do that by overriding the individual routes listed.
 
+### Generate custom views
+If you want to use custom views, you'll need copy over the views and templates
+to your application. Sentinel provides a mix task make this a one-liner:
+
+```shell
+mix sentinel.gen.views
+```
+
+This mix task accepts a single argument of the specific context. This value can
+be "email", "error", "password", "session", "shared", or "user". Once you copy
+over a context's view and templates, you must update the config to point to
+your application's local files:
+
+```json
+config :sentinel, views: %{user: MyApp.Web.UserView}
+```
+
+The keys for this views config map correspond with the list of contexts above.
+
 ### Auth Error Handler
 If you'd like to write your own custom authorization or authentication
 handler change the `auth_handler` Sentinel configuration option
