@@ -96,7 +96,9 @@ config :sentinel,
   confirmable: :optional,
   confirmable_redirect_url: "http://localhost:4000", # for api usage only
   password_reset_url: "http://localhost:4000", # for api usage only
-  send_emails: true
+  send_emails: true,
+  user_model_validator: {MyApp.Accounts, :custom_changeset}, # your custom validator
+  registrator_callback: {MyApp.Accounts, :setup} # your callback function (optional)
 ```
 
 See `config/test.exs` for an example of configuring Sentinel
@@ -308,6 +310,26 @@ to the module name of your handler.
 It must define two functions, `unauthorized/2`, and `unauthenticated/2`,
 where the first parameter is the connection, and the second is
 information about the session.
+
+### Custom model validator
+If you want to add custom changeset validations to the user model, you can do
+that by specifying a user model validator: 
+
+```elixir
+config :sentinel, user_model_validator: {MyApp.Accounts, :custom_changeset}
+```
+This function must accept 2 arguments consisting of a changeset and a map of
+params and *must* return a changeset. The params in the second argument will be
+the raw params from the original request (not the ueberauth callback params).
+
+```elixir
+def custom_changeset(changeset, attrs \\ %{}) do
+  changeset
+  |> cast(attrs, [:my_attr])
+  |> validate_required([:my_attr])
+  |> validate_inclusion(:my_attr, ["foo", "bar"])
+end
+```
 
 ## Contributing/Want something new?
 Create an issue. Preferably with a PR. If you're super awesome

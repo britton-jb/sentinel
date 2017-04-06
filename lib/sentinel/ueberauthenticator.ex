@@ -105,7 +105,7 @@ defmodule Sentinel.Ueberauthenticator do
       {confirmation_token, changeset} =
         updated_auth.info
         |> Map.from_struct
-        |> Registrator.changeset
+        |> Registrator.changeset(updated_auth.extra.raw_info)
         |> Confirmator.confirmation_needed_changeset
 
       user =

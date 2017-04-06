@@ -10,11 +10,11 @@ defmodule Sentinel.Mixfile do
       elixir: "~> 1.3",
       elixirc_paths: elixirc_paths(Mix.env),
       compilers: [:phoenix] ++ Mix.compilers,
-      package: package,
-      description: description,
+      package: package(),
+      description: description(),
       source_url: @source_url,
-      aliases: aliases,
-      deps: deps]
+      aliases: aliases(),
+      deps: deps()]
   end
 
   defp elixirc_paths(:test), do: ["lib", "test/support"]

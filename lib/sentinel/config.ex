@@ -212,4 +212,11 @@ defmodule Sentinel.Config do
   defp custom_views do
     Application.get_env(:sentinel, :views, %{})
   end
+
+  @doc """
+  Wrapper for getting the application config of :registrator_callback
+  """
+  def registrator_callback do
+    Application.get_env(:sentinel, :registrator_callback)
+  end
 end

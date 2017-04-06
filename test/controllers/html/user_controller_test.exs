@@ -199,7 +199,7 @@ defmodule Html.UserControllerTest do
     Config.persist([sentinel: [confirmable: :optional]])
     Config.persist([sentinel: [invitable: false]])
 
-    Application.put_env(:sentinel, :user_model_validator, fn changeset ->
+    Application.put_env(:sentinel, :user_model_validator, fn (changeset, params) ->
       Ecto.Changeset.add_error(changeset, :password, "too short")
     end)
 
@@ -264,5 +264,18 @@ defmodule Html.UserControllerTest do
     assert updated_user.email == "new@example.com"
     assert String.contains?(conn.private.phoenix_flash["info"], "Successfully confirmed your account")
     assert String.contains?(conn.resp_body, "You are being <a href=\"/\">redirected</a>")
+  end
+
+  test "sign up with a custom registrator callback", %{conn: conn, params: params} do
+    Config.persist([sentinel: [registrator_callback: {Sentinel.TestRegistratorCallback, :registrator_callback}]])
+
+    conn = post conn, auth_path(conn, :callback, "identity"), params
+    response(conn, 302)
+
+    assert String.contains?(conn.private.phoenix_flash["info"],  "You will receive an email with instructions for how to confirm your email address in a few minutes.")
+
+    user = TestRepo.get_by!(User, email: params.user.email)
+
+    assert user.role == "foo"
   end
 end

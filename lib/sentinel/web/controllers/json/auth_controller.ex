@@ -8,6 +8,7 @@ defmodule Sentinel.Controllers.Json.AuthController do
   alias Plug.Conn
   alias Sentinel.AfterRegistrator
   alias Sentinel.Config
+  alias Sentinel.RegistratorHelper
   alias Sentinel.Ueberauthenticator
   alias Sentinel.UserHelper
   alias Sentinel.Util
@@ -34,11 +35,12 @@ defmodule Sentinel.Controllers.Json.AuthController do
   end
 
   defp new_user(conn, user, confirmation_token) do
-    {:ok, _} = AfterRegistrator.confirmable_and_invitable(user, confirmation_token)
-
-    conn
-    |> put_status(201)
-    |> json(Config.views.user.render("show.json", %{user: user}))
+    with {:ok, user} <- AfterRegistrator.confirmable_and_invitable(user, confirmation_token),
+         {:ok, user} <- RegistratorHelper.callback(user) do
+      conn
+      |> put_status(201)
+      |> json(Config.views.user.render("show.json", %{user: user}))
+    end
   end
 
   defp existing_user(conn, user) do
