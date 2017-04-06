@@ -10,6 +10,11 @@ defmodule Sentinel.Ueberauth do
   alias Sentinel.Config
   alias Sentinel.Changeset.HashPassword
 
+  if Application.get_env(:sentinel, :uuid_primary_keys, false) do
+    @primary_key {:id, :binary_id, autogenerate: true}
+    @foreign_key_type :binary_id
+  end
+
   schema "ueberauths" do
     field :provider, :string
     field :uid, :string
