@@ -265,4 +265,17 @@ defmodule Html.UserControllerTest do
     assert String.contains?(conn.private.phoenix_flash["info"], "Successfully confirmed your account")
     assert String.contains?(conn.resp_body, "You are being <a href=\"/\">redirected</a>")
   end
+
+  test "sign up with a custom registrator callback", %{conn: conn, params: params} do
+    Config.persist([sentinel: [registrator_callback: {Sentinel.TestRegistratorCallback, :registrator_callback}]])
+
+    conn = post conn, auth_path(conn, :callback, "identity"), params
+    response(conn, 302)
+
+    assert String.contains?(conn.private.phoenix_flash["info"],  "You will receive an email with instructions for how to confirm your email address in a few minutes.")
+
+    user = TestRepo.get_by!(User, email: params.user.email)
+
+    assert user.role == "foo"
+  end
 end
