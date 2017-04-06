@@ -14,12 +14,12 @@ defmodule Sentinel.UserHelper do
   @doc """
   Adds extra validator specified in configuration
   """
-  def validator(changeset) do
-    apply_validator(Config.user_model_validator, changeset)
+  def validator(changeset, params \\ %{}) do
+    apply_validator(Config.user_model_validator, changeset, params)
   end
-  defp apply_validator(nil, changeset), do: changeset
-  defp apply_validator({mod, fun}, changeset), do: apply(mod, fun, [changeset])
-  defp apply_validator(validator, changeset) do
-    validator.(changeset)
+  defp apply_validator(nil, changeset, _params), do: changeset
+  defp apply_validator({mod, fun}, changeset, params), do: apply(mod, fun, [changeset, params])
+  defp apply_validator(validator, changeset, params) do
+    validator.(changeset, params)
   end
 end

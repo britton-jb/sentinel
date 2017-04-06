@@ -18,7 +18,7 @@ defmodule Sentinel.Changeset.Registrator do
   def changeset(params = %{username: username}) when username != "" and username != nil do
     username_changeset(params)
   end
-  def changeset(params) do
+  def changeset(params, raw_info \\ %{}) do
     updated_params = params |> atomize_params |> downcase_email
 
     Sentinel.Config.user_model
@@ -28,10 +28,10 @@ defmodule Sentinel.Changeset.Registrator do
     |> Changeset.validate_required([:email])
     |> Changeset.validate_change(:email, &Util.presence_validator/2)
     |> Changeset.unique_constraint(:email)
-    |> changeset_helper
+    |> changeset_helper(raw_info)
   end
 
-  defp username_changeset(params) do
+  defp username_changeset(params, raw_info \\ %{}) do
     UserHelper.model
     |> struct
     |> UserHelper.model.changeset(params)
@@ -40,7 +40,7 @@ defmodule Sentinel.Changeset.Registrator do
     |> Changeset.unique_constraint(:username)
     |> Changeset.put_change(:hashed_confirmation_token, nil)
     |> Changeset.put_change(:confirmed_at, DateTime.utc)
-    |> changeset_helper
+    |> changeset_helper(raw_info)
   end
 
   defp atomize_params(params) do
@@ -60,8 +60,6 @@ defmodule Sentinel.Changeset.Registrator do
     end
   end
 
-  defp changeset_helper(changeset) do
-    changeset
-    |> UserHelper.validator
-  end
+  defp changeset_helper(changeset, %{"user" => user_info}), do: changeset_helper(changeset, user_info)
+  defp changeset_helper(changeset, user_info), do: UserHelper.validator(changeset, user_info)
 end
