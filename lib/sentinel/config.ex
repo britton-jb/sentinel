@@ -203,4 +203,35 @@ defmodule Sentinel.Config do
   def registrator_callback do
     Application.get_env(:sentinel, :registrator_callback)
   end
+
+  @doc """
+  Wrapper for getting the application config of :redirects
+  """
+  def redirects do
+    Map.merge(default_redirects(), custom_redirects())
+  end
+
+  defp default_redirects do
+    %{
+      password_create: "/",
+      password_update: {:account, :edit},
+      password_update_error: "/",
+      password_update_unsuccessful: {:password, :new},
+      session_create: {:account, :edit},
+      session_create_error: {:auth, :new},
+      session_delete: "/",
+      user_confirmation: "/",
+      user_confirmation_error: "/",
+      user_confirmation_sent: "/",
+      user_create: {:account, :edit},
+      user_create_unconfirmed: "/",
+      user_invitation: {:account, :edit},
+      user_invitation_error: "/",
+      user_invited: {:user, :new},
+    }
+  end
+
+  defp custom_redirects do
+    Application.get_env(:sentinel, :redirects, %{})
+  end
 end

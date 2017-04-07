@@ -4,6 +4,7 @@ defmodule Sentinel.Controllers.Html.UserController do
   """
   use Phoenix.Controller
   alias Sentinel.Config
+  alias Sentinel.RedirectHelper
 
   plug :put_layout, {Config.layout_view, Config.layout}
 
@@ -20,7 +21,7 @@ defmodule Sentinel.Controllers.Html.UserController do
 
     conn
     |> put_flash(:info, "Sent confirmation instructions")
-    |> redirect(to: "/")
+    |> RedirectHelper.redirect_from(:user_confirmation_sent)
   end
 
   @doc """
@@ -34,12 +35,12 @@ defmodule Sentinel.Controllers.Html.UserController do
       {:ok, _user} ->
         conn
         |> put_flash(:info, "Successfully confirmed your account")
-        |> redirect(to: "/")
+        |> RedirectHelper.redirect_from(:user_confirmation)
       {:error, _changeset} ->
         conn
         |> put_status(422)
         |> put_flash(:error, "Unable to confirm your account")
-        |> redirect(to: "/")
+        |> RedirectHelper.redirect_from(:user_confirmation_error)
     end
   end
 
@@ -61,7 +62,7 @@ defmodule Sentinel.Controllers.Html.UserController do
     conn
     |> put_status(422)
     |> put_flash(:error, "Invalid invitation tokens")
-    |> redirect(to: "/")
+    |> RedirectHelper.redirect_from(:user_invitation_error)
   end
 
   def invited(conn, params) do
@@ -70,7 +71,7 @@ defmodule Sentinel.Controllers.Html.UserController do
         conn
         |> Guardian.Plug.sign_in(user)
         |> put_flash(:info, "Signed up")
-        |> redirect(to: Config.router_helper.account_path(Config.endpoint, :edit))
+        |> RedirectHelper.redirect_from(:user_invitation)
       {:error, changeset} ->
         conn
         |> put_status(422)

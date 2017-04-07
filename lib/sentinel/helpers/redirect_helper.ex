@@ -11,18 +11,24 @@ defmodule Sentinel.RedirectHelper do
   Redirect from a given context
   """
   def redirect_from(conn, context) do
-    with {controller, action} <- Config.redirects()[context],
-         path                 <- get_path(controller, action) do
-      conn
-      |> redirect(to: path)
-    else
-      _ ->
-        conn
-        |> redirect(to: "/")
-    end
+    path =
+      case Config.redirects()[context] do
+        {controller, action} ->
+          get_path(controller, action)
+        path when is_binary(path) ->
+          path
+        _ ->
+          "/"
+      end
+
+    redirect(conn, to: path)
   end
 
   defp get_path(controller, action) do
-    apply(Config.router_helper(), :"#{controller}_path", [Config.endpoint, action])
+    try do
+      apply(Config.router_helper(), :"#{controller}_path", [Config.endpoint, action])
+    rescue
+      _ -> "/"
+    end
   end
 end

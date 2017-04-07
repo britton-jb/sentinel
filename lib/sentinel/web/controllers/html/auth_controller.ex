@@ -6,6 +6,7 @@ defmodule Sentinel.Controllers.Html.AuthController do
   use Phoenix.Controller
   alias Sentinel.AfterRegistrator
   alias Sentinel.Config
+  alias Sentinel.RedirectHelper
   alias Sentinel.RegistratorHelper
   alias Sentinel.Ueberauthenticator
 
@@ -49,23 +50,23 @@ defmodule Sentinel.Controllers.Html.AuthController do
       if ueberauth.provider == "identity" && is_nil(ueberauth.hashed_password) do
         conn
         |> put_flash(:info, "Successfully invited user")
-        |> redirect(to: Config.router_helper.user_path(Config.endpoint, :new))
+        |> RedirectHelper.redirect_from(:user_invited)
       else
         case Config.confirmable do
           :required ->
             conn
             |> put_flash(:info, "You must confirm your account to continue. You will receive an email with instructions for how to confirm your email address in a few minutes.")
-            |> redirect(to: "/")
+            |> RedirectHelper.redirect_from(:user_create_unconfirmed)
           :false ->
             conn
             |> Guardian.Plug.sign_in(user)
             |> put_flash(:info, "Signed up")
-            |> redirect(to: Config.router_helper.account_path(Config.endpoint, :edit))
+            |> RedirectHelper.redirect_from(:user_create)
           _ ->
             conn
             |> Guardian.Plug.sign_in(user)
             |> put_flash(:info, "You will receive an email with instructions for how to confirm your email address in a few minutes.")
-            |> redirect(to: Config.router_helper.account_path(Config.endpoint, :edit))
+            |> RedirectHelper.redirect_from(:user_create)
         end
       end
     end
@@ -75,7 +76,7 @@ defmodule Sentinel.Controllers.Html.AuthController do
     conn
     |> Guardian.Plug.sign_in(user)
     |> put_flash(:info, "Logged in")
-    |> redirect(to: Config.router_helper.account_path(Config.endpoint, :edit))
+    |> RedirectHelper.redirect_from(:session_create)
   end
 
   @doc """
@@ -86,7 +87,7 @@ defmodule Sentinel.Controllers.Html.AuthController do
     conn
     |> Guardian.Plug.sign_out
     |> put_flash(:info, "Logged out successfully.")
-    |> redirect(to: "/")
+    |> RedirectHelper.redirect_from(:session_delete)
   end
 
   @doc """
@@ -108,11 +109,11 @@ defmodule Sentinel.Controllers.Html.AuthController do
         conn
         |> Guardian.Plug.sign_in(user)
         |> put_flash(:info, "Logged in")
-        |> redirect(to: Config.router_helper.account_path(Config.endpoint, :edit))
+        |> RedirectHelper.redirect_from(:session_create)
       {:error, _errors} ->
         conn
         |> put_flash(:error, "Unknown username or password")
-        |> redirect(to: Config.router_helper.auth_path(Config.endpoint, :new))
+        |> RedirectHelper.redirect_from(:session_create_error)
     end
   end
 end
