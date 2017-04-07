@@ -67,6 +67,7 @@ defmodule Html.UserControllerTest do
       assert_delivered_email mocked_mail
       assert String.contains?(conn.private.phoenix_flash["info"], "You will receive an email with instructions for how to confirm your email address in a few minutes.")
       assert String.contains?(conn.resp_body, Sentinel.Config.router_helper.account_path(Sentinel.Config.endpoint, :edit))
+      assert Guardian.Plug.current_resource(conn).id == user.id
     end
   end
 
@@ -83,6 +84,7 @@ defmodule Html.UserControllerTest do
       refute is_nil(user.hashed_confirmation_token)
       assert_delivered_email mocked_mail
       assert String.contains?(conn.private.phoenix_flash["info"], "You must confirm your account to continue. You will receive an email with instructions for how to confirm your email address in a few minutes.")
+      assert Guardian.Plug.current_resource(conn) == nil
     end
   end
 
@@ -98,6 +100,7 @@ defmodule Html.UserControllerTest do
     refute_delivered_email Sentinel.Mailer.NewEmailAddress.build(user, "token")
     assert String.contains?(conn.private.phoenix_flash["info"], "Signed up")
     assert String.contains?(conn.resp_body, Sentinel.Config.router_helper.account_path(Sentinel.Config.endpoint, :edit))
+    assert Guardian.Plug.current_resource(conn).id == user.id
   end
 
   test "inviting a user via the invitable sign up", %{conn: conn, invite_params: params, invite_email: mocked_mail} do # green
@@ -238,6 +241,7 @@ defmodule Html.UserControllerTest do
     assert updated_user.confirmed_at != nil
     assert String.contains?(conn.private.phoenix_flash["info"], "Successfully confirmed your account")
     assert String.contains?(conn.resp_body, "You are being <a href=\"/\">redirected</a>")
+    assert Guardian.Plug.current_resource(conn).id == updated_user.id
   end
 
   test "confirm a user's new email", %{conn: conn, params: %{user: user}} do
@@ -264,6 +268,7 @@ defmodule Html.UserControllerTest do
     assert updated_user.email == "new@example.com"
     assert String.contains?(conn.private.phoenix_flash["info"], "Successfully confirmed your account")
     assert String.contains?(conn.resp_body, "You are being <a href=\"/\">redirected</a>")
+    assert Guardian.Plug.current_resource(conn).id == updated_user.id
   end
 
   test "sign up with a custom registrator callback", %{conn: conn, params: params} do
@@ -277,5 +282,6 @@ defmodule Html.UserControllerTest do
     user = TestRepo.get_by!(User, email: params.user.email)
 
     assert user.role == "foo"
+    assert Guardian.Plug.current_resource(conn).id == user.id
   end
 end
