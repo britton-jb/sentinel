@@ -264,6 +264,7 @@ defmodule Html.UserControllerTest do
     assert updated_user.email == "new@example.com"
     assert String.contains?(conn.private.phoenix_flash["info"], "Successfully confirmed your account")
     assert String.contains?(conn.resp_body, "You are being <a href=\"/\">redirected</a>")
+    assert Guardian.Plug.current_resource(conn).id == updated_user.id
   end
 
   test "sign up with a custom registrator callback", %{conn: conn, params: params} do

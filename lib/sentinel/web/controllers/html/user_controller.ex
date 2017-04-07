@@ -31,8 +31,9 @@ defmodule Sentinel.Controllers.Html.UserController do
   """
   def confirm(conn, params) do
     case Sentinel.Confirm.do_confirm(params) do
-      {:ok, _user} ->
+      {:ok, user} ->
         conn
+        |> Guardian.Plug.sign_in(user)
         |> put_flash(:info, "Successfully confirmed your account")
         |> redirect(to: "/")
       {:error, _changeset} ->
