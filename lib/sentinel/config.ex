@@ -63,7 +63,7 @@ defmodule Sentinel.Config do
   Helper method ensuring invitable is properly configured
   """
   def invitable_configured? do
-    invitable && invitation_registration_url
+    invitable() && invitation_registration_url()
   end
 
   @doc """
@@ -91,7 +91,7 @@ defmodule Sentinel.Config do
   Wrapper for getting the application config of :reply_to, defaults to the send_address
   """
   def reply_to do
-    Application.get_env(:sentinel, :reply_to, send_address)
+    Application.get_env(:sentinel, :reply_to, send_address())
   end
 
   @doc """
@@ -112,14 +112,14 @@ defmodule Sentinel.Config do
   Wrapper for getting the application config of :router_helper
   """
   def router_helper do
-    Module.concat(router, Helpers)
+    Module.concat(router(), Helpers)
   end
 
   @doc """
   Helper method ensuring router helper is properly configured
   """
   def router_helper_configured? do
-    router && endpoint
+    router() && endpoint()
   end
 
   @doc """
@@ -152,7 +152,7 @@ defmodule Sentinel.Config do
     end)
     |> Enum.map(fn provider_config ->
       {provider, _details} = provider_config
-      {Atom.to_string(provider), router_helper.auth_url(endpoint, :request, provider)}
+      {Atom.to_string(provider), router_helper().auth_url(endpoint(), :request, provider)}
     end)
   end
 
@@ -202,5 +202,36 @@ defmodule Sentinel.Config do
   """
   def registrator_callback do
     Application.get_env(:sentinel, :registrator_callback)
+  end
+
+  @doc """
+  Wrapper for getting the application config of :redirects
+  """
+  def redirects do
+    Map.merge(default_redirects(), custom_redirects())
+  end
+
+  defp default_redirects do
+    %{
+      password_create: "/",
+      password_update: {:account, :edit},
+      password_update_error: "/",
+      password_update_unsuccessful: {:password, :new},
+      session_create: {:account, :edit},
+      session_create_error: {:auth, :new},
+      session_delete: "/",
+      user_confirmation: "/",
+      user_confirmation_error: "/",
+      user_confirmation_sent: "/",
+      user_create: {:account, :edit},
+      user_create_unconfirmed: "/",
+      user_invitation: {:account, :edit},
+      user_invitation_error: "/",
+      user_invited: {:user, :new},
+    }
+  end
+
+  defp custom_redirects do
+    Application.get_env(:sentinel, :redirects, %{})
   end
 end

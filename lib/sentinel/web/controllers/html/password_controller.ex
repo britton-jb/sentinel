@@ -8,6 +8,7 @@ defmodule Sentinel.Controllers.Html.PasswordController do
   alias Sentinel.Changeset.PasswordResetter
   alias Sentinel.Config
   alias Sentinel.Mailer
+  alias Sentinel.RedirectHelper
   alias Sentinel.Util
 
   plug :put_layout, {Config.layout_view, Config.layout}
@@ -47,7 +48,7 @@ defmodule Sentinel.Controllers.Html.PasswordController do
   defp send_redirect_and_flash(conn) do
     conn
     |> put_flash(:info, "You'll receive an email with instructions about how to reset your password in a few minutes.")
-    |> redirect(to: "/")
+    |> RedirectHelper.redirect_from(:password_create)
   end
 
   def edit(conn, params, headers \\ %{}, session \\ %{})
@@ -57,7 +58,7 @@ defmodule Sentinel.Controllers.Html.PasswordController do
   def edit(conn, _params, _headers, _session) do
     conn
     |> put_flash(:error, "Invalid password reset link. Please try again.")
-    |> redirect(to: "/")
+    |> RedirectHelper.redirect_from(:password_update_error)
   end
 
   @doc """
@@ -74,19 +75,19 @@ defmodule Sentinel.Controllers.Html.PasswordController do
         conn
         |> Guardian.Plug.sign_in(user)
         |> put_flash(:info, "Successfully updated password")
-        |> redirect(to: Config.router_helper.account_path(Config.endpoint, :edit))
+        |> RedirectHelper.redirect_from(:password_update)
       {:error, _changeset} ->
         conn
         |> put_status(422)
         |> put_flash(:error, "Unable to reset your password")
-        |> redirect(to: Config.router_helper.password_path(Config.endpoint, :new))
+        |> RedirectHelper.redirect_from(:password_update_unsuccessful)
     end
   end
   def update(conn, _params, _headers, _session) do
     conn
     |> put_status(422)
     |> put_flash(:error, "Unable to reset your password")
-    |> redirect(to: Config.router_helper.password_path(Config.endpoint, :new))
+    |> RedirectHelper.redirect_from(:password_update_unsuccessful)
   end
 
   def authenticated_update(conn, %{"account" => params}, current_user, _session) do # FIXME could extract all of this here and on json side into another module
@@ -104,7 +105,7 @@ defmodule Sentinel.Controllers.Html.PasswordController do
       {:ok, _updated_auth} ->
         conn
         |> put_flash(:info, "Update successful")
-        |> redirect(to: Config.router_helper.account_path(Config.endpoint, :edit))
+        |> RedirectHelper.redirect_from(:password_update)
       {:error, changeset} ->
         render(conn, Sentinel.AccountView, "edit.html", %{conn: conn, user: current_user, changeset: changeset})
     end
