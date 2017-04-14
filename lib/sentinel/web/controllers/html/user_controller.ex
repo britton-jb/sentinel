@@ -37,6 +37,9 @@ defmodule Sentinel.Controllers.Html.UserController do
         |> Guardian.Plug.sign_in(user)
         |> put_flash(:info, "Successfully confirmed your account")
         |> RedirectHelper.redirect_from(:user_confirmation)
+      {:error, :bad_request} ->
+        conn
+        |> RedirectHelper.redirect_from(:user_confirmation_error)
       {:error, _changeset} ->
         conn
         |> put_status(422)

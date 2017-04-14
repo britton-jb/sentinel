@@ -33,6 +33,7 @@ defmodule Sentinel.Controllers.Html.AuthController do
         failed_to_authenticate(conn)
     end
   end
+  def callback(conn, _params), do: failed_to_authenticate(conn)
 
   defp failed_to_authenticate(conn) do
     changeset = Sentinel.Session.changeset(%Sentinel.Session{})
