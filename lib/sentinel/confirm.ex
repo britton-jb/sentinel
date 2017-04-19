@@ -31,4 +31,5 @@ defmodule Sentinel.Confirm do
     |> Confirmator.confirmation_changeset
     |> Config.repo.update
   end
+  def do_confirm(_), do: {:error, :bad_request}
 end
