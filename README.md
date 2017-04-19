@@ -1,9 +1,5 @@
 # Sentinel
-[![Build Status][travis-img]][travis] [![License][license-img]][license]
-[travis-img]: https://travis-ci.org/britton-jb/sentinel.svg?branch=master
-[travis]: https://travis-ci.org/britton-jb/sentinel
-[license-img]: http://img.shields.io/badge/license-MIT-brightgreen.svg
-[license]: http://opensource.org/licenses/MIT
+[![Build Status](https://travis-ci.org/britton-jb/sentinel.svg?branch=master)](https://travis-ci.org/britton-jb/sentinel)
 
 Things I wish [Guardian](https://github.com/ueberauth/guardian) included
 out of the box, like [Ueberauth](
@@ -161,7 +157,9 @@ warning: the :datetime type in migrations is deprecated, please use
 
 This is due to the fact that Phoenix's generators don't appear to
 support `utc_datetime` being passed in. Please modify the generated
-migration accordingly.
+migration accordingly. Phoenix's generators also appear to not support
+setting `null: false` with the migration generator, so you will want
+to set that in the migration for the user email as well.
 
 ### Mount the desired routes
 ```elixir
