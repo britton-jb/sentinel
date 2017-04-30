@@ -35,8 +35,14 @@ config :sentinel,
   repo: Sentinel.TestRepo, #FIXME should be your repo
   ecto_repos: [Sentinel.TestRepo],
   auth_handler: Sentinel.AuthHandler,
-  user_view: Sentinel.UserView,
-  error_view: Sentinel.ErrorView,
+  views: %{
+    email: Sentinel.EmailView, # your email view (optional)
+    error: Sentinel.ErrorView, # your error view (optional)
+    password: Sentinel.PasswordView, # your password view (optional)
+    session: Sentinel.SessionView, # your session view (optional)
+    shared: Sentinel.SharedView, # your shared view (optional)
+    user: Sentinel.UserView # your user view (optional)
+  },
   router: Sentinel.TestRouter, #FIXME your router
   endpoint: Sentinel.Endpoint, #FIXME your endpoint
   invitable: true,

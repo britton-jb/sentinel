@@ -24,7 +24,6 @@ config :sentinel,
   crypto_provider: Comeonin.Bcrypt,
   unauthorized_handler: Sentinel.AuthHandler,
   repo: Sentinel.TestRepo,
-  user_view: Sentinel.UserView,
   environment: :test,
   send_emails: true
 

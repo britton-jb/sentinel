@@ -20,7 +20,7 @@ defmodule Sentinel.AuthHandler do
     conn
     |> put_status(401)
     |> put_flash(:error, "Failed to authenticate")
-    |> render(Sentinel.SessionView, "new.html", %{conn: conn, changeset: changeset, providers: Config.ueberauth_providers})
+    |> render(Config.views.session, "new.html", %{conn: conn, changeset: changeset, providers: Config.ueberauth_providers})
   end
 
   @doc """
@@ -30,6 +30,6 @@ defmodule Sentinel.AuthHandler do
     Util.send_error(conn, %{base: "Unknown email or password"}, 403)
   end
   def unauthorized(conn, _) do
-    render(conn, Config.error_view, "403.html", %{conn: conn})
+    render(conn, Config.views.error, "403.html", %{conn: conn})
   end
 end

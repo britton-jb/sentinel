@@ -76,9 +76,15 @@ config :sentinel,
   ecto_repos: [Sentinel.TestRepo],
   auth_handler: Sentinel.AuthHandler,
   layout_view: MyApp.Layout, # your layout
-  layout_view: :app,
-  user_view: Sentinel.UserView,
-  error_view: Sentinel.ErrorView,
+  layout: :app,
+  views: %{
+    email: Sentinel.EmailView, # your email view (optional)
+    error: Sentinel.ErrorView, # your error view (optional)
+    password: Sentinel.PasswordView, # your password view (optional)
+    session: Sentinel.SessionView, # your session view (optional)
+    shared: Sentinel.SharedView, # your shared view (optional)
+    user: Sentinel.UserView # your user view (optional)
+  },
   router: Sentinel.TestRouter, # your router
   endpoint: Sentinel.Endpoint, # your endpoint
   invitable: true,
@@ -274,6 +280,25 @@ URL, with the following params:
 ### Custom Routes
 If you want to customize the routes, or use your own controller
 endpoints you can do that by overriding the individual routes listed.
+
+### Generate custom views
+If you want to use custom views, you'll need copy over the views and templates
+to your application. Sentinel provides a mix task make this a one-liner:
+
+```shell
+mix sentinel.gen.views
+```
+
+This mix task accepts a single argument of the specific context. This value can
+be "email", "error", "password", "session", "shared", or "user". Once you copy
+over a context's view and templates, you must update the config to point to
+your application's local files:
+
+```json
+config :sentinel, views: %{user: MyApp.Web.UserView}
+```
+
+The keys for this views config map correspond with the list of contexts above.
 
 ### Auth Error Handler
 If you'd like to write your own custom authorization or authentication

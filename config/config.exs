@@ -17,8 +17,7 @@ config :comeonin, :bcrypt_log_rounds, 4
 
 config :sentinel,
   crypto_provider: Comeonin.Bcrypt,
-  auth_handler: Sentinel.AuthHandler,
-  user_view: Sentinel.UserView
+  auth_handler: Sentinel.AuthHandler
 
 config :guardian, Guardian,
   allowed_algos: ["HS512"], # optional
@@ -27,7 +26,7 @@ config :guardian, Guardian,
   verify_issuer: true, # optional
   serializer: Sentinel.GuardianSerializer,
   hooks: GuardianDb,
-  permissions: Application.get_env(:sentinel, :permissions)#,
+  permissions: Application.get_env(:sentinel, :permissions)
 
 config :guardian_db, GuardianDb,
   repo: Application.get_env(:sentinel, :repo)
@@ -44,7 +43,7 @@ config :ueberauth, Ueberauth,
       [
         param_nesting: "user",
         callback_methods: ["POST"],
-        uid_field: :email,
+        uid_field: :email
       ]
     },
   ]

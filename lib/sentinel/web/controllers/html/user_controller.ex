@@ -10,11 +10,11 @@ defmodule Sentinel.Controllers.Html.UserController do
 
   def new(conn, _params) do
     changeset = Config.user_model.changeset(struct(Config.user_model), %{})
-    render(conn, Sentinel.UserView, "new.html", %{conn: conn, changeset: changeset})
+    render(conn, Config.views.user, "new.html", %{conn: conn, changeset: changeset})
   end
 
   def confirmation_instructions(conn, _params) do
-    render(conn, Sentinel.UserView, "confirmation_instructions.html", %{conn: conn})
+    render(conn, Config.views.user, "confirmation_instructions.html", %{conn: conn})
   end
   def resend_confirmation_instructions(conn, params) do
     Sentinel.Confirm.send_confirmation_instructions(params)
@@ -54,7 +54,7 @@ defmodule Sentinel.Controllers.Html.UserController do
       |> Config.repo.get(id)
       |> Config.user_model.changeset(%{})
 
-    render(conn, Sentinel.UserView, "invitation_registration.html", %{
+    render(conn, Config.views.user, "invitation_registration.html", %{
       conn: conn,
       changeset: changeset,
       user_id: id,
@@ -80,7 +80,7 @@ defmodule Sentinel.Controllers.Html.UserController do
         conn
         |> put_status(422)
         |> put_flash(:error, "Failed to create user")
-        |> render(Sentinel.SessionView, "new.html", %{conn: conn, changeset: changeset, providers: Config.ueberauth_providers})
+        |> render(Config.views.session, "new.html", %{conn: conn, changeset: changeset, providers: Config.ueberauth_providers})
     end
   end
 end

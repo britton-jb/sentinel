@@ -1,5 +1,5 @@
-defmodule Sentinel.UserView do
-  use Phoenix.View, root: "lib/sentinel/web/templates/"
+defmodule <%= module %> do
+  use Phoenix.View, root: "<%= templates_path %>"
   use Phoenix.HTML
 
   alias Sentinel.Config

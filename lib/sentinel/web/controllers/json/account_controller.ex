@@ -19,7 +19,7 @@ defmodule Sentinel.Controllers.Json.AccountController do
   Responds with status 200 and body view show JSON
   """
   def show(conn, _params, current_user, _claims \\ %{}) do
-    json conn, Config.user_view.render("show.json", %{user: current_user})
+    json conn, Config.views.user.render("show.json", %{user: current_user})
   end
 
   @doc """
@@ -32,7 +32,7 @@ defmodule Sentinel.Controllers.Json.AccountController do
     case Update.update(current_user, params) do
       {:ok, %{user: updated_user, auth: _auth, confirmation_token: confirmation_token}} ->
         Update.maybe_send_new_email_address_confirmation_email(updated_user, confirmation_token)
-        json conn, Config.user_view.render("show.json", %{user: updated_user})
+        json conn, Config.views.user.render("show.json", %{user: updated_user})
       {:error, changeset} ->
         Util.send_error(conn, changeset.errors)
     end

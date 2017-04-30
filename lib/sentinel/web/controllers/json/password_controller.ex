@@ -88,7 +88,7 @@ defmodule Sentinel.Controllers.Json.PasswordController do
 
     case Config.repo.update(changeset) do
       {:ok, _updated_auth} ->
-        json conn, Config.user_view.render("show.json", %{user: user})
+        json conn, Config.views.user.render("show.json", %{user: user})
       {:error, changeset} ->
         Util.send_error(conn, changeset.errors)
     end
