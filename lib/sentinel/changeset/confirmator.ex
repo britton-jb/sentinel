@@ -13,7 +13,7 @@ defmodule Sentinel.Changeset.Confirmator do
   Returns {unhashed_confirmation_token, changeset}
   """
   def confirmation_needed_changeset(changeset) do
-    {confirmation_token, hashed_confirmation_token} = generate_token
+    {confirmation_token, hashed_confirmation_token} = generate_token()
 
     changeset =
       changeset

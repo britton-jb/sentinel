@@ -5,9 +5,7 @@ defmodule Html.AuthControllerTest do
   alias Mix.Config
 
   @unknown_email "unknown_email@example.com"
-  @email "user@example.com"
   @password "secret"
-  @role "user"
 
   setup do
     auth = Factory.insert(:ueberauth)

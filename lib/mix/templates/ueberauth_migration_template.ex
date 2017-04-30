@@ -9,7 +9,7 @@ defmodule UeberauthMigrationTemplate do
       add :hashed_password, :text
       add :hashed_password_reset_token, :text
       add :user_id, :integer
-      timestamps
+      timestamps()
     end
 
     create index(:ueberauths, [:user_id])

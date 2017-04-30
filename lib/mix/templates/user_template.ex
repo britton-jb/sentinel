@@ -3,11 +3,13 @@ defmodule Sentinel.UserTemplate do
   import Ecto.Changeset
 
   schema "users" do
-    field  :email,                       :string
+    field  :email,                       :string, null: false
     field  :role,                        :string
     field  :hashed_confirmation_token,   :string
     field  :confirmed_at,                Ecto.DateTime
     field  :unconfirmed_email,           :string
+
+    has_many :ueberauths, Sentinel.Ueberauth, on_delete: :delete_all
   end
 
   @required_fields [:email]

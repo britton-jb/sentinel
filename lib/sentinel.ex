@@ -4,7 +4,7 @@ defmodule Sentinel do
   """
 
   defmacro mount_ueberauth do
-    run_ueberauth_compile_time_checks
+    run_ueberauth_compile_time_checks()
 
     quote do
       require Ueberauth
@@ -77,7 +77,7 @@ defmodule Sentinel do
   Mount's Sentinel JSON API routes inside your application
   """
   defmacro mount_api do
-    run_api_compile_time_checks
+    run_api_compile_time_checks()
 
     quote do
       require Ueberauth

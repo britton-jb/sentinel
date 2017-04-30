@@ -12,7 +12,7 @@ defmodule Sentinel.Ueberauthenticator do
   @unknown_error {:error, [base: {"Unknown email or password", []}]}
 
   def ueberauthenticate(auth = %Auth{provider: :identity, credentials: %Auth.Credentials{other: %{password: password}}}) when is_nil(password) or password == "" do
-    if invitable? do
+    if invitable?() do
       create_user_and_auth(auth)
     else
       {:error, [password: {"A password is required to login", []}]}

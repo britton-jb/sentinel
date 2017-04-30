@@ -6,10 +6,7 @@ defmodule Html.AccountControllerTest do
   alias Sentinel.Ueberauthenticator
   alias Sentinel.User
 
-  @from_email "test@example.com"
-  @old_email "old@example.com"
   @new_email "user@example.com"
-  @old_password "old_secret"
   @new_password "secret"
 
   defp old_email do
@@ -22,7 +19,7 @@ defmodule Html.AccountControllerTest do
     end
 
     user = Factory.insert(:user,
-      email: old_email,
+      email: old_email(),
       confirmed_at: DateTime.utc,
     )
     ueberauth = Factory.insert(:ueberauth, user: user)
@@ -59,7 +56,7 @@ defmodule Html.AccountControllerTest do
       assert String.contains?(conn.resp_body, "Successfully updated user account")
 
       {:ok, _} = Ueberauthenticator.ueberauthenticate(%Ueberauth.Auth{
-        uid: @old_email,
+        uid: old_email(),
         provider: :identity,
         credentials: %Ueberauth.Auth.Credentials{
           other: %{password: auth.plain_text_password}
@@ -70,13 +67,13 @@ defmodule Html.AccountControllerTest do
   end
 
   test "set email to the same email it was before", %{conn: conn, user: user, auth: auth} do
-    conn = put conn, account_path(conn, :update), %{account: %{email: @old_email}}
+    conn = put conn, account_path(conn, :update), %{account: %{email: old_email()}}
     response(conn, 200)
 
     assert String.contains?(conn.resp_body, "Successfully updated user account")
 
     {:ok, _} = Ueberauthenticator.ueberauthenticate(%Ueberauth.Auth{
-      uid: @old_email,
+      uid: old_email(),
       provider: :identity,
       credentials: %Ueberauth.Auth.Credentials{
         other: %{password: auth.plain_text_password}
@@ -92,7 +89,7 @@ defmodule Html.AccountControllerTest do
   test "update account with custom validations", %{conn: conn, user: user, auth: auth} do
     params = %{account: %{password: @new_password}}
   
-    Application.put_env(:sentinel, :user_model_validator, fn (changeset, params) ->
+    Application.put_env(:sentinel, :user_model_validator, fn (changeset, _params) ->
       Changeset.add_error(changeset, :password, "too_short")
     end)
 
@@ -101,7 +98,7 @@ defmodule Html.AccountControllerTest do
 
     assert String.contains?(conn.resp_body, "Failed to update user account")
     {:ok, _} = Ueberauthenticator.ueberauthenticate(%Ueberauth.Auth{
-      uid: @old_email,
+      uid: old_email(),
       provider: :identity,
       credentials: %Ueberauth.Auth.Credentials{
         other: %{password: auth.plain_text_password}

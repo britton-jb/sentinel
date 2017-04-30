@@ -55,11 +55,11 @@ defmodule Sentinel.Mailer do
     Bamboo module
   """
   def base_email(user) do
-    new_email
+    new_email()
     |> put_layout({Sentinel.EmailLayoutView, :email})
     |> to(user)
     |> from(Mailer.from)
-    |> put_header("Reply-To", reply_to)
+    |> put_header("Reply-To", reply_to())
   end
 
   @doc """
@@ -103,7 +103,7 @@ defmodule Sentinel.Mailer do
     ensuring user wants emails to go out in a given environment
   """
   def managed_deliver(email) do
-    if send_emails? do
+    if send_emails?() do
       Mailer.deliver_later(email)
     end
   end

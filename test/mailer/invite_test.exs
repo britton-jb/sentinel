@@ -9,7 +9,7 @@ defmodule Mailer.InviteTest do
   setup do
     mocked_confirmation_token = SecureRandom.urlsafe_base64()
     mocked_password_reset_token = SecureRandom.urlsafe_base64()
-    user = Factory.insert(:user, email: to_email)
+    user = Factory.insert(:user, email: to_email())
     mocked_mail = Sentinel.Mailer.Invite.build(
       user,
       %{
@@ -26,11 +26,11 @@ defmodule Mailer.InviteTest do
   end
 
   test "renders correct to", %{mocked_mail: mocked_mail} do
-    assert mocked_mail.to == [{to_email, to_email}]
+    assert mocked_mail.to == [{to_email(), to_email()}]
   end
 
   test "renders correct subject", %{mocked_mail: mocked_mail} do
-    assert mocked_mail.subject == "You've been invited to #{app_name} #{to_email}"
+    assert mocked_mail.subject == "You've been invited to #{app_name()} #{to_email()}"
   end
 
   test "renders correct html body", %{mocked_mail: mocked_mail} do

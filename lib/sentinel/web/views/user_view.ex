@@ -5,14 +5,14 @@ defmodule Sentinel.UserView do
   alias Sentinel.Config
 
   def render("index.json", %{users: users}) do
-    render_many(users, user_view, "user.json")
+    render_many(users, user_view(), "user.json")
   end
 
   def render("show.json", %{user: user, token: token}) do
-    %{data: %{token: token, user: render_one(user, user_view, "user.json")}}
+    %{data: %{token: token, user: render_one(user, user_view(), "user.json")}}
   end
   def render("show.json", %{user: user}) do
-    render_one(user, user_view, "user.json")
+    render_one(user, user_view(), "user.json")
   end
 
   def render("user.json", %{user: user}) do

@@ -17,7 +17,7 @@ defmodule Json.UserControllerTest do
     end
 
     conn =
-      build_conn
+      build_conn()
       |> Conn.put_req_header("content-type", "application/json")
       |> Conn.put_req_header("accept", "application/json")
     user = Factory.build(:user)
@@ -201,7 +201,7 @@ defmodule Json.UserControllerTest do
     Config.persist([sentinel: [confirmable: :optional]])
     Config.persist([sentinel: [invitable: false]])
 
-    Application.put_env(:sentinel, :user_model_validator, fn (changeset, params) ->
+    Application.put_env(:sentinel, :user_model_validator, fn (changeset, _params) ->
       Ecto.Changeset.add_error(changeset, :password, "too short")
     end)
 

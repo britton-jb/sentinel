@@ -7,7 +7,7 @@ defmodule Sentinel.AfterRegistrator do
   alias Sentinel.Changeset.PasswordResetter
 
   def confirmable_and_invitable(user, confirmation_token) do
-    case {confirmable?, invitable?} do # NOTE move this from a case to private methods?
+    case {confirmable?(), invitable?()} do # NOTE move this from a case to private methods?
       {false, false} -> # not confirmable or invitable
         {:ok, user}
 

@@ -11,7 +11,7 @@ defmodule Sentinel.Changeset.PasswordResetter do
   Returns {unhashed_password_reset_token, changeset}
   """
   def create_changeset(%Sentinel.Ueberauth{provider: "identity"} = auth) do
-    {password_reset_token, hashed_password_reset_token} = generate_token
+    {password_reset_token, hashed_password_reset_token} = generate_token()
 
     changeset =
       auth

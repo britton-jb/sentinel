@@ -18,7 +18,7 @@ defmodule Sentinel.Mailer.Invite do
     |> assign(:user, user)
     |> assign(:confirmation_token, confirmation_token)
     |> assign(:password_reset_token, password_reset_token)
-    |> subject("You've been invited to #{app_name} #{user.email}")
+    |> subject("You've been invited to #{app_name()} #{user.email}")
     |> render(:invite)
   end
 end

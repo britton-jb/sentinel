@@ -10,7 +10,7 @@ defmodule Json.PasswordControllerTest do
 
   setup do
     conn =
-      build_conn
+      build_conn()
       |> Conn.put_req_header("content-type", "application/json")
       |> Conn.put_req_header("accept", "application/json")
     auth = Factory.insert(:ueberauth)

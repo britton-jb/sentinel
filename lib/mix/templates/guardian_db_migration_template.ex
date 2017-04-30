@@ -11,7 +11,7 @@ defmodule GuardianDbMigrationTemplate do
       add :exp, :bigint
       add :jwt, :text
       add :claims, :map
-      timestamps
+      timestamps()
     end
   end
 

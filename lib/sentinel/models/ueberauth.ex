@@ -43,6 +43,7 @@ defmodule Sentinel.Ueberauth do
     struct
     |> cast(updated_params, [:provider, :uid, :expires_at, :user_id])
     |> validate_required([:provider, :uid, :user_id])
+    |> assoc_constraint(:user)
   end
 
   defp identity_changeset(struct, params) do

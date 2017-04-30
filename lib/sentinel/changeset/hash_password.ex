@@ -20,21 +20,21 @@ defmodule Sentinel.Changeset.HashPassword do
     end
   end
   def changeset(changeset, %{credentials: %{other: %{password: password, password_confirmation: _no_match}}}) when password != "" and password != nil do
-    if not invitable? && being_created?(changeset) do
+    if not invitable?() && being_created?(changeset) do
       changeset |> Changeset.add_error(:password, "password and confirmation must match")
     else
       changeset
     end
   end
   def changeset(changeset, %{credentials: %{other: %{password: _}}}) do
-    if invitable? && being_created?(changeset) do
+    if invitable?() && being_created?(changeset) do
       changeset
     else
       changeset |> Changeset.add_error(:password, "can't be blank")
     end
   end
   def changeset(changeset, _params) do
-    if not invitable? && being_created?(changeset) do
+    if not invitable?() && being_created?(changeset) do
       changeset |> Changeset.add_error(:password, "can't be blank")
     else
       changeset
