@@ -99,32 +99,36 @@ defmodule Sentinel.Ueberauthenticator do
   end
 
   defp create_user_and_auth(auth) do
-    updated_auth = auth |> Map.put(:provider, Atom.to_string(auth.provider))
+    if Config.registerable?() do
+      updated_auth = auth |> Map.put(:provider, Atom.to_string(auth.provider))
 
-    Config.repo.transaction(fn ->
-      {confirmation_token, changeset} =
-        updated_auth.info
-        |> Map.from_struct
-        |> Registrator.changeset(updated_auth.extra.raw_info)
-        |> Confirmator.confirmation_needed_changeset
+      Config.repo.transaction(fn ->
+        {confirmation_token, changeset} =
+          updated_auth.info
+          |> Map.from_struct
+          |> Registrator.changeset(updated_auth.extra.raw_info)
+          |> Confirmator.confirmation_needed_changeset
 
-      user =
-        case Config.repo.insert(changeset) do
-          {:ok, user} -> user
+        user =
+          case Config.repo.insert(changeset) do
+            {:ok, user} -> user
+            _ -> Config.repo.rollback(changeset.errors)
+          end
+
+        auth_changeset =
+          %Sentinel.Ueberauth{uid: user.id, user_id: user.id}
+          |> Sentinel.Ueberauth.changeset(Map.from_struct(updated_auth))
+
+        case Config.repo.insert(auth_changeset) do
+          {:ok, _auth} -> nil
           _ -> Config.repo.rollback(changeset.errors)
         end
 
-      auth_changeset =
-        %Sentinel.Ueberauth{uid: user.id, user_id: user.id}
-        |> Sentinel.Ueberauth.changeset(Map.from_struct(updated_auth))
-
-      case Config.repo.insert(auth_changeset) do
-        {:ok, _auth} -> nil
-        _ -> Config.repo.rollback(changeset.errors)
-      end
-
-      %{user: user, confirmation_token: confirmation_token}
-    end)
+        %{user: user, confirmation_token: confirmation_token}
+      end)
+    else
+      {:error, [base: {"New user registration is not permitted", []}]}
+    end
   end
 
   defp invitable? do

@@ -81,6 +81,13 @@ defmodule Sentinel.Config do
   end
 
   @doc """
+  Wrapper for getting the application config of :registerable module
+  """
+  def registerable? do
+    Application.get_env(:sentinel, :registerable, true)
+  end
+
+  @doc """
   Wrapper for getting the application config of :reply_to, defaults to the send_address
   """
   def reply_to do

@@ -49,8 +49,12 @@ defmodule Sentinel do
       require Ueberauth
 
       scope "/", Sentinel.Controllers.Html do
-        get "/user/new", UserController, :new
-        post "/user", UserController, :create
+
+        if Sentinel.registerable? do
+          get "/user/new", UserController, :new
+          post "/user", UserController, :create
+        end
+
         if Sentinel.invitable? do
           get "/user/:id/invited", UserController, :invitation_registration
           put "/user/:id/invited", UserController, :invited
@@ -126,10 +130,14 @@ defmodule Sentinel do
   end
 
   def confirmable? do
-    Sentinel.Config.confirmable != false
+    Sentinel.Config.confirmable != false # defaults to :optional
   end
 
   def confirmable_configured? do
     Sentinel.Config.confirmable_redirect_url
+  end
+
+  def registerable? do
+    Sentinel.Config.registerable?
   end
 end

@@ -3,16 +3,16 @@ This is less of a roadmap and more notes about things that I'd like to
 change.
 
 ## Features
-- able to disable registerable module (includes registerable module
-  extration)
 - lockable
-- Trackable
+- Guardian plug wrapper to handle most cases?
+- Use with instead of nested conditional code
+
+- Trackable?
 - unconfirmed access number of days
 
 - Enable username rather than email based accounts
 
 - Easy socket auth handling
-- Guardian plug wrapper to handle most cases?
 
 ## Cleanup
 - It should raise error at run/compile time if it can't find the
