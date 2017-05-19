@@ -77,7 +77,6 @@ defmodule Sentinel.Util do
     |> Enum.join("&")
   end
 
-  #FIXME actually make into full struct
   def params_to_ueberauth_auth_struct(params, password_reset_token \\ nil) do
     %{
       password_reset_token: (password_reset_token || params["password_reset_token"]),

@@ -5,11 +5,11 @@ defmodule Sentinel.Authenticator do
   alias Sentinel.Config
 
   @locked_account_message "This account is currently locked. Please follow the instructions in your email to unlock it."
+
   @doc """
   Compares user password and ensures user is confirmed if applicable
   """
-  def authenticate(%Sentinel.Ueberauth{locked_at: locked_at}) when not is_nil(locked_at) do
-    # FIXME add spec here
+  def authenticate(%Sentinel.Ueberauth{locked_at: locked_at}, _password) when not is_nil(locked_at) do
     {:error, %{base: @locked_account_message}}
   end
   def authenticate(auth, password) do
@@ -25,32 +25,20 @@ defmodule Sentinel.Authenticator do
     Config.crypto_provider.dummy_checkpw
     {:error, %{base: @unknown_password_error_message}}
   end
-  defp check_password(%Sentinel.Ueberauth{locked_at: locked_at}) when not is_nil(locked_at) do
-    {:error, %{base: @locked_account_message}}
-  end
   defp check_password(auth, password) do
-    if Config.crypto_provider.checkpw(password, auth.hashed_password) do
-      {:ok, auth}
-    else
-      # FIXME - right here I need to increment the lock count if lockable is configured
-      if Config.lockable? do
-        failed_attempts = auth.failed_attempts + 1
-
-       #update_params =
-       #   if failed_attempts >= 5 do
-       #     %{}
-       #   else
-       #   end
-       # updated_auth = 
-       #   auth
-       #   |> Sentinel.Ueberauth.changeset(update_params)
-       #   |> Sentinel.Config.repo.update()
-
-
-#FIXME send error if 3 failed
-      else
+    case {Config.crypto_provider.checkpw(password, auth.hashed_password), Config.lockable?, auth} do
+      {true, _, _} -> {:ok, auth}
+      {false, true, %Sentinel.Ueberauth{failed_attempts: 3}} ->
+        Sentinel.Ueberauth.increment_failed_attempts(auth)
+        {:error, %{base: "You have one more attempt to authenticate correctly before this account is locked."}}
+      {false, true, %Sentinel.Ueberauth{failed_attempts: 4}} ->
+        Sentinel.Ueberauth.lock(auth)
+        {:error, %{base: "This account has been locked, due to too many failed login attempts."}}
+      {false, true, _} ->
+        Sentinel.Ueberauth.increment_failed_attempts(auth)
         {:error, %{base: @unknown_password_error_message}}
-      end
+      {_, _, _} ->
+        {:error, %{base: @unknown_password_error_message}}
     end
   end
 

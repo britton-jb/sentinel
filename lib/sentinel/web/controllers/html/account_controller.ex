@@ -10,9 +10,7 @@ defmodule Sentinel.Controllers.Html.AccountController do
   alias Sentinel.Update
 
   plug :put_layout, {Config.layout_view, Config.layout}
-  plug Guardian.Plug.VerifySession
-  plug Guardian.Plug.EnsureAuthenticated, handler: Config.auth_handler
-  plug Guardian.Plug.LoadResource
+  plug Sentinel.Plug.AuthenticateResource, handler: Config.auth_handler
 
   @doc """
   Get the account data for the current user

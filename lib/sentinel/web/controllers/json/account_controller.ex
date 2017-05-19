@@ -10,9 +10,7 @@ defmodule Sentinel.Controllers.Json.AccountController do
   alias Sentinel.Util
   alias Sentinel.Update
 
-  plug Guardian.Plug.VerifyHeader
-  plug Guardian.Plug.EnsureAuthenticated, handler: Config.auth_handler
-  plug Guardian.Plug.LoadResource
+  plug Sentinel.Plug.AuthenticateResource, handler: Config.auth_handler
 
   @doc """
   Get the account data for the current user

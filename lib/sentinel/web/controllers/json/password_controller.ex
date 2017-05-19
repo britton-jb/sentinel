@@ -10,8 +10,7 @@ defmodule Sentinel.Controllers.Json.PasswordController do
   alias Sentinel.Mailer
   alias Sentinel.Util
 
-  plug Guardian.Plug.VerifyHeader when action in [:authenticated_update]
-  plug Guardian.Plug.LoadResource when action in [:authenticated_update]
+  plug Sentinel.Plug.AuthenticateResource, %{handler: Config.auth_handler} when action in [:authenticated_update]
 
   @doc """
   Create a password reset token for a user

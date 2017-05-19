@@ -12,9 +12,7 @@ defmodule Sentinel.Controllers.Html.AuthController do
 
   plug Ueberauth
   plug :put_layout, {Config.layout_view, Config.layout}
-  plug Guardian.Plug.VerifySession when action in [:delete]
-  plug Guardian.Plug.EnsureAuthenticated, %{handler: Config.auth_handler} when action in [:delete]
-  plug Guardian.Plug.LoadResource when action in [:delete]
+  plug Sentinel.Plug.AuthenticateResource, %{handler: Config.auth_handler} when action in [:delete]
 
   def request(conn, _params) do
     changeset = Sentinel.Session.changeset(%Sentinel.Session{})

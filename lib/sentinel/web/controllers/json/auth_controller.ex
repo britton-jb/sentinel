@@ -14,9 +14,7 @@ defmodule Sentinel.Controllers.Json.AuthController do
   alias Sentinel.Util
 
   plug Ueberauth
-  plug Guardian.Plug.VerifyHeader when action in [:delete]
-  plug Guardian.Plug.EnsureAuthenticated, %{handler: Config.auth_handler} when action in [:delete]
-  plug Guardian.Plug.LoadResource when action in [:delete]
+  plug Sentinel.Plug.AuthenticateResource, %{handler: Config.auth_handler} when action in [:delete]
 
   def request(conn, _params) do
     json conn, %{providers: Config.ueberauth_providers}

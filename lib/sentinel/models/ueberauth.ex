@@ -43,24 +43,43 @@ defmodule Sentinel.Ueberauth do
     updated_params = coerce_provider_to_string(params)
 
     struct
-    |> cast(updated_params, [:provider, :uid, :expires_at, :user_id])
+    |> cast(updated_params, [:provider, :uid, :expires_at, :user_id, :locked_at])
     |> validate_required([:provider, :uid, :user_id])
     |> validates_provider_doesnt_already_exist_for_user
     |> assoc_constraint(:user)
   end
 
-  # FIXME define an increment lock count?
+  @spec increment_failed_attempts(%Sentinel.Ueberauth{}) :: %Sentinel.Ueberauth{}
+  def increment_failed_attempts(auth) do
+    {:ok, updated_auth} =
+      auth
+      |> Sentinel.Ueberauth.changeset(%{failed_attempts: (auth.failed_attempts || 0) + 1})
+      |> Sentinel.Config.repo.update()
+  end
+
   @spec lock(%Sentinel.Ueberauth{}) :: %Sentinel.Ueberauth{}
-  def lock(ueberauth) do
+  def lock(auth) do
+    {:ok, updated_auth} =
+      auth
+      |> Sentinel.Ueberauth.changeset(%{
+        failed_attempts: 5,
+        locked_at: Ecto.DateTime.utc(),
+      }) |> Sentinel.Config.repo.update()
   end
 
   @spec unlock(%Sentinel.Ueberauth{}) :: %Sentinel.Ueberauth{}
-  def unlock(ueberauth) do
+  def unlock(auth) do
+    {:ok, updated_auth} =
+      auth
+      |> Sentinel.Ueberauth.changeset(%{
+        failed_attempts: 0,
+        locked_at: nil,
+      }) |> Sentinel.Config.repo.update()
   end
 
   defp identity_changeset(struct, params) do
     struct
-    |> cast(params, [:provider, :uid, :expires_at, :hashed_password, :hashed_password_reset_token, :user_id])
+    |> cast(params, [:provider, :uid, :expires_at, :hashed_password, :hashed_password_reset_token, :user_id, :locked_at])
     |> validate_required([:provider, :uid, :user_id])
     |> assoc_constraint(:user)
     |> validates_provider_doesnt_already_exist_for_user
@@ -80,7 +99,7 @@ defmodule Sentinel.Ueberauth do
          ueberauth     when not is_nil(ueberauth)     <- Sentinel.Config.repo.get_by(Sentinel.Config.user_model, provider: provider_atom, user_id: user_id) do
       add_error(changeset, :provider, "already exists for this user")
     else
-      _ -> changeset 
+      _ -> changeset
     end
   end
 end

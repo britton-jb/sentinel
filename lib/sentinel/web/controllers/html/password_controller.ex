@@ -12,8 +12,7 @@ defmodule Sentinel.Controllers.Html.PasswordController do
   alias Sentinel.Util
 
   plug :put_layout, {Config.layout_view, Config.layout}
-  plug Guardian.Plug.VerifySession when action in [:authenticated_update]
-  plug Guardian.Plug.LoadResource when action in [:authenticated_update]
+  plug Sentinel.Plug.AuthenticateResource, %{handler: Config.auth_handler} when action in [:authenticated_update]
 
   def new(conn, _params, _headers \\ %{}, _session \\ %{}) do
     render(conn, Config.views.password, "new.html", %{conn: conn})

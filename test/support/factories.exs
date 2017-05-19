@@ -10,10 +10,13 @@ defmodule Sentinel.Factory do
   end
 
   def ueberauth_factory do
+    user = insert(:user)
+
     %Sentinel.Ueberauth{
       hashed_password: Sentinel.Config.crypto_provider.hashpwsalt("password"),
       provider: "identity",
-      user: build(:user),
+      user: user,
+      uid: "#{user.id}"
     } |> Map.put(:plain_text_password, "password")
   end
 end

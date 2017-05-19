@@ -30,13 +30,51 @@ defmodule AuthenticatorTest do
   end
 
   test "fail to authenticate, lockable enabled" do
+    ueberauth = Factory.insert(:ueberauth)
+
     Config.persist([sentinel: [lockable: true]])
 
     assert {:error, %{base: "Unknown email or password"}} = Authenticator.authenticate(
-      %Ueberauth{
-        hashed_password: Sentinel.Config.crypto_provider.hashpwsalt("password"),
-        user: %{confirmed_at: nil}
-      },
+      ueberauth,
+      "wrong_password"
+    )
+
+    Config.persist([sentinel: [lockable: false]])
+  end
+
+  test "fail to authenticate, lockable enabled, 3 previous failed attempts" do
+    ueberauth = Factory.insert(:ueberauth, failed_attempts: 3)
+
+    Config.persist([sentinel: [lockable: true]])
+
+    assert {:error, %{base: "You have one more attempt to authenticate correctly before this account is locked."}} = Authenticator.authenticate(
+      ueberauth,
+      "wrong_password"
+    )
+
+    Config.persist([sentinel: [lockable: false]])
+  end
+
+  test "fail to authenticate, lockable enabled, 4 previous failed attempts" do
+    ueberauth = Factory.insert(:ueberauth, failed_attempts: 4)
+
+    Config.persist([sentinel: [lockable: true]])
+
+    assert {:error, %{base: "This account has been locked, due to too many failed login attempts."}} = Authenticator.authenticate(
+      ueberauth,
+      "wrong_password"
+    )
+
+    Config.persist([sentinel: [lockable: false]])
+  end
+
+  test "fail to authenticate, lockable enabled, account locked" do
+    ueberauth = Factory.insert(:ueberauth, failed_attempts: 5, locked_at: Ecto.DateTime.utc())
+
+    Config.persist([sentinel: [lockable: true]])
+
+    assert {:error, %{base: "This account is currently locked. Please follow the instructions in your email to unlock it."}} = Authenticator.authenticate(
+      ueberauth,
       "wrong_password"
     )
 
