@@ -152,7 +152,7 @@ defmodule Sentinel.Config do
     end)
     |> Enum.map(fn provider_config ->
       {provider, _details} = provider_config
-      {Atom.to_string(provider), router_helper().auth_url(endpoint(), :request, provider)}
+      %{provider: Atom.to_string(provider), url: router_helper().auth_url(endpoint(), :request, provider)}
     end)
   end
 
@@ -198,6 +198,9 @@ defmodule Sentinel.Config do
     Application.get_env(:sentinel, :layout, :app)
   end
 
+  def lockable? do
+    Application.get_env(:sentinel, :lockable, false)
+  end
   @doc """
   Wrapper for getting and merging the application config of :views
   """

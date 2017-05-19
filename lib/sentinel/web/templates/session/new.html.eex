@@ -25,7 +25,7 @@
 <%= if Enum.any?(@providers) do %>
   <p>Or login with one of the following</p>
   <ul>
-    <%= for {provider, request_path} <- @providers do %>
+    <%= for %{provider: provider, url: request_path} <- @providers do %>
       <li>
         <a href="<%= request_path %>"><%= String.capitalize(provider) %></a>
       </li>

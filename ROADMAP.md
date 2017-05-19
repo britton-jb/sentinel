@@ -3,8 +3,23 @@ This is less of a roadmap and more notes about things that I'd like to
 change.
 
 ## Features
-- lockable
+- lockable - need to add error messages authenticator,
+  and model in fixme comments, then add the routes and emails going
+  out that will allow the user to unlock their account
+
 - Guardian plug wrapper to handle most cases?
+  Need to insert this into the controller and test to see if
+  it works as expected
+
+
+
+
+
+
+- It should raise error at compile time if it can't find the
+  appropriate root level mounted ueberauth routes - how can we do this?
+  Otherwise may have to be runtime on the ueberauth routes
+
 - Use with instead of nested conditional code
 
 - Trackable?
@@ -15,9 +30,6 @@ change.
 - Easy socket auth handling
 
 ## Cleanup
-- It should raise error at run/compile time if it can't find the
-  appropriate root level mounted ueberauth routes
-
 - More robust mix task
 
 - excoveralls

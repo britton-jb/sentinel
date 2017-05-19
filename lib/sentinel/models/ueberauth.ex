@@ -21,6 +21,8 @@ defmodule Sentinel.Ueberauth do
     field :expires_at, Ecto.DateTime
     field :hashed_password, :string
     field :hashed_password_reset_token, :string
+    field :failed_attempts, :integer
+    field :locked_at, Ecto.DateTime
     belongs_to :user, Config.user_model
 
     timestamps()
@@ -43,7 +45,17 @@ defmodule Sentinel.Ueberauth do
     struct
     |> cast(updated_params, [:provider, :uid, :expires_at, :user_id])
     |> validate_required([:provider, :uid, :user_id])
+    |> validates_provider_doesnt_already_exist_for_user
     |> assoc_constraint(:user)
+  end
+
+  # FIXME define an increment lock count?
+  @spec lock(%Sentinel.Ueberauth{}) :: %Sentinel.Ueberauth{}
+  def lock(ueberauth) do
+  end
+
+  @spec unlock(%Sentinel.Ueberauth{}) :: %Sentinel.Ueberauth{}
+  def unlock(ueberauth) do
   end
 
   defp identity_changeset(struct, params) do
@@ -51,6 +63,7 @@ defmodule Sentinel.Ueberauth do
     |> cast(params, [:provider, :uid, :expires_at, :hashed_password, :hashed_password_reset_token, :user_id])
     |> validate_required([:provider, :uid, :user_id])
     |> assoc_constraint(:user)
+    |> validates_provider_doesnt_already_exist_for_user
     |> HashPassword.changeset(params)
   end
 
@@ -59,5 +72,15 @@ defmodule Sentinel.Ueberauth do
   end
   defp coerce_provider_to_string(params) do
     params
+  end
+
+  defp validates_provider_doesnt_already_exist_for_user(changeset) do
+    with provider_atom when not is_nil(provider_atom) <- get_change(changeset, :provider),
+         user_id       when not is_nil(user_id)       <- get_change(changeset, :user_id),
+         ueberauth     when not is_nil(ueberauth)     <- Sentinel.Config.repo.get_by(Sentinel.Config.user_model, provider: provider_atom, user_id: user_id) do
+      add_error(changeset, :provider, "already exists for this user")
+    else
+      _ -> changeset 
+    end
   end
 end

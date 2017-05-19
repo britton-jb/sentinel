@@ -11,6 +11,7 @@ defmodule Sentinel do
 
       scope "/", Sentinel.Controllers do
         get "/login", AuthController, :new
+        post "/login", AuthController, :create
         get "/logout", AuthController, :delete
       end
 
