@@ -1,0 +1,16 @@
+<h2>Resend your unlock instrucdtions?</h2>
+
+<p>Enter your email address and we'll send you another link to unlock your account.</p>
+
+<%= form_for @conn, Config.router_helper.password_path(@conn, :create), [as: :unlock], fn f -> %>
+  <div class="field">
+    <%= label f, :email, class: "sentinel control-label" %><br />
+    <%= email_input f, :email, class: "sentinel form-control" %>
+  </div>
+
+  <div class="actions">
+    <%= submit "Resend account unlock instructions" %>
+  </div>
+<% end %>
+
+<%= render(Sentinel.Config.views.shared, "links.html", assigns) %>

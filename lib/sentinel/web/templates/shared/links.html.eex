@@ -14,3 +14,7 @@
 
   <%= link "Didn't receive confirmation instructions?", to: Config.router_helper.user_path(@conn, :confirmation_instructions) %><br />
 <% end %>
+<%= if Config.lockable != false && assigns.conn.private[:phoenix_controller] != Sentinel.Controllers.Html.UnlockController do %>
+
+  <%= link "Didn't receive instructions to unlock your account?", to: Config.router_helper.unlock_path(@conn, :new) %><br />
+<% end %>

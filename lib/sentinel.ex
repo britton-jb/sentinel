@@ -3,6 +3,9 @@ defmodule Sentinel do
   Module responsible for the macros that mount the Sentinel routes
   """
 
+  @doc """
+  Mounts Sentinel html and json auth routes inside your application
+  """
   defmacro mount_ueberauth do
     run_ueberauth_compile_time_checks()
 
@@ -13,14 +16,13 @@ defmodule Sentinel do
         get "/login", AuthController, :new
         post "/login", AuthController, :create
         get "/logout", AuthController, :delete
-        get "/unlock", AuthController, :unlock
       end
 
       scope "/auth", Sentinel.Controllers do
         get "/session/new", AuthController, :new
         post "/session", AuthController, :create
         delete "/session", AuthController, :delete
-
+        
         get "/:provider", AuthController, :request
         get "/:provider/callback", AuthController, :callback
         post "/:provider/callback", AuthController, :callback
@@ -44,7 +46,7 @@ defmodule Sentinel do
   end
 
   @doc """
-  Mount's Sentinel HTML routes inside your application
+  Mounts Sentinel HTML routes inside your application
   """
   defmacro mount_html do
     quote do
@@ -54,7 +56,7 @@ defmodule Sentinel do
 
         if Sentinel.registerable? do
           get "/user/new", UserController, :new
-          post "/user", UserController, :create
+          post "/user", UserController, :create #FIXME this route doesn't appear to exist?
         end
 
         if Sentinel.invitable? do
@@ -65,6 +67,8 @@ defmodule Sentinel do
           get "/user/confirmation_instructions", UserController, :confirmation_instructions
           post "/user/confirmation_instructions", UserController, :resend_confirmation_instructions
           get "/user/confirmation", UserController, :confirm
+        end
+        if Sentinel.lockable? do
         end
 
         get "/password/new", PasswordController, :new
@@ -80,7 +84,7 @@ defmodule Sentinel do
   end
 
   @doc """
-  Mount's Sentinel JSON API routes inside your application
+  Mounts Sentinel JSON API routes inside your application
   """
   defmacro mount_api do
     run_api_compile_time_checks()
@@ -96,6 +100,8 @@ defmodule Sentinel do
         if Sentinel.confirmable? do
           post "/user/confirmation_instructions", UserController, :resend_confirmation_instructions
           get "/user/confirmation", UserController, :confirm
+        end
+        if Sentinel.lockable? do
         end
 
         get "/password/new", PasswordController, :new
@@ -141,5 +147,9 @@ defmodule Sentinel do
 
   def registerable? do
     Sentinel.Config.registerable?
+  end
+
+  def lockable? do
+    Sentinel.Config.lockable?
   end
 end

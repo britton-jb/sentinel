@@ -47,7 +47,7 @@ defmodule AuthenticatorTest do
 
     Config.persist([sentinel: [lockable: true]])
 
-    assert {:error, %{base: "You have one more attempt to authenticate correctly before this account is locked."}} = Authenticator.authenticate(
+    assert {:error, %{lockable: "You have one more attempt to authenticate correctly before this account is locked."}} = Authenticator.authenticate(
       ueberauth,
       "wrong_password"
     )
@@ -60,7 +60,7 @@ defmodule AuthenticatorTest do
 
     Config.persist([sentinel: [lockable: true]])
 
-    assert {:error, %{base: "This account has been locked, due to too many failed login attempts."}} = Authenticator.authenticate(
+    assert {:error, %{lockable: "This account has been locked, due to too many failed login attempts."}} = Authenticator.authenticate(
       ueberauth,
       "wrong_password"
     )
@@ -73,7 +73,7 @@ defmodule AuthenticatorTest do
 
     Config.persist([sentinel: [lockable: true]])
 
-    assert {:error, %{base: "This account is currently locked. Please follow the instructions in your email to unlock it."}} = Authenticator.authenticate(
+    assert {:error, %{lockable: "This account is currently locked. Please follow the instructions in your email to unlock it."}} = Authenticator.authenticate(
       ueberauth,
       "wrong_password"
     )

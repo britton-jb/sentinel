@@ -19,8 +19,8 @@ defmodule Sentinel.AfterRegistrator do
 
         if ueberauth.provider == "identity" && is_nil(ueberauth.hashed_password) do
           {password_reset_token, changeset} =
-          ueberauth
-          |> PasswordResetter.create_changeset
+            ueberauth
+            |> PasswordResetter.create_changeset
           Config.repo.update!(changeset)
 
           Mailer.send_invite_email(user, %{

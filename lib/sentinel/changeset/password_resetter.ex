@@ -52,7 +52,7 @@ defmodule Sentinel.Changeset.PasswordResetter do
   Returns {token, hashed_token}.
   """
   def generate_token do
-    token = SecureRandom.urlsafe_base64(64)
+    token = SecureRandom.urlsafe_base64()
     {token, Config.crypto_provider.hashpwsalt(token)}
   end
 

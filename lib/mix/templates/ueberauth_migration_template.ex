@@ -11,6 +11,7 @@ defmodule UeberauthMigrationTemplate do
       add :user_id, :integer
       add :failed_attempts, :integer, default: 0
       add :locked_at, :utc_datetime
+      add :unlock_token, :string
       timestamps()
     end
 

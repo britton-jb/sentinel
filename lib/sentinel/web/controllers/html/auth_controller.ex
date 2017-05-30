@@ -27,6 +27,12 @@ defmodule Sentinel.Controllers.Html.AuthController do
       {:ok, %{user: user, confirmation_token: confirmation_token}} ->
         new_user(conn, user, confirmation_token)
       {:ok, user} -> existing_user(conn, user)
+      {:error, %{lockable: message}} ->
+        changeset = Sentinel.Session.changeset(%Sentinel.Session{})
+        conn
+        |> put_status(401)
+        |> put_flash(:error, message)
+        |> render(Config.views.session, "new.html", %{conn: conn, changeset: changeset, providers: Config.ueberauth_providers})
       {:error, _errors} ->
         failed_to_authenticate(conn)
     end
@@ -42,32 +48,43 @@ defmodule Sentinel.Controllers.Html.AuthController do
   end
 
   defp new_user(conn, user, confirmation_token) do
-    with {:ok, user} <- AfterRegistrator.confirmable_and_invitable(user, confirmation_token),
-         {:ok, user} <- RegistratorHelper.callback(user) do
-      ueberauth = Config.repo.get_by(Sentinel.Ueberauth, user_id: user.id)
-
-      if ueberauth.provider == "identity" && is_nil(ueberauth.hashed_password) do
+    with {:ok, user}                          <- AfterRegistrator.confirmable_and_invitable(user, confirmation_token),
+         {:ok, user}                          <- RegistratorHelper.callback(user),
+         ueberauth when not is_nil(ueberauth) <- Config.repo.get_by(Sentinel.Ueberauth, user_id: user.id),
+         true                                 <- ueberauth.provider == "identity" && is_nil(ueberauth.hashed_password) do
+      conn
+      |> put_flash(:info, "Successfully invited user")
+      |> RedirectHelper.redirect_from(:user_invited)
+    else
+      false ->
+        confirmable_new_user(conn, user)
+      {:error, message} ->
         conn
-        |> put_flash(:info, "Successfully invited user")
-        |> RedirectHelper.redirect_from(:user_invited)
-      else
-        case Config.confirmable do
-          :required ->
-            conn
-            |> put_flash(:info, "You must confirm your account to continue. You will receive an email with instructions for how to confirm your email address in a few minutes.")
-            |> RedirectHelper.redirect_from(:user_create_unconfirmed)
-          :false ->
-            conn
-            |> Guardian.Plug.sign_in(user)
-            |> put_flash(:info, "Signed up")
-            |> RedirectHelper.redirect_from(:user_create)
-          _ ->
-            conn
-            |> Guardian.Plug.sign_in(user)
-            |> put_flash(:info, "You will receive an email with instructions for how to confirm your email address in a few minutes.")
-            |> RedirectHelper.redirect_from(:user_create)
-        end
-      end
+        |> put_flash(:error, message)
+        |> redirect(to: Config.router_helper.user_path(conn, :new))
+      _ ->
+        conn
+        |> put_flash(:error, "There was an error creating your account")
+        |> redirect(to: Config.router_helper.user_path(conn, :new))
+    end
+  end
+
+  defp confirmable_new_user(conn, user) do
+    case Config.confirmable do
+      :required ->
+        conn
+        |> put_flash(:info, "You must confirm your account to continue. You will receive an email with instructions for how to confirm your email address in a few minutes.")
+        |> RedirectHelper.redirect_from(:user_create_unconfirmed)
+      :false ->
+        conn
+        |> Guardian.Plug.sign_in(user)
+        |> put_flash(:info, "Signed up")
+        |> RedirectHelper.redirect_from(:user_create)
+      _ ->
+        conn
+        |> Guardian.Plug.sign_in(user)
+        |> put_flash(:info, "You will receive an email with instructions for how to confirm your email address in a few minutes.")
+        |> RedirectHelper.redirect_from(:user_create)
     end
   end
 

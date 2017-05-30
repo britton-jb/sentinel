@@ -44,7 +44,7 @@ defmodule Sentinel.Changeset.HashPassword do
   defp invitable? do
     Config.invitable
   end
-  defp being_created?(changeset) do # FIXME might need to make this more robust
+  defp being_created?(changeset) do # NOTE might need to make this more robust
     changeset.data |> Map.get(:id) |> is_nil
   end
 end

@@ -38,6 +38,9 @@ defmodule Sentinel.Controllers.Json.AuthController do
       conn
       |> put_status(201)
       |> json(Config.views.user.render("show.json", %{user: user}))
+    else
+      {:error, message} -> Util.send_error(conn, %{error: message})
+      _ -> Util.send_error(conn, %{error: "Unable to create new user. Please try again"}, 500)
     end
   end
 

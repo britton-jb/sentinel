@@ -99,6 +99,15 @@ defmodule Sentinel.Mailer do
   end
 
   @doc """
+  Thin wrapper around the Sentinel.Mailer.Unlock module
+  """
+  def send_locked_account_email(user, unlock_token) do
+    user
+    |> Sentinel.Mailer.Unlock.build(unlock_token)
+    |> Mailer.managed_deliver
+  end
+
+  @doc """
     Method used to send and manage delivery of emails, which references config
     ensuring user wants emails to go out in a given environment
   """

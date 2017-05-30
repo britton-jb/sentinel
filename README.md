@@ -94,7 +94,7 @@ config :sentinel,
   password_reset_url: "http://localhost:4000", # for api usage only
   send_emails: true,
   user_model_validator: {MyApp.Accounts, :custom_changeset}, # your custom validator
-  registrator_callback: {MyApp.Accounts, :setup} # your callback function (optional)
+  registrator_callback: {MyApp.Accounts, :setup} # your callback function (optional), should return {:ok, user} or {:error, message}
 ```
 
 See `config/test.exs` for an example of configuring Sentinel

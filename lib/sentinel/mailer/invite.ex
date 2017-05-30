@@ -9,7 +9,7 @@ defmodule Sentinel.Mailer.Invite do
   import Sentinel.Mailer
 
   @doc """
-  Takes a user, and a tuple containing a confirmation token & password reset
+  Takes a user, and a map containing a confirmation token & password reset
   token and returns an email. It does not send the email
   """
   def build(user, %{confirmation_token: confirmation_token, password_reset_token: password_reset_token}) do

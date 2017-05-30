@@ -23,6 +23,7 @@ defmodule Sentinel.Ueberauth do
     field :hashed_password_reset_token, :string
     field :failed_attempts, :integer
     field :locked_at, Ecto.DateTime
+    field :unlock_token, :string
     belongs_to :user, Config.user_model
 
     timestamps()
@@ -64,16 +65,23 @@ defmodule Sentinel.Ueberauth do
       |> Sentinel.Ueberauth.changeset(%{
         failed_attempts: 5,
         locked_at: Ecto.DateTime.utc(),
+        unlock_token: SecureRandom.urlsafe_base64() 
       }) |> Sentinel.Config.repo.update()
+      
+    preloaded_auth = Sentinel.Config.repo.preload(updated_auth, [:user])
+    Sentinel.Mailer.send_locked_account_email(preloaded_auth.user, preloaded_auth.unlock_token)
+
+    {:ok, preloaded_auth}
   end
 
-  @spec unlock(%Sentinel.Ueberauth{}) :: %Sentinel.Ueberauth{}
-  def unlock(auth) do
-    {:ok, updated_auth} =
-      auth
-      |> Sentinel.Ueberauth.changeset(%{
+  @spec unlock(string) :: %Sentinel.Ueberauth{}
+  def unlock(unlock_token) do
+    Sentinel.Ueberauth
+    |> Sentinel.Config.repo.get_by(unlock_token: unlock_token)
+    |> Sentinel.Ueberauth.changeset(%{
         failed_attempts: 0,
         locked_at: nil,
+        unlock_token: nil,
       }) |> Sentinel.Config.repo.update()
   end
 

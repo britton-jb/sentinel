@@ -1,5 +1,4 @@
 defmodule Sentinel.Plug.AuthenticateResource do
-
   def init(opts \\ %{}) do
     {
       Guardian.Plug.VerifyHeader.init(opts),

@@ -10,7 +10,7 @@ defmodule Sentinel.Authenticator do
   Compares user password and ensures user is confirmed if applicable
   """
   def authenticate(%Sentinel.Ueberauth{locked_at: locked_at}, _password) when not is_nil(locked_at) do
-    {:error, %{base: @locked_account_message}}
+    {:error, %{lockable: @locked_account_message}}
   end
   def authenticate(auth, password) do
     case check_password(auth, password) do
@@ -30,10 +30,10 @@ defmodule Sentinel.Authenticator do
       {true, _, _} -> {:ok, auth}
       {false, true, %Sentinel.Ueberauth{failed_attempts: 3}} ->
         Sentinel.Ueberauth.increment_failed_attempts(auth)
-        {:error, %{base: "You have one more attempt to authenticate correctly before this account is locked."}}
+        {:error, %{lockable: "You have one more attempt to authenticate correctly before this account is locked."}}
       {false, true, %Sentinel.Ueberauth{failed_attempts: 4}} ->
         Sentinel.Ueberauth.lock(auth)
-        {:error, %{base: "This account has been locked, due to too many failed login attempts."}}
+        {:error, %{lockable: "This account has been locked, due to too many failed login attempts."}}
       {false, true, _} ->
         Sentinel.Ueberauth.increment_failed_attempts(auth)
         {:error, %{base: @unknown_password_error_message}}

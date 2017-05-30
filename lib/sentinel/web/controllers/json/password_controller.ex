@@ -46,7 +46,7 @@ defmodule Sentinel.Controllers.Json.PasswordController do
   end
 
   def edit(conn, params) do
-    redirect(conn, external: Util.api_redirect_url(:password_reset, params))
+    Sentinel.RedirectHelper.api_redirect(conn, :password_update, params)
   end
 
   @doc """

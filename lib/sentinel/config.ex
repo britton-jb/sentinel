@@ -199,8 +199,9 @@ defmodule Sentinel.Config do
   end
 
   def lockable? do
-    Application.get_env(:sentinel, :lockable, false)
+    Application.get_env(:sentinel, :lockable, true)
   end
+  
   @doc """
   Wrapper for getting and merging the application config of :views
   """
@@ -215,6 +216,7 @@ defmodule Sentinel.Config do
       password: Sentinel.PasswordView,
       session: Sentinel.SessionView,
       shared: Sentinel.SharedView,
+      unlock: Sentinel.UnlockView,
       user: Sentinel.UserView
     }
   end
@@ -254,6 +256,9 @@ defmodule Sentinel.Config do
       user_invitation: {:account, :edit},
       user_invitation_error: "/",
       user_invited: {:user, :new},
+      unlock_account: "/",
+      unlock_account_error: "/",
+      unlock_create: "/",
     }
   end
 
