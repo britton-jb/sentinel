@@ -1,6 +1,10 @@
 # Sentinel
 [![Build Status](https://travis-ci.org/britton-jb/sentinel.svg?branch=master)](https://travis-ci.org/britton-jb/sentinel)
 
+*Note* - currently master (this readme) and the latest hex release have diverged due
+to poor planning on my part while working on the next version of
+Sentinel.
+
 Things I wish [Guardian](https://github.com/ueberauth/guardian) included
 out of the box, like [Ueberauth](
 https://github.com/ueberauth/ueberauth) integration, routing,
