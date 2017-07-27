@@ -231,4 +231,14 @@ defmodule UeberauthenticatorTest do
 
     Config.persist([sentinel: [confirmable: :optional]])
   end
+
+  test "ueberauthenticate through provider with non existing auth and user" do
+    assert {:ok, %{ user: %Sentinel.User{}}} = Ueberauthenticator.ueberauthenticate(%Auth{
+      uid: "some-non-existing-uid",
+      info: %Ueberauth.Auth.Info{
+        email: "test@example.com"
+      },
+      provider: :someprovider
+    })
+  end
 end
