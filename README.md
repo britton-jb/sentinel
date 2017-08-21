@@ -1,9 +1,15 @@
 # Sentinel
 [![Build Status](https://travis-ci.org/britton-jb/sentinel.svg?branch=master)](https://travis-ci.org/britton-jb/sentinel)
 
-*Note* - currently master (this readme) and the latest hex release have diverged due
+## Note
+Currently master (this readme) and the latest hex release have diverged due
 to poor planning on my part while working on the next version of
-Sentinel.
+Sentinel. It also currently interacts poorly with the new directory
+structure of Phoenix 1.3. I'm currently working on an update to remedy
+this, but cannot promise it will be released soon.
+
+If you'd like to assist in developing the latest version of Sentinel
+please reach out to me.
 
 Things I wish [Guardian](https://github.com/ueberauth/guardian) included
 out of the box, like [Ueberauth](
