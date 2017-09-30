@@ -2,9 +2,7 @@ defmodule Sentinel.Confirm do
   @moduledoc """
   Handles the common confirmation logic
   """
-  alias Sentinel.Changeset.Confirmator
-  alias Sentinel.Config
-  alias Sentinel.Mailer
+  alias Sentinel.{Changeset.Confirmator, Config, Mailer}
 
   def send_confirmation_instructions(%{"email" => email} = params) do
     user = Config.repo.get_by(Config.user_model, email: email)
@@ -24,7 +22,7 @@ defmodule Sentinel.Confirm do
   def send_confirmation_instructions(_params) do
   end
 
-  def do_confirm(params = %{"id" => id}) do
+  def do_confirm(%{"id" => id} = params) do
     Config.user_model
     |> Config.repo.get(id)
     |> Config.user_model.changeset(params)
@@ -33,3 +31,4 @@ defmodule Sentinel.Confirm do
   end
   def do_confirm(_), do: {:error, :bad_request}
 end
+

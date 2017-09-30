@@ -1,8 +1,6 @@
 defmodule Sentinel.Changeset.Registrator do
   alias Ecto.Changeset
-  alias Ecto.DateTime
-  alias Sentinel.Util
-  alias Sentinel.UserHelper
+  alias Sentinel.{Util, UserHelper}
 
   @moduledoc """
   Handles registration changeset logic
@@ -39,7 +37,7 @@ defmodule Sentinel.Changeset.Registrator do
     |> Changeset.validate_change(:username, &Util.presence_validator/2)
     |> Changeset.unique_constraint(:username)
     |> Changeset.put_change(:hashed_confirmation_token, nil)
-    |> Changeset.put_change(:confirmed_at, DateTime.utc)
+    |> Changeset.put_change(:confirmed_at, DateTime.utc_now)
     |> changeset_helper(raw_info)
   end
 

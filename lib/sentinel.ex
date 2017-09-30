@@ -4,7 +4,7 @@ defmodule Sentinel do
   """
 
   @doc """
-  Mounts Sentinel html and json auth routes inside your application
+  Mounts Sentinel HTML and JSON auth routes inside your application
   """
   defmacro mount_ueberauth do
     run_ueberauth_compile_time_checks()
@@ -22,7 +22,7 @@ defmodule Sentinel do
         get "/session/new", AuthController, :new
         post "/session", AuthController, :create
         delete "/session", AuthController, :delete
-        
+
         get "/:provider", AuthController, :request
         get "/:provider/callback", AuthController, :callback
         post "/:provider/callback", AuthController, :callback
@@ -56,7 +56,6 @@ defmodule Sentinel do
 
         if Sentinel.registerable? do
           get "/user/new", UserController, :new
-          post "/user", UserController, :create #FIXME this route doesn't appear to exist?
         end
 
         if Sentinel.invitable? do
@@ -69,10 +68,13 @@ defmodule Sentinel do
           get "/user/confirmation", UserController, :confirm
         end
         if Sentinel.lockable? do
+          get "/unlock", UnlockController, :new
+          post "/unlock", UnlockController, :create
+          put "/unlock", UnlockController, :update
         end
 
         get "/password/new", PasswordController, :new
-        post "/password/new", PasswordController, :create
+        post "/password", PasswordController, :create
         get "/password/edit", PasswordController, :edit
         put "/password", PasswordController, :update
 
@@ -102,6 +104,8 @@ defmodule Sentinel do
           get "/user/confirmation", UserController, :confirm
         end
         if Sentinel.lockable? do
+          post "/unlock", UnlockController, :create
+          put "/unlock", UnlockController, :update
         end
 
         get "/password/new", PasswordController, :new

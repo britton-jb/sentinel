@@ -5,16 +5,10 @@ defmodule Sentinel.Controllers.Json.AuthController do
 
   require Ueberauth
   use Phoenix.Controller
-  alias Plug.Conn
-  alias Sentinel.AfterRegistrator
-  alias Sentinel.Config
-  alias Sentinel.RegistratorHelper
-  alias Sentinel.Ueberauthenticator
-  alias Sentinel.UserHelper
-  alias Sentinel.Util
+  alias Sentinel.{AfterRegistrator, Config, RegistratorHelper, Ueberauthenticator, Util}
 
   plug Ueberauth
-  plug Sentinel.Plug.AuthenticateResource, %{handler: Config.auth_handler} when action in [:delete]
+  plug Sentinel.AuthenticatedPipeline when action in [:delete]
 
   def request(conn, _params) do
     json conn, %{providers: Config.ueberauth_providers}
@@ -45,9 +39,7 @@ defmodule Sentinel.Controllers.Json.AuthController do
   end
 
   defp existing_user(conn, user) do
-    permissions = UserHelper.model.permissions(user.id)
-
-    case Guardian.encode_and_sign(user, :token, permissions) do
+    case Sentinel.Guardian.encode_and_sign(user) do
       {:ok, token, _encoded_claims} ->
         conn
         |> put_status(201)
@@ -63,10 +55,10 @@ defmodule Sentinel.Controllers.Json.AuthController do
   Responds with status 200 if no error occured.
   """
   def delete(conn, _params) do
-    token = conn |> Conn.get_req_header("authorization") |> List.first
+    token = Sentinel.Guardian.Plug.current_token(conn)
 
-    case Guardian.revoke! token do
-      :ok -> json conn, :ok
+    case Sentinel.Guardian.revoke(token) do
+      {:ok, _} -> json conn, :ok
       {:error, :could_not_revoke_token} -> Util.send_error(conn, %{error: "Could not revoke the session token"}, 422)
       {:error, error} -> Util.send_error(conn, error, 422)
     end
@@ -74,7 +66,7 @@ defmodule Sentinel.Controllers.Json.AuthController do
 
   @doc """
   Log in as an existing user.
-  Parameter are "email" and "password".
+  Parameter are %{"user" => %{"email": email, "password": password}}.
   Responds with status 200 and {token: token} if credentials were correct.
   Responds with status 401 and {errors: error_message} otherwise.
   """
@@ -91,9 +83,7 @@ defmodule Sentinel.Controllers.Json.AuthController do
 
     case Ueberauthenticator.ueberauthenticate(auth) do
       {:ok, user} ->
-        permissions = UserHelper.model.permissions(user.id)
-
-        case Guardian.encode_and_sign(user, :token, permissions) do
+        case Sentinel.Guardian.encode_and_sign(user) do
           {:ok, token, _encoded_claims} -> json conn, %{token: token}
           {:error, :token_storage_failure} -> Util.send_error(conn, %{error: "Failed to store session, please try to login again using your new password"})
           {:error, reason} -> Util.send_error(conn, %{error: reason})

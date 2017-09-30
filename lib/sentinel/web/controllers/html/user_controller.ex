@@ -3,8 +3,7 @@ defmodule Sentinel.Controllers.Html.UserController do
   Handles the user create, confirm and invite actions
   """
   use Phoenix.Controller
-  alias Sentinel.Config
-  alias Sentinel.RedirectHelper
+  alias Sentinel.{Config, RedirectHelper, Confirm}
 
   plug :put_layout, {Config.layout_view, Config.layout}
 
@@ -17,7 +16,7 @@ defmodule Sentinel.Controllers.Html.UserController do
     render(conn, Config.views.user, "confirmation_instructions.html", %{conn: conn})
   end
   def resend_confirmation_instructions(conn, params) do
-    Sentinel.Confirm.send_confirmation_instructions(params)
+    Confirm.send_confirmation_instructions(params)
 
     conn
     |> put_flash(:info, "Sent confirmation instructions")
@@ -31,10 +30,10 @@ defmodule Sentinel.Controllers.Html.UserController do
   If the confirmation matches, the user will be confirmed and signed in.
   """
   def confirm(conn, params) do
-    case Sentinel.Confirm.do_confirm(params) do
+    case Confirm.do_confirm(params) do
       {:ok, user} ->
         conn
-        |> Guardian.Plug.sign_in(user)
+        |> Sentinel.Guardian.Plug.sign_in(user)
         |> put_flash(:info, "Successfully confirmed your account")
         |> RedirectHelper.redirect_from(:user_confirmation)
       {:error, :bad_request} ->
@@ -73,7 +72,7 @@ defmodule Sentinel.Controllers.Html.UserController do
     case Sentinel.Invited.do_invited(params) do
       {:ok, user} ->
         conn
-        |> Guardian.Plug.sign_in(user)
+        |> Sentinel.Guardian.Plug.sign_in(user)
         |> put_flash(:info, "Signed up")
         |> RedirectHelper.redirect_from(:user_invitation)
       {:error, changeset} ->
@@ -84,3 +83,4 @@ defmodule Sentinel.Controllers.Html.UserController do
     end
   end
 end
+

@@ -1,7 +1,7 @@
 defmodule Sentinel.Mixfile do
   use Mix.Project
 
-  @version "2.0.1"
+  @version "3.0.0-rc1"
   @source_url "https://github.com/britton-jb/sentinel"
 
   def project do
@@ -56,35 +56,40 @@ defmodule Sentinel.Mixfile do
 
   defp deps do
     [
-      {:guardian, "~> 0.14.2"},
-      {:guardian_db, "~> 0.8.0", optional: true},
+      {:guardian, "~> 1.0-beta", override: true},
+      {:guardian_db, github: "ueberauth/guardian_db", optional: true},
       {:secure_random, "~> 0.2"},
-      {:bamboo, "~> 0.7"},
-      {:comeonin, "~> 2.0"},
+      {:bamboo, "~> 0.8"},
+      {:comeonin, "~> 4.0"},
+      {:bcrypt_elixir, "~> 0.12"},
 
       {:cowboy, "~> 1.0"},
       {:phoenix, "~> 1.1"},
       {:phoenix_html, "~> 2.2"},
       {:phoenix_ecto, "~> 3.1"},
       {:ecto, "~> 2.1"},
-      {:postgrex, ">= 0.11.1"},
-      {:jose, "~> 1.4"},
+      {:postgrex, ">= 0.11.1", override: true},
 
       {:ueberauth, "~> 0.4"},
       {:ueberauth_identity, "~> 0.2"},
 
       # DEV
-      {:credo, "~> 0.5", only: [:dev, :test]},
       {:ex_doc, ">= 0.0.0", only: :dev},
+      {:dialyxir, github: "jeremyjh/dialyxir", only: [:dev], runtime: false},
+      {:credo, "~> 0.5", only: [:dev, :test]},
+      {:ex_guard, "~> 1.3", only: :dev},
       # TESTING
       {:mock, "~> 0.1", only: :test},
-      {:ex_machina, "~> 1.0", only: :test},
+      {:ex_machina, "~> 2.0", only: :test},
+      {:ex_spec, "~> 2.0", only: :test},
     ]
   end
 
   defp aliases do
     [
-      "test": ["ecto.drop", "ecto.create --quiet", "ecto.migrate", "test"]
+      "test": ["ecto.drop", "ecto.create --quiet", "ecto.migrate", "test"],
+      "static_analysis": ["credo", "dialyzer"],
+      "precommit": ["test", "static_analysis"]
     ]
   end
 end

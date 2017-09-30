@@ -12,7 +12,7 @@ defmodule Sentinel.Mailer.Unlock do
   Takes a user, and a map containing the unlo
   token and returns an email. It does not send the email
   """
-  @spec build(struct, string) :: map
+  @spec build(struct, String.t()) :: map
   def build(user, unlock_token) do
     user
     |> base_email
@@ -22,3 +22,4 @@ defmodule Sentinel.Mailer.Unlock do
     |> render(:unlock)
   end
 end
+

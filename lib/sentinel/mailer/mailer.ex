@@ -1,8 +1,8 @@
 defmodule Sentinel.Mailer do
-  use Bamboo.Mailer, otp_app: :sentinel
-  use Bamboo.Phoenix, view: Sentinel.Config.views.email
+  alias Sentinel.{Config, Mailer}
 
-  alias Sentinel.Mailer
+  use Bamboo.Mailer, otp_app: Sentinel.Config.otp_app
+  use Bamboo.Phoenix, view: Config.views.email
 
   @moduledoc """
   Provides mailer base imported into mailer modules

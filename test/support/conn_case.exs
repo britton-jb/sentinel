@@ -1,7 +1,7 @@
 defmodule Sentinel.ConnCase do
   alias Sentinel.TestRepo
 
-  use ExUnit.CaseTemplate
+  use ExUnit.CaseTemplate, async: true
   @default_opts [
     store: :cookie,
     key: "foobar",

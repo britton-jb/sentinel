@@ -4,3 +4,4 @@ defmodule Sentinel.PasswordView do
 
   alias Sentinel.Config
 end
+

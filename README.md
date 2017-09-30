@@ -29,30 +29,22 @@ setup:
 
 defp deps do
   # ...
-  {:sentinel, "~> 2.0"},
-  {:guardian_db, "~> 0.8.0"}, # If you'd like to database back your tokens, and prevent replayability
+  {:sentinel, "~> 3.0"},
+  {:guardian_db, "~> 1.0"}, # If you'd like to database back your tokens, and prevent replayability
   # ...
 end
 ```
 
-### Configure Guardian
+### Configure Sentinel.Guardian
 Example config:
 
 ``` elixir
 # config/config.exs
 
-config :guardian, Guardian,
-  allowed_algos: ["HS512"], # optional
-  verify_module: Guardian.JWT,  # optional
+config :sentinel, Sentinel.Guardian,
   issuer: "MyApp",
-  ttl: { 30, :days },
-  verify_issuer: true, # optional
-  secret_key: "guardian_sekret",
-  serializer: Sentinel.GuardianSerializer,
-  hooks: GuardianDb # optional if using guardiandb
+  secret_key: "`use mix guardian.gen.secret to obtain`",
 ```
-
-[More info](https://github.com/ueberauth/guardian#installation)
 
 #### Optionally Configure GuardianDb
 ``` elixir
@@ -68,12 +60,12 @@ this walkthrough, creates the migration for the GuardianDb tokens.
 # config/config.exs
 
 config :sentinel,
+  otp_app: :your_otp_app,
   app_name: "Test App",
   user_model: Sentinel.User, # should be your generated model
   send_address: "test@example.com",
   crypto_provider: Comeonin.Bcrypt,
   repo: Sentinel.TestRepo,
-  ecto_repos: [Sentinel.TestRepo],
   auth_handler: Sentinel.AuthHandler,
   layout_view: MyApp.Layout, # your layout
   layout: :app,
@@ -97,7 +89,8 @@ config :sentinel,
   registrator_callback: {MyApp.Accounts, :setup} # your callback function (optional), should return {:ok, user} or {:error, message}
 ```
 
-See `config/test.exs` for an example of configuring Sentinel
+See `config/test.exs` or the Sentinel example repo for an example of
+configuring Sentinel
 
 `invitation_registration_url`, `confirmable_redirect_url`, and
 `password_reset_url` are three configuration settings that must be set
@@ -144,26 +137,23 @@ config :sentinel, Sentinel.Mailer,
 Create the database using Ecto if it doesn't yet exist.
 
 ``` elixir
-mix sentinel.install
+mix sentinel.install MyUserSchemaModuleAndContextIfDesired user_table optional:extra_fields
 ```
 
 This will create a user model if it doesn't already exist, add a
 migration for GuardianDb migration, and add a migration for Ueberauth
 provider credentials.
 
+Ensure that you include `Sentinel.Changeset.Schema.changeset/1` in your
+schema's generated changeset to ensure emails are required, unique, and
+downcased upon insertion. Also ensure you remove the 
+`unconfirmed_email`, `confirmed_at`, and `hashed_confirmation_token` from
+the `validate_required/2` list.
+
 You will want to delete the GuardianDb migration if you're choosing not
 to use it.
 
-Currently the install task outputs the following warning:
-
-```
-warning: the :datetime type in migrations is deprecated, please use
-:utc_datetime or :naive_datetime instead
-```
-
-This is due to the fact that Phoenix's generators don't appear to
-support `utc_datetime` being passed in. Please modify the generated
-migration accordingly. Phoenix's generators also appear to not support
+Phoenix's generators also appear to not support
 setting `null: false` with the migration generator, so you will want
 to set that in the migration for the user email as well.
 
@@ -231,6 +221,9 @@ PUT | /user/:id/invited | Complete user invitation flow
 GET | /user/confirmation_instructions | Request resending confirmation instructions page
 POST | /user/confirmation_instructions | Request confirmation instructions email
 GET | /user/confirmation | Confirm user email address from email
+GET | /unlock | Request unlock token page
+POST | /unlock | Request unlock email
+PUT | /unlock | Unlock an account
 GET | /password/new | Forgot password page
 POST | /password/new | Request password reset email
 GET | /password/edit | Password reset page
@@ -246,6 +239,8 @@ GET | /user/:id/invited | Redirect user from email link to invited user registra
 PUT | /user/:id/invited | Complete user invitation flow
 GET | /user/confirmation_instructions | Request resending confirmation instructions
 GET | /user/confirmation | Confirm user email address from email
+POST | /unlock | Request unlock email
+PUT | /unlock |
 GET | /password/new | Request password reset email
 GET | /password/edit | Request password reset page from email
 PUT | /password | Reset password
@@ -277,6 +272,11 @@ URL, with the following params:
 }
 ```
 
+### Lockable
+By default, users are locked out after 5 failed login attempts. If
+you'd like to disable this then set the `lockable` configuration
+field to `false`. The default is `true`.
+
 ### Custom Routes
 If you want to customize the routes, or use your own controller
 endpoints you can do that by overriding the individual routes listed.
@@ -305,13 +305,13 @@ If you'd like to write your own custom authorization or authentication
 handler change the `auth_handler` Sentinel configuration option
 to the module name of your handler.
 
-It must define two functions, `unauthorized/2`, and `unauthenticated/2`,
+It must define `auth_error/3`,
 where the first parameter is the connection, and the second is
-information about the session.
+a tuple with information about the error type, and the third is options.
 
 ### Custom model validator
 If you want to add custom changeset validations to the user model, you can do
-that by specifying a user model validator: 
+that by specifying a user model validator:
 
 ```elixir
 config :sentinel, user_model_validator: {MyApp.Accounts, :custom_changeset}
@@ -338,7 +338,7 @@ money on this, so I do support when I feel like it. That said, I want to
 do my best to contribute to the Elixir/Phoenix community, so I'll do
 what I can.
 
-Having said that if you bother to put up a PR I'll take a look, and
+If you bother to put up a PR I'll take a look, and
 either merge it, or let you know what needs to change before I do.
 Having experienced sending in PRs and never hearing anything about
-them, I know it sucks.
+them, I know it is not a good time.

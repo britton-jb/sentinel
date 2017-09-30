@@ -1,18 +1,13 @@
-defmodule Sentinel.Controllers.Unlock do
+defmodule Sentinel.Controllers.Html.UnlockController do
   use Phoenix.Controller
-  alias Sentinel.{RedirectHelper, Config}
+  alias Sentinel.RedirectHelper
 
   def new(conn, _params) do
-    render(conn, Config.views.unlock, "new.html", %{conn: conn})
+    render(conn, Sentinel.Config.views.unlock, "new.html", %{conn: conn})
   end
 
-  def create(conn, %{"unlock" => {"email" => email}} = params) do
-    with user <- Config.repo.get_by(Config.user_model, email: email),
-         auth <- Config.repo.get_by(Sentinel.Ueberauth, provider: "identity", user_id: user.id) do
-      Sentinel.Mailer.send_locked_account_email(user, auth.unlock_token)
-    else
-      _ -> nil
-    end
+  def create(conn, %{"unlock" => %{"email" => email}}) do
+    Sentinel.Lockable.send_unlock_email(email)
 
     conn
     |> put_flash(:info, "We've sent an unlock email to that account")
@@ -24,9 +19,9 @@ defmodule Sentinel.Controllers.Unlock do
     |> RedirectHelper.redirect_from(:unlock_create)
   end
 
-  def unlock(conn, %{"unlock_token" => unlock_token} = params) do
+  def update(conn, %{"unlock_token" => unlock_token}) do
     case Sentinel.Ueberauth.unlock(unlock_token) do
-      {:ok, auth} ->
+      {:ok, _auth} ->
         conn
         |> put_flash(:info, "Your account has been unlocked")
         |> RedirectHelper.redirect_from(:unlock_account)

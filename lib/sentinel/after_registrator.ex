@@ -2,9 +2,7 @@ defmodule Sentinel.AfterRegistrator do
   @moduledoc """
   Handles the email sending logic after a new user is registered to the platform
   """
-  alias Sentinel.Config
-  alias Sentinel.Mailer
-  alias Sentinel.Changeset.PasswordResetter
+  alias Sentinel.{Config, Mailer, Changeset.PasswordResetter}
 
   def confirmable_and_invitable(user, confirmation_token) do
     case {confirmable?(), invitable?()} do # NOTE move this from a case to private methods?

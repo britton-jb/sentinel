@@ -29,8 +29,8 @@ defmodule ConfirmatorTest do
   end
 
   test "confirmation_changeset clears the saved token and sets confirmed at if the token matches" do
-    mocked_date = Ecto.DateTime.utc
-    with_mock Ecto.DateTime, [:passthrough], [utc: fn -> mocked_date end] do
+    mocked_date = DateTime.utc_now()
+    with_mock DateTime, [:passthrough], [utc_now: fn -> mocked_date end] do
       {token, user} =
         Factory.build(:user, hashed_confirmation_token: "123secret")
         |> Ecto.Changeset.cast(%{}, [])

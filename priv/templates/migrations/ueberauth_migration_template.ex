@@ -1,4 +1,4 @@
-defmodule UeberauthMigrationTemplate do
+defmodule UeberauthMigration do
   use Ecto.Migration
 
   def change do

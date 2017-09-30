@@ -11,9 +11,9 @@ defmodule Sentinel.RedirectHelper do
   def api_redirect(conn, redirect, params \\ %{}) do
     redirect(conn, external: "#{Map.get(Config.redirects(), redirect)}#{mapped_params(params)}")
   end
-  defp mapped_params(%{} = params), do: nil
+  defp mapped_params(%{} = _params), do: nil
   defp mapped_params(params) do
-    param_string = 
+    param_string =
       params
       |> Enum.map_join("&", fn(key, value) ->
         "#{key}=#{value}"
@@ -44,10 +44,8 @@ defmodule Sentinel.RedirectHelper do
   end
 
   defp get_path(controller, action) do
-    try do
-      apply(Config.router_helper(), :"#{controller}_path", [Config.endpoint, action])
-    rescue
+    apply(Config.router_helper(), :"#{controller}_path", [Config.endpoint, action])
+  rescue
       _ -> "/"
-    end
   end
 end

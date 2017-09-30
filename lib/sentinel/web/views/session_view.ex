@@ -4,3 +4,4 @@ defmodule Sentinel.SessionView do
 
   alias Sentinel.Config
 end
+

@@ -18,7 +18,6 @@ defmodule Sentinel.UserView do
   def render("user.json", %{user: user}) do
     %{id: user.id,
       email: user.email,
-      role: user.role,
       hashed_confirmation_token: user.hashed_confirmation_token,
       confirmed_at: user.confirmed_at,
       unconfirmed_email: user.unconfirmed_email}
@@ -28,3 +27,4 @@ defmodule Sentinel.UserView do
     Config.views.user
   end
 end
+

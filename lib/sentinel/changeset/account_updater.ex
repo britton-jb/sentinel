@@ -4,9 +4,7 @@ defmodule Sentinel.Changeset.AccountUpdater do
   """
 
   alias Ecto.Changeset
-  alias Sentinel.Changeset.HashPassword
-  alias Sentinel.Changeset.Confirmator
-  alias Sentinel.UserHelper
+  alias Sentinel.{Changeset.HashPassword, Changeset.Confirmator, UserHelper}
 
   @doc """
   Returns confirmation token and changeset updating email and hashed_password on an existing user.

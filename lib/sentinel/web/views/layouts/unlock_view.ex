@@ -4,3 +4,4 @@ defmodule Sentinel.UnlockView do
 
   alias Sentinel.Config
 end
+

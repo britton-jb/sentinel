@@ -6,21 +6,22 @@ defmodule Mix.Tasks.Sentinel.Install do
 
   use Mix.Task
 
-  def run(_) do
+  def run(args) do
     IO.puts "Creating migrations"
-    create_migrations()
+    create_migrations(args)
 
     IO.puts "You should go in and ensure your application is configured correctly"
   end
 
-  defp create_migrations do
-    if File.exists?("priv/repo/migrations") do
-      migrations = Path.wildcard("priv/repo/migrations/*.exs")
+  defp create_migrations(args) do
+    legacy = !Kernel.function_exported?(Mix.Phoenix, :web_path, 1)
+    Mix.Tasks.Ecto.run(["-r", "#{Sentinel.Config.repo()}"])
+    migrations_path = Mix.Ecto.migrations_path(Sentinel.Config.repo())
 
-      migrations
-      |> Enum.find(fn(migration) ->
-        String.contains?(migration, "create_user")
-      end) |> create_user_migration()
+    if File.exists?(migrations_path) do
+      migrations = Path.wildcard("#{migrations_path}/*.exs")
+
+      create_user_migration(args, legacy)
 
       migrations
       |> Enum.find(fn(migration) ->
@@ -32,49 +33,34 @@ defmodule Mix.Tasks.Sentinel.Install do
         String.contains?(migration, "ueberauth")
       end) |> create_ueberauth_migration()
     else
-      create_user_migration()
+      create_user_migration(args, legacy)
       create_guardian_token_migration()
       create_ueberauth_migration()
     end
   end
 
-  defp create_user_migration do
-    generate_user_migration()
-  end
-  defp create_user_migration(nil) do
-    generate_user_migration()
-  end
-  defp create_user_migration(_) do
-    IO.puts "A user creation migration appears to already exist"
-  end
+  defp create_user_migration(args, legacy) do
+    if legacy do
+      Mix.Tasks.Phoenix.Gen.Model.run(args ++ [
+        "email:string",
+        "hashed_confirmation_token:text",
+        "confirmed_at:datetime",
+        "unconfirmed_email:string"
+      ])
+    else
+      Mix.Tasks.Phx.Gen.Schema.run(args ++ [
+        "email:string",
+        "hashed_confirmation_token:text",
+        "confirmed_at:utc_datetime",
+        "unconfirmed_email:string"
+      ])
+    end
 
-  defp generate_user_migration do
-    Mix.Tasks.Phoenix.Gen.Model.run([
-      "User",
-      "users",
-      "email:string",
-      "hashed_confirmation_token:text",
-      "confirmed_at:datetime",
-      "unconfirmed_email:string"
-    ])
+    IO.puts "Make sure to include `Sentinel.Changeset.Schema.changeset/1` in your changeset"
+    IO.puts "This ensures emails are required and downcased properly before insertion.\n"
+    IO.puts "Also make sure to remove the unconfirmed_email, confirmed_at, and hashed_confirmation_token"
+    IO.puts "from the validate_required/2 list."
     Process.sleep(1001)
-
-    user_path = "web/models/user.ex"
-
-    old_content =
-      user_path
-      |> File.stream!
-      |> Enum.map(fn(line) -> line end)
-      |> Enum.slice(0..17)
-
-    new_content =
-      "deps/sentinel/lib/mix/templates/user_template.ex"
-      |> File.stream!
-      |> Enum.map(fn(line) -> line end)
-      |> Enum.slice(18..100)
-
-    user_path
-    |> File.write!(old_content ++ new_content)
   end
 
   defp create_guardian_token_migration do
@@ -92,26 +78,29 @@ defmodule Mix.Tasks.Sentinel.Install do
 
     Process.sleep(1001)
 
-    migration_path =
-      "priv/repo/migrations/*.exs"
+    migrations_path = Mix.Ecto.migrations_path(Sentinel.Config.repo())
+
+    token_migration_path =
+      "#{migrations_path}/*.exs"
       |> Path.wildcard
       |> Enum.find(fn(migration) ->
-        String.contains?(migration, "guardian")
+        String.contains?(migration, "add_guardian_db_tokens")
       end)
 
     migration_content =
-      migration_path
+      token_migration_path
       |> File.stream!
       |> Enum.map(fn(line) -> line end)
       |> Enum.slice(0..2)
 
     new_content =
-      "deps/sentinel/lib/mix/templates/guardian_db_migration_template.ex"
+      :sentinel
+      |> Application.app_dir("priv/templates/migrations/guardian_db_migration_template.ex")
       |> File.stream!
       |> Enum.map(fn(line) -> line end)
       |> Enum.slice(3..100)
 
-    migration_path
+    token_migration_path
     |> File.write!(migration_content ++ new_content)
   end
 
@@ -130,11 +119,13 @@ defmodule Mix.Tasks.Sentinel.Install do
 
     Process.sleep(1001)
 
+    migrations_path = Mix.Ecto.migrations_path(Sentinel.Config.repo())
+
     migration_path =
-      "priv/repo/migrations/*.exs"
+      "#{migrations_path}/*.exs"
       |> Path.wildcard
       |> Enum.find(fn(migration) ->
-        String.contains?(migration, "ueberauth")
+        String.contains?(migration, "add_ueberauth")
       end)
 
     migration_content =
@@ -144,7 +135,8 @@ defmodule Mix.Tasks.Sentinel.Install do
       |> Enum.slice(0..2)
 
     new_content =
-      "deps/sentinel/lib/mix/templates/ueberauth_migration_template.ex"
+      :sentinel
+      |> Application.app_dir("priv/templates/migrations/ueberauth_migration_template.ex")
       |> File.stream!
       |> Enum.map(fn(line) -> line end)
       |> Enum.slice(3..100)

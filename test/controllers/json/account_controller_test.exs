@@ -2,7 +2,6 @@ defmodule Json.AccountControllerTest do
   use Sentinel.ConnCase
 
   alias Ecto.Changeset
-  alias Ecto.DateTime
   alias Sentinel.Ueberauthenticator
   alias Sentinel.User
 
@@ -20,16 +19,15 @@ defmodule Json.AccountControllerTest do
 
     user = Factory.insert(:user,
       email: old_email(),
-      confirmed_at: DateTime.utc,
+      confirmed_at: DateTime.utc_now(),
     )
     ueberauth = Factory.insert(:ueberauth, user: user)
-    permissions = User.permissions(user.id)
-    {:ok, token, _} = Guardian.encode_and_sign(user, :token, permissions)
+    {:ok, token, _} = Sentinel.Guardian.encode_and_sign(user)
 
     conn =
       build_conn()
       |> Conn.put_req_header("content-type", "application/json")
-      |> Conn.put_req_header("authorization", token)
+      |> Conn.put_req_header("authorization", "Bearer #{token}")
 
     {:ok, %{user: user, auth: ueberauth, conn: conn}}
   end
@@ -45,9 +43,9 @@ defmodule Json.AccountControllerTest do
 
     mocked_token = SecureRandom.urlsafe_base64()
     mocked_user = Map.merge(user, %User{unconfirmed_email: @new_email})
-    mocked_mail = Mailer.send_new_email_address_email(mocked_user, mocked_token)
+    mocked_mail = Mailer.NewEmailAddress.build(mocked_user, mocked_token)
 
-    with_mock Mailer, [:passthrough], [send_new_email_address_email: fn(_, _) -> mocked_mail end] do
+    with_mock Mailer.NewEmailAddress, [:passthrough], [build: fn(_, _) -> mocked_mail end] do
       conn = put conn, api_account_path(conn, :update), %{account: %{email: @new_email}}
       response = json_response(conn, 200)
 

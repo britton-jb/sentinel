@@ -11,14 +11,12 @@ defmodule Html.PasswordControllerTest do
   setup do
     auth = Factory.insert(:ueberauth)
     user = auth.user
-    permissions = User.permissions(user.id)
-    {:ok, token, _} = Guardian.encode_and_sign(user, :token, permissions)
+    {:ok, token, claims} = Sentinel.Guardian.encode_and_sign(user)
     authenticated_conn =
       build_conn()
-      |> Sentinel.ConnCase.conn_with_fetched_session
-      |> put_session(Guardian.Keys.base_key(:default), token)
-      |> Sentinel.ConnCase.run_plug(Guardian.Plug.VerifySession)
-      |> Sentinel.ConnCase.run_plug(Guardian.Plug.LoadResource)
+      |> init_test_session(%{guardian_default_token: token})
+      |> Sentinel.Guardian.Plug.put_current_token(token)
+      |> Sentinel.Guardian.Plug.put_current_claims(claims)
 
     {:ok, %{conn: build_conn(), user: user, auth: auth, authenticated_conn: authenticated_conn}}
   end
@@ -41,9 +39,9 @@ defmodule Html.PasswordControllerTest do
 
   test "request a reset token", %{conn: conn, user: user} do
     mocked_reset_token = "mocked_reset_token"
-    mocked_mail = Mailer.send_password_reset_email(user, mocked_reset_token)
+    mocked_mail = Mailer.PasswordReset.build(user, mocked_reset_token)
 
-    with_mock Sentinel.Mailer, [:passthrough], [send_password_reset_email: fn(_, _) -> mocked_mail end] do
+    with_mock Mailer.PasswordReset, [:passthrough], [build: fn(_, _) -> mocked_mail end] do
       conn = post conn, password_path(conn, :create), %{password: %{email: user.email}}
       response(conn, 302)
 
@@ -99,7 +97,7 @@ defmodule Html.PasswordControllerTest do
   test "Reset password when logged in", %{authenticated_conn: conn, user: user, auth: auth} do
     old_hashed_password = auth.hashed_password
     user
-    |> Sentinel.User.changeset(%{confirmed_at: Ecto.DateTime.utc})
+    |> Sentinel.User.changeset(%{confirmed_at: DateTime.utc_now()})
     |> TestRepo.update!
 
     conn = put conn, password_path(conn, :authenticated_update), %{account: %{password: @new_password, password_confirmation: @new_password}}

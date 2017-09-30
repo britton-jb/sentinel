@@ -5,7 +5,6 @@ defmodule Sentinel.Util do
   import Phoenix.Controller
   import Plug.Conn
 
-  alias Sentinel.Config
   alias Sentinel.Util
 
   @doc """

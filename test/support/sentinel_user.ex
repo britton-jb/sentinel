@@ -6,7 +6,7 @@ defmodule Sentinel.User do
     field  :email,                       :string
     field  :role,                        :string
     field  :hashed_confirmation_token,   :string
-    field  :confirmed_at,                Ecto.DateTime
+    field  :confirmed_at,                :utc_datetime
     field  :unconfirmed_email,           :string
     field  :my_attr,                     :string, virtual: true
   end
@@ -18,20 +18,7 @@ defmodule Sentinel.User do
     struct
     |> cast(params, @required_fields ++ @optional_fields)
     |> validate_required([:email])
-    |> downcase_email
+    |> Sentinel.Changeset.Schema.changeset
     |> unique_constraint(:email)
-  end
-
-  def permissions(_user_id) do
-    Application.get_env(:sentinel, :permissions)
-  end
-
-  defp downcase_email(changeset) do
-    email = get_change(changeset, :email)
-    if is_nil(email) do
-      changeset
-    else
-      put_change(changeset, :email, String.downcase(email))
-    end
   end
 end

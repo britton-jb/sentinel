@@ -2,7 +2,6 @@ defmodule Html.AccountControllerTest do
   use Sentinel.ConnCase
 
   alias Ecto.Changeset
-  alias Ecto.DateTime
   alias Sentinel.Ueberauthenticator
   alias Sentinel.User
 
@@ -20,18 +19,16 @@ defmodule Html.AccountControllerTest do
 
     user = Factory.insert(:user,
       email: old_email(),
-      confirmed_at: DateTime.utc,
+      confirmed_at: DateTime.utc_now(),
     )
     ueberauth = Factory.insert(:ueberauth, user: user)
-    permissions = User.permissions(user.id)
-    {:ok, token, _} = Guardian.encode_and_sign(user, :token, permissions)
+    {:ok, token, claims} = Sentinel.Guardian.encode_and_sign(user)
 
     conn =
       build_conn()
-      |> Sentinel.ConnCase.conn_with_fetched_session
-      |> put_session(Guardian.Keys.base_key(:default), token)
-      |> Sentinel.ConnCase.run_plug(Guardian.Plug.VerifySession)
-      |> Sentinel.ConnCase.run_plug(Guardian.Plug.LoadResource)
+      |> init_test_session(%{guardian_default_token: token})
+      |> Sentinel.Guardian.Plug.put_current_token(token)
+      |> Sentinel.Guardian.Plug.put_current_claims(claims)
 
     {:ok, %{user: user, auth: ueberauth, conn: conn}}
   end
@@ -47,9 +44,9 @@ defmodule Html.AccountControllerTest do
 
     mocked_token = SecureRandom.urlsafe_base64()
     mocked_user = Map.merge(user, %User{unconfirmed_email: @new_email})
-    mocked_mail = Mailer.send_new_email_address_email(mocked_user, mocked_token)
+    mocked_mail = Mailer.NewEmailAddress.build(mocked_user, mocked_token)
 
-    with_mock Mailer, [:passthrough], [send_new_email_address_email: fn(_, _) -> mocked_mail end] do
+    with_mock Mailer.NewEmailAddress, [:passthrough], [build: fn(_, _) -> mocked_mail end] do
       conn = put conn, account_path(conn, :update), %{account: %{email: @new_email}}
       response(conn, 200)
 

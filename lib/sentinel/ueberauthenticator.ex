@@ -3,13 +3,10 @@ defmodule Sentinel.Ueberauthenticator do
   Common authentication logic using the ueberauth underlying layer
   """
   alias Ueberauth.Auth
-  alias Sentinel.Authenticator
-  alias Sentinel.Changeset.Registrator
-  alias Sentinel.Changeset.Confirmator
-  alias Sentinel.Config
-  alias Sentinel.Ueberauth
+  alias Sentinel.{Authenticator, Changeset.Registrator, Changeset.Confirmator, Config, Ueberauth}
 
   @unknown_error {:error, [base: {"Unknown email or password", []}]}
+  @locked_error {:error, [lockable: {"Your account is currently locked. Please follow the instructions we sent you by email to unlock it.", []}]}
 
   def ueberauthenticate(auth = %Auth{provider: :identity, credentials: %Auth.Credentials{other: %{password: password}}}) when is_nil(password) or password == "" do
     if invitable?() do
@@ -92,6 +89,9 @@ defmodule Sentinel.Ueberauthenticator do
   defp authenticate(_user, nil, _password) do
     @unknown_error
   end
+  defp authenticate(_user, %Ueberauth{locked_at: locked_at}, _password) when locked_at != nil do
+    @locked_error
+  end
   defp authenticate(user, auth, password) do
     auth
     |> Map.put(:user, user)
@@ -135,3 +135,4 @@ defmodule Sentinel.Ueberauthenticator do
     Config.invitable
   end
 end
+

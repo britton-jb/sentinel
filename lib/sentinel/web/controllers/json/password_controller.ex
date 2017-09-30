@@ -3,14 +3,10 @@ defmodule Sentinel.Controllers.Json.PasswordController do
   Handles the password create and reset actions for JSON APIs
   """
   use Phoenix.Controller
-  use Guardian.Phoenix.Controller
 
-  alias Sentinel.Changeset.PasswordResetter
-  alias Sentinel.Config
-  alias Sentinel.Mailer
-  alias Sentinel.Util
+  alias Sentinel.{Changeset.PasswordResetter, Config, Mailer, Util}
 
-  plug Sentinel.Plug.AuthenticateResource, %{handler: Config.auth_handler} when action in [:authenticated_update]
+  plug Sentinel.AuthenticatedPipeline when action in [:authenticated_update]
 
   @doc """
   Create a password reset token for a user
@@ -57,14 +53,12 @@ defmodule Sentinel.Controllers.Json.PasswordController do
   Responds with status 422 and body {errors: [messages]} otherwise.
   """
   def update(conn, params, headers \\ %{}, session \\ %{})
-  def update(conn, params = %{"user_id" => user_id}, _headers, _session) do
+  def update(conn, %{"user_id" => user_id} = params, _headers, _session) do
     user = Config.repo.get(Config.user_model, user_id)
 
     case Sentinel.Update.update_password(user_id, params) do
       {:ok, _auth} ->
-        permissions = Config.user_model.permissions(user.id)
-
-        case Guardian.encode_and_sign(user, :token, permissions) do
+        case Sentinel.Guardian.encode_and_sign(user) do
           {:ok, token, _encoded_claims} -> json conn, %{token: token}
           {:error, :token_storage_failure} -> Util.send_error(conn, %{errors: "Failed to store session, please try to login again using your new password"})
           {:error, reason} -> Util.send_error(conn, %{errors: reason})
@@ -74,7 +68,8 @@ defmodule Sentinel.Controllers.Json.PasswordController do
     end
   end
 
-  def authenticated_update(conn, %{"account" => params}, user, _session) do
+  def authenticated_update(conn, %{"account" => params}) do
+    user = Sentinel.Guardian.Plug.current_resource(conn)
     auth = Config.repo.get_by(Sentinel.Ueberauth, user_id: user.id, provider: "identity")
     {password_reset_token, changeset} = auth |> PasswordResetter.create_changeset
     updated_auth = Config.repo.update!(changeset)

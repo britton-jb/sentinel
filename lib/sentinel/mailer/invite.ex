@@ -22,3 +22,4 @@ defmodule Sentinel.Mailer.Invite do
     |> render(:invite)
   end
 end
+

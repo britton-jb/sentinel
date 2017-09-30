@@ -2,10 +2,7 @@ defmodule Sentinel.Invited do
   @moduledoc """
   Handles the common invitation logic
   """
-  alias Sentinel.Changeset.Confirmator
-  alias Sentinel.Changeset.PasswordResetter
-  alias Sentinel.Config
-  alias Sentinel.Util
+  alias Sentinel.{Changeset.Confirmator, Changeset.PasswordResetter, Config, Util}
 
   def do_invited(%{"id" => id} = params) do
     # handled this way rather than with two functions with pattern matching

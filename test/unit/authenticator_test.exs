@@ -6,7 +6,7 @@ defmodule AuthenticatorTest do
   alias Mix.Config
 
   test "authenticate without db based ueberauth struct" do
-    assert {:error, %{base: "Unknown email or password"}} = Authenticator.authenticate(nil, "password")
+    assert {:error, [base: {"Unknown email or password", []}]} = Authenticator.authenticate(nil, "password")
   end
 
   test "authenticate with db based ueberauth struct" do
@@ -20,7 +20,7 @@ defmodule AuthenticatorTest do
 
   test "authenticate with db based ueberauth struct, confirmation required, user not confirmed" do
     Config.persist([sentinel: [confirmable: :required]])
-    assert {:error, %{base: "Account not confirmed yet. Please follow the instructions we sent you by email."}} = Authenticator.authenticate(
+    assert {:error, [base: {"Account not confirmed yet. Please follow the instructions we sent you by email.", []}]} = Authenticator.authenticate(
       %Ueberauth{
         hashed_password: Sentinel.Config.crypto_provider.hashpwsalt("password"),
         user: %{confirmed_at: nil}
@@ -34,7 +34,7 @@ defmodule AuthenticatorTest do
 
     Config.persist([sentinel: [lockable: true]])
 
-    assert {:error, %{base: "Unknown email or password"}} = Authenticator.authenticate(
+    assert {:error, [base: {"Unknown email or password", []}]} = Authenticator.authenticate(
       ueberauth,
       "wrong_password"
     )
@@ -47,7 +47,7 @@ defmodule AuthenticatorTest do
 
     Config.persist([sentinel: [lockable: true]])
 
-    assert {:error, %{lockable: "You have one more attempt to authenticate correctly before this account is locked."}} = Authenticator.authenticate(
+    assert {:error, [lockable: {"You have one more attempt to authenticate correctly before this account is locked.", []}]} = Authenticator.authenticate(
       ueberauth,
       "wrong_password"
     )
@@ -60,7 +60,7 @@ defmodule AuthenticatorTest do
 
     Config.persist([sentinel: [lockable: true]])
 
-    assert {:error, %{lockable: "This account has been locked, due to too many failed login attempts."}} = Authenticator.authenticate(
+    assert {:error, [lockable: {"Your account has been locked. We've sent you email instructions regarding how to unlock it.", []}]} = Authenticator.authenticate(
       ueberauth,
       "wrong_password"
     )
@@ -69,11 +69,11 @@ defmodule AuthenticatorTest do
   end
 
   test "fail to authenticate, lockable enabled, account locked" do
-    ueberauth = Factory.insert(:ueberauth, failed_attempts: 5, locked_at: Ecto.DateTime.utc())
+    ueberauth = Factory.insert(:ueberauth, failed_attempts: 5, locked_at: DateTime.utc_now())
 
     Config.persist([sentinel: [lockable: true]])
 
-    assert {:error, %{lockable: "This account is currently locked. Please follow the instructions in your email to unlock it."}} = Authenticator.authenticate(
+    assert {:error, [lockable: {"This account is currently locked. Please follow the instructions in your email to unlock it.", []}]} = Authenticator.authenticate(
       ueberauth,
       "wrong_password"
     )

@@ -3,11 +3,7 @@ defmodule Sentinel.Update do
   Handles abstracted update logic from controllers
   """
 
-  alias Sentinel.Changeset.AccountUpdater
-  alias Sentinel.Changeset.PasswordResetter
-  alias Sentinel.Config
-  alias Sentinel.Mailer
-  alias Sentinel.Util
+  alias Sentinel.{Changeset.AccountUpdater, Changeset.PasswordResetter, Config, Mailer, Util}
 
   def update(current_user, %{"password" => password} = params) do
     Config.repo.transaction(fn ->

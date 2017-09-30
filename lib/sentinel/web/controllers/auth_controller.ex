@@ -5,13 +5,11 @@ defmodule Sentinel.Controllers.AuthController do
 
   require Ueberauth
   use Phoenix.Controller
-  alias Sentinel.Config
-  alias Sentinel.Controllers.Html
-  alias Sentinel.Controllers.Json
+  alias Sentinel.{Config, Controllers.Html, Controllers.Json}
 
   plug Ueberauth
   plug :put_layout, {Config.layout_view, Config.layout}
-  plug Sentinel.Plug.AuthenticateResource, %{handler: Config.auth_handler} when action in [:delete]
+  plug Sentinel.AuthenticatedPipeline when action in [:delete]
 
   def new(conn, params) do
     if conn.private.phoenix_format == "json" do

@@ -15,9 +15,8 @@ defmodule Json.PasswordControllerTest do
       |> Conn.put_req_header("accept", "application/json")
     auth = Factory.insert(:ueberauth)
     user = auth.user
-    permissions = User.permissions(user.id)
-    {:ok, token, _} = Guardian.encode_and_sign(user, :token, permissions)
-    authenticated_conn = conn |> Conn.put_req_header("authorization", token)
+    {:ok, token, _} = Sentinel.Guardian.encode_and_sign(user)
+    authenticated_conn = conn |> Conn.put_req_header("authorization", "Bearer #{token}")
 
     {:ok, %{conn: conn, user: user, auth: auth, authenticated_conn: authenticated_conn}}
   end
@@ -31,9 +30,9 @@ defmodule Json.PasswordControllerTest do
 
   test "request a reset token", %{conn: conn, user: user} do
     mocked_reset_token = "mocked_reset_token"
-    mocked_mail = Mailer.send_password_reset_email(user, mocked_reset_token)
+    mocked_mail = Mailer.PasswordReset.build(user, mocked_reset_token)
 
-    with_mock Sentinel.Mailer, [:passthrough], [send_password_reset_email: fn(_, _) -> mocked_mail end] do
+    with_mock Mailer.PasswordReset, [:passthrough], [build: fn(_, _) -> mocked_mail end] do
       conn = get conn, api_password_path(conn, :new), %{email: user.email}
       response = json_response(conn, 200)
       assert response == "ok"
@@ -78,10 +77,10 @@ defmodule Json.PasswordControllerTest do
     refute updated_auth.hashed_password == old_hashed_password
   end
 
-  test "Reset password when logged in", %{authenticated_conn: conn, user: user, auth: auth} do #FIXME FAILING
+  test "reset password when logged in", %{authenticated_conn: conn, user: user, auth: auth} do
     old_hashed_password = auth.hashed_password
     user
-    |> Sentinel.User.changeset(%{confirmed_at: Ecto.DateTime.utc})
+    |> Sentinel.User.changeset(%{confirmed_at: DateTime.utc_now()})
     |> TestRepo.update!
 
     conn = put conn, api_password_path(conn, :authenticated_update), %{account: %{password: @new_password, password_confirmation: @new_password}}

@@ -4,18 +4,17 @@ defmodule Sentinel.Controllers.Html.AccountController do
   """
 
   use Phoenix.Controller
-  use Guardian.Phoenix.Controller
 
-  alias Sentinel.Config
-  alias Sentinel.Update
+  alias Sentinel.{Config, Update}
 
   plug :put_layout, {Config.layout_view, Config.layout}
-  plug Sentinel.Plug.AuthenticateResource, handler: Config.auth_handler
+  plug Sentinel.AuthenticatedPipeline
 
   @doc """
   Get the account data for the current user
   """
-  def edit(conn, _params, current_user, _claims \\ %{}) do
+  def edit(conn, _params) do
+    current_user = Sentinel.Guardian.Plug.current_resource(conn)
     changeset = Config.user_model.changeset(current_user, %{})
     render(conn, Config.views.user, "edit.html", %{conn: conn, user: current_user, changeset: changeset})
   end
@@ -25,7 +24,9 @@ defmodule Sentinel.Controllers.Html.AccountController do
   If the email address should be updated, the user will receive an email to his new address.
   The stored email address will only be updated after clicking the link in that message.
   """
-  def update(conn, %{"account" => params}, current_user, _claims) do
+  def update(conn, %{"account" => params}) do
+    current_user = Sentinel.Guardian.Plug.current_resource(conn)
+
     case Update.update(current_user, params) do
       {:ok, %{user: updated_user, auth: _auth, confirmation_token: confirmation_token}} ->
         Update.maybe_send_new_email_address_confirmation_email(updated_user, confirmation_token)

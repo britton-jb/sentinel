@@ -4,8 +4,7 @@ defmodule Sentinel.Controllers.Json.UserController do
   """
 
   use Phoenix.Controller
-  alias Sentinel.Config
-  alias Sentinel.Util
+  alias Sentinel.{Config, Util}
 
   def resend_confirmation_instructions(conn, params) do
     Sentinel.Confirm.send_confirmation_instructions(params)
@@ -47,3 +46,4 @@ defmodule Sentinel.Controllers.Json.UserController do
     end
   end
 end
+

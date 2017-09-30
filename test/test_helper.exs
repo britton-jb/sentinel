@@ -12,7 +12,6 @@ Code.require_file "test/support/endpoint.exs"
 Code.require_file "test/support/router.exs"
 Code.require_file "test/support/unit_case.exs"
 Code.require_file "test/support/conn_case.exs"
-Code.require_file "test/support/sentinel_user.exs"
 Code.require_file "test/support/mailer_helper.exs"
 Code.require_file "test/support/factories.exs"
 

@@ -3,8 +3,7 @@ defmodule Sentinel.Changeset.PasswordResetter do
   Module responsible for handling the password reset logic changeset
   """
   alias Ecto.Changeset
-  alias Sentinel.Changeset.HashPassword
-  alias Sentinel.Config
+  alias Sentinel.{Changeset.HashPassword, Config}
 
   @doc """
   Adds the changes needed to create a password reset token.
@@ -56,7 +55,7 @@ defmodule Sentinel.Changeset.PasswordResetter do
     {token, Config.crypto_provider.hashpwsalt(token)}
   end
 
-  defp validate_token(changeset = %{params: %{"password_reset_token" => password_reset_token}}) do
+  defp validate_token(%{params: %{"password_reset_token" => password_reset_token}} = changeset) do
     token_matches = Config.crypto_provider.checkpw(
       password_reset_token,
       changeset.data.hashed_password_reset_token
@@ -69,7 +68,7 @@ defmodule Sentinel.Changeset.PasswordResetter do
     Changeset.add_error changeset, :password_reset_token, "invalid"
   end
 
-  defp validate_password_and_confirmation_match(changeset = %{params: %{"credentials" => %{other: %{password: password, password_confirmation: password}}}}) do
+  defp validate_password_and_confirmation_match(%{params: %{"credentials" => %{other: %{password: password, password_confirmation: password}}}} = changeset) do
     changeset
   end
   defp validate_password_and_confirmation_match(changeset) do

@@ -4,18 +4,14 @@ defmodule Sentinel.Controllers.Html.AuthController do
   """
   require Ueberauth
   use Phoenix.Controller
-  alias Sentinel.AfterRegistrator
-  alias Sentinel.Config
-  alias Sentinel.RedirectHelper
-  alias Sentinel.RegistratorHelper
-  alias Sentinel.Ueberauthenticator
+  alias Sentinel.{AfterRegistrator, Config, RedirectHelper, RegistratorHelper, Ueberauthenticator, Session}
 
   plug Ueberauth
   plug :put_layout, {Config.layout_view, Config.layout}
-  plug Sentinel.Plug.AuthenticateResource, %{handler: Config.auth_handler} when action in [:delete]
+  plug Sentinel.AuthenticatedPipeline when action in [:delete]
 
   def request(conn, _params) do
-    changeset = Sentinel.Session.changeset(%Sentinel.Session{})
+    changeset = Session.changeset(%Session{})
     render(conn, Config.views.session, "new.html", %{conn: conn, changeset: changeset, providers: Config.ueberauth_providers})
   end
 
@@ -28,7 +24,7 @@ defmodule Sentinel.Controllers.Html.AuthController do
         new_user(conn, user, confirmation_token)
       {:ok, user} -> existing_user(conn, user)
       {:error, %{lockable: message}} ->
-        changeset = Sentinel.Session.changeset(%Sentinel.Session{})
+        changeset = Session.changeset(%Session{})
         conn
         |> put_status(401)
         |> put_flash(:error, message)
@@ -40,7 +36,7 @@ defmodule Sentinel.Controllers.Html.AuthController do
   def callback(conn, _params), do: failed_to_authenticate(conn)
 
   defp failed_to_authenticate(conn) do
-    changeset = Sentinel.Session.changeset(%Sentinel.Session{})
+    changeset = Session.changeset(%Session{})
     conn
     |> put_status(401)
     |> put_flash(:error, "Failed to authenticate")
@@ -77,12 +73,12 @@ defmodule Sentinel.Controllers.Html.AuthController do
         |> RedirectHelper.redirect_from(:user_create_unconfirmed)
       :false ->
         conn
-        |> Guardian.Plug.sign_in(user)
+        |> Sentinel.Guardian.Plug.sign_in(user)
         |> put_flash(:info, "Signed up")
         |> RedirectHelper.redirect_from(:user_create)
       _ ->
         conn
-        |> Guardian.Plug.sign_in(user)
+        |> Sentinel.Guardian.Plug.sign_in(user)
         |> put_flash(:info, "You will receive an email with instructions for how to confirm your email address in a few minutes.")
         |> RedirectHelper.redirect_from(:user_create)
     end
@@ -90,7 +86,7 @@ defmodule Sentinel.Controllers.Html.AuthController do
 
   defp existing_user(conn, user) do
     conn
-    |> Guardian.Plug.sign_in(user)
+    |> Sentinel.Guardian.Plug.sign_in(user)
     |> put_flash(:info, "Logged in")
     |> RedirectHelper.redirect_from(:session_create)
   end
@@ -101,7 +97,7 @@ defmodule Sentinel.Controllers.Html.AuthController do
   """
   def delete(conn, _params) do
     conn
-    |> Guardian.Plug.sign_out
+    |> Sentinel.Guardian.Plug.sign_out
     |> put_flash(:info, "Logged out successfully.")
     |> RedirectHelper.redirect_from(:session_delete)
   end
@@ -123,12 +119,18 @@ defmodule Sentinel.Controllers.Html.AuthController do
     case Ueberauthenticator.ueberauthenticate(auth) do
       {:ok, user} ->
         conn
-        |> Guardian.Plug.sign_in(user)
+        |> Sentinel.Guardian.Plug.sign_in(user)
         |> put_flash(:info, "Logged in")
         |> RedirectHelper.redirect_from(:session_create)
-      {:error, _errors} ->
+      {:error, error} ->
+        error_message =
+          error
+          |> List.first
+          |> elem(1)
+          |> elem(0)
+
         conn
-        |> put_flash(:error, "Unknown username or password")
+        |> put_flash(:error, error_message)
         |> RedirectHelper.redirect_from(:session_create_error)
     end
   end

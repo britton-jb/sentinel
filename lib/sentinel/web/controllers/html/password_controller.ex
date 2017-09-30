@@ -3,22 +3,17 @@ defmodule Sentinel.Controllers.Html.PasswordController do
   Handles the password create and reset actions
   """
   use Phoenix.Controller
-  use Guardian.Phoenix.Controller
 
-  alias Sentinel.Changeset.PasswordResetter
-  alias Sentinel.Config
-  alias Sentinel.Mailer
-  alias Sentinel.RedirectHelper
-  alias Sentinel.Util
+  alias Sentinel.{Changeset.PasswordResetter, Config, Mailer, RedirectHelper, Util}
 
   plug :put_layout, {Config.layout_view, Config.layout}
-  plug Sentinel.Plug.AuthenticateResource, %{handler: Config.auth_handler} when action in [:authenticated_update]
+  plug Sentinel.AuthenticatedPipeline when action in [:authenticated_update]
 
-  def new(conn, _params, _headers \\ %{}, _session \\ %{}) do
+  def new(conn, _params) do
     render(conn, Config.views.password, "new.html", %{conn: conn})
   end
 
-  def create(conn, %{"password" => %{"email" => email}}, _headers \\ %{}, _session \\ %{}) do # FIXME could extract all of this here, and on json side into another module
+  def create(conn, %{"password" => %{"email" => email}}) do
     user = Config.repo.get_by(Config.user_model, email: email)
 
     if is_nil(user) do
@@ -50,11 +45,11 @@ defmodule Sentinel.Controllers.Html.PasswordController do
     |> RedirectHelper.redirect_from(:password_create)
   end
 
-  def edit(conn, params, headers \\ %{}, session \\ %{})
-  def edit(conn, %{"user_id" => user_id, "password_reset_token" => password_reset_token}, _headers, _session) do
+  def edit(conn, params)
+  def edit(conn, %{"user_id" => user_id, "password_reset_token" => password_reset_token}) do
     render(conn, Config.views.password, "edit.html", %{conn: conn, password_reset_token: password_reset_token, user_id: user_id})
   end
-  def edit(conn, _params, _headers, _session) do
+  def edit(conn, _params) do
     conn
     |> put_flash(:error, "Invalid password reset link. Please try again.")
     |> RedirectHelper.redirect_from(:password_update_error)
@@ -65,14 +60,14 @@ defmodule Sentinel.Controllers.Html.PasswordController do
   Params should be:
   {user_id: 1, password_reset_token: "abc123"}
   """
-  def update(conn, params, _headers \\ %{}, _session \\ %{})
-  def update(conn, %{"password" => %{"user_id" => user_id, "password_reset_token" => _password_reset_params} = params}, _headers, _session) do
+  def update(conn, params)
+  def update(conn, %{"password" => %{"user_id" => user_id, "password_reset_token" => _password_reset_params} = params}) do
     user = Config.repo.get(Config.user_model, user_id)
 
     case Sentinel.Update.update_password(user_id, params) do
       {:ok, _auth} ->
         conn
-        |> Guardian.Plug.sign_in(user)
+        |> Sentinel.Guardian.Plug.sign_in(user)
         |> put_flash(:info, "Successfully updated password")
         |> RedirectHelper.redirect_from(:password_update)
       {:error, _changeset} ->
@@ -82,14 +77,15 @@ defmodule Sentinel.Controllers.Html.PasswordController do
         |> RedirectHelper.redirect_from(:password_update_unsuccessful)
     end
   end
-  def update(conn, _params, _headers, _session) do
+  def update(conn, _params) do
     conn
     |> put_status(422)
     |> put_flash(:error, "Unable to reset your password")
     |> RedirectHelper.redirect_from(:password_update_unsuccessful)
   end
 
-  def authenticated_update(conn, %{"account" => params}, current_user, _session) do # FIXME could extract all of this here and on json side into another module
+  def authenticated_update(conn, %{"account" => params}) do
+    current_user = Sentinel.Guardian.Plug.current_resource(conn)
     auth = Config.repo.get_by(Sentinel.Ueberauth, user_id: current_user.id, provider: "identity")
     {password_reset_token, changeset} = auth |> PasswordResetter.create_changeset
     updated_auth = Config.repo.update!(changeset)

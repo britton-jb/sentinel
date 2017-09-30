@@ -11,13 +11,6 @@ defmodule Sentinel.Config do
   end
 
   @doc """
-  Wrapper for getting the application config of :auth_handler
-  """
-  def auth_handler do
-    Application.get_env(:sentinel, :auth_handler, Sentinel.AuthHandler)
-  end
-
-  @doc """
   Wrapper for getting the application config of :confirmable
   """
   def confirmable do
@@ -78,6 +71,13 @@ defmodule Sentinel.Config do
   """
   def invitation_registration_url do
     Application.get_env(:sentinel, :invitation_registration_url)
+  end
+
+  @doc """
+  Checks if guardian_db is present
+  """
+  def guardian_db? do
+    Code.ensure_loaded?(GuardianDb)
   end
 
   @doc """
@@ -201,7 +201,11 @@ defmodule Sentinel.Config do
   def lockable? do
     Application.get_env(:sentinel, :lockable, true)
   end
-  
+
+  def otp_app do
+    Application.get_env(:sentinel, :otp_app)
+  end
+
   @doc """
   Wrapper for getting and merging the application config of :views
   """

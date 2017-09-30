@@ -12,7 +12,7 @@ defmodule UeberauthenticatorTest do
     end
 
     auth = Factory.insert(:ueberauth)
-    confirmed_user = Factory.insert(:user, confirmed_at: Ecto.DateTime.utc)
+    confirmed_user = Factory.insert(:user, confirmed_at: DateTime.utc_now())
     confirmed_auth = Factory.insert(:ueberauth, user: confirmed_user)
     {:ok,
       %{
@@ -172,7 +172,7 @@ defmodule UeberauthenticatorTest do
   end
 
   test "authenticate a confirmed user - case insensitive" do
-    user = Factory.insert(:user, confirmed_at: Ecto.DateTime.utc)
+    user = Factory.insert(:user, confirmed_at: DateTime.utc_now())
     auth = Factory.insert(:ueberauth, user: user)
 
     assert {:ok, _user = %Sentinel.User{}} = Ueberauthenticator.ueberauthenticate(%Auth{

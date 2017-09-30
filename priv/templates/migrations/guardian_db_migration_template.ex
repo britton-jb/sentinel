@@ -1,4 +1,4 @@
-defmodule GuardianDbMigrationTemplate do
+defmodule GuardianDbMigration do
   use Ecto.Migration
 
   def up do

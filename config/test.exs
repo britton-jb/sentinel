@@ -14,27 +14,27 @@ config :sentinel, Sentinel.TestRepo,
   max_overflow: 0,
   priv: "test/support"
 
-config :guardian, Guardian,
-  issuer: "Sentinel",
-  secret_key: "guardian_sekret",
-  allowed_algos: ["HS512"], # optional
-  verify_module: Guardian.JWT,  # optional
-  ttl: { 30, :days },
-  verify_issuer: true, # optional
-  serializer: Sentinel.GuardianSerializer,
-  hooks: GuardianDb, # optional - only needed if using guardian db
-  permissions: Application.get_env(:sentinel, :permissions)
-
+config :bcrypt_elixir, :log_rounds, 4
 # Only relevant to test ^^
 
+config :sentinel, Sentinel.Guardian,
+  issuer: "Sentinel",
+  secret_key: "Secret key. You can use `mix guardian.gen.secret` to get one"
+
+config :sentinel, Sentinel.Pipeline,
+  module: Sentinel.Guardian,
+  error_handler: Sentinel.AuthHandler
+
+config :guardian_db, GuardianDb,
+  repo: Sentinel.TestRepo
+
 config :sentinel,
+  otp_app: :sentinel, # should be your otp_app
   app_name: "Test App",
-  user_model: Sentinel.User, #FIXME should be your generated model
+  user_model: Sentinel.User, # should be your generated model
   send_address: "test@example.com",
-  crypto_provider: Comeonin.Bcrypt,
-  repo: Sentinel.TestRepo, #FIXME should be your repo
+  repo: Sentinel.TestRepo, # should be your repo
   ecto_repos: [Sentinel.TestRepo],
-  auth_handler: Sentinel.AuthHandler,
   views: %{
     email: Sentinel.EmailView, # your email view (optional)
     error: Sentinel.ErrorView, # your error view (optional)
@@ -43,17 +43,14 @@ config :sentinel,
     shared: Sentinel.SharedView, # your shared view (optional)
     user: Sentinel.UserView # your user view (optional)
   },
-  router: Sentinel.TestRouter, #FIXME your router
-  endpoint: Sentinel.Endpoint, #FIXME your endpoint
+  router: Sentinel.TestRouter, # your router
+  endpoint: Sentinel.Endpoint, # your endpoint
   invitable: true,
   invitation_registration_url: "http://localhost:4000", # for api usage only
   confirmable: :optional,
   confirmable_redirect_url: "http://localhost:4000", # for api usage only
   password_reset_url: "http://localhost:4000", # for api usage only
   send_emails: true
-
-config :guardian_db, GuardianDb,
-  repo: Sentinel.TestRepo #FIXME your repo
 
 config :sentinel, Sentinel.Mailer,
   adapter: Bamboo.TestAdapter
