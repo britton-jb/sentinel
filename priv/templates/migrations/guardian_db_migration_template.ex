@@ -13,6 +13,8 @@ defmodule GuardianDbMigration do
       add :claims, :map
       timestamps()
     end
+
+    create index(:guardian_tokens, [:sub])
   end
 
   def down do

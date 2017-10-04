@@ -60,6 +60,7 @@ defmodule Mix.Tasks.Sentinel.Install do
     IO.puts "This ensures emails are required and downcased properly before insertion.\n"
     IO.puts "Also make sure to remove the unconfirmed_email, confirmed_at, and hashed_confirmation_token"
     IO.puts "from the validate_required/2 list."
+    IO.puts "Finally, add `create index(:users, [:email], unique: true)` to the users migration."
     Process.sleep(1001)
   end
 
@@ -143,5 +144,7 @@ defmodule Mix.Tasks.Sentinel.Install do
 
     migration_path
     |> File.write!(migration_content ++ new_content)
+
+    IO.puts "If your user table isn't `users` make sure to modify your Ueberauth migration to the correct table name"
   end
 end
