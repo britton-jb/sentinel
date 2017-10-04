@@ -7,7 +7,7 @@ defmodule Sentinel.Mixfile do
   def project do
     [app: :sentinel,
       version: @version,
-      elixir: "~> 1.3",
+      elixir: "~> 1.4",
       elixirc_paths: elixirc_paths(Mix.env),
       compilers: [:phoenix] ++ Mix.compilers,
       package: package(),
