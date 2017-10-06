@@ -120,11 +120,9 @@ defmodule Sentinel.Ueberauthenticator do
           |> Sentinel.Ueberauth.changeset(Map.from_struct(updated_auth))
 
         case Config.repo.insert(auth_changeset) do
-          {:ok, _auth} -> nil
-          _ -> Config.repo.rollback(changeset.errors)
+          {:ok, _auth} -> %{user: user, confirmation_token: confirmation_token}
+          {:error, changeset} -> Config.repo.rollback(changeset.errors)
         end
-
-        %{user: user, confirmation_token: confirmation_token}
       end)
     else
       {:error, [base: {"New user registration is not permitted", []}]}

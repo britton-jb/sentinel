@@ -22,7 +22,7 @@ defmodule Sentinel.Controllers.Json.AuthController do
       {:ok, %{user: user, confirmation_token: confirmation_token}} ->
         new_user(conn, user, confirmation_token)
       {:ok, user} -> existing_user(conn, user)
-      {:error, errors} -> Util.send_error(conn, errors, 401)
+      {:error, errors} -> Util.send_error(conn, errors, 422)
     end
   end
 
