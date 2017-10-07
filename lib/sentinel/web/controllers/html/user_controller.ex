@@ -83,4 +83,3 @@ defmodule Sentinel.Controllers.Html.UserController do
     end
   end
 end
-

@@ -81,6 +81,14 @@ defmodule Sentinel.Config do
   end
 
   @doc """
+  Wrapper for the application config that may contain a user's custom
+  password validation changeset
+  """
+  def password_validation do
+    Application.get_env(:sentinel, :password_validation)
+  end
+
+  @doc """
   Wrapper for getting the application config of :registerable module
   """
   def registerable? do

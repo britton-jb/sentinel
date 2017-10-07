@@ -57,7 +57,7 @@ defmodule Sentinel.Ueberauth do
     {:ok, _updated_auth} =
       auth
       |> Sentinel.Ueberauth.changeset(%{failed_attempts: (auth.failed_attempts || 0) + 1})
-      |> Sentinel.Config.repo.update()
+      |> Config.repo.update()
   end
 
   @spec lock(%Sentinel.Ueberauth{}) :: %Sentinel.Ueberauth{}
@@ -68,9 +68,9 @@ defmodule Sentinel.Ueberauth do
         failed_attempts: 5,
         locked_at: DateTime.utc_now(),
         unlock_token: SecureRandom.urlsafe_base64()
-      }) |> Sentinel.Config.repo.update()
+      }) |> Config.repo.update()
 
-    preloaded_auth = Sentinel.Config.repo.preload(updated_auth, [:user])
+    preloaded_auth = Config.repo.preload(updated_auth, [:user])
     Sentinel.Mailer.send_locked_account_email(preloaded_auth.user, preloaded_auth.unlock_token)
 
     {:ok, preloaded_auth}
@@ -79,12 +79,12 @@ defmodule Sentinel.Ueberauth do
   @spec unlock(String.t()) :: %Sentinel.Ueberauth{}
   def unlock(unlock_token) do
     Sentinel.Ueberauth
-    |> Sentinel.Config.repo.get_by(unlock_token: unlock_token)
+    |> Config.repo.get_by(unlock_token: unlock_token)
     |> Sentinel.Ueberauth.changeset(%{
         failed_attempts: 0,
         locked_at: nil,
         unlock_token: nil,
-      }) |> Sentinel.Config.repo.update()
+      }) |> Config.repo.update()
   end
 
   defp identity_changeset(struct, params) do
@@ -93,6 +93,7 @@ defmodule Sentinel.Ueberauth do
     |> validate_required([:provider, :uid, :user_id])
     |> assoc_constraint(:user)
     |> validates_provider_doesnt_already_exist_for_user
+    |> Sentinel.PasswordValidator.changeset(params)
     |> HashPassword.changeset(params)
   end
 
@@ -106,7 +107,7 @@ defmodule Sentinel.Ueberauth do
   defp validates_provider_doesnt_already_exist_for_user(changeset) do
     with provider_atom when not is_nil(provider_atom) <- get_change(changeset, :provider),
          user_id       when not is_nil(user_id)       <- get_change(changeset, :user_id),
-         ueberauth     when not is_nil(ueberauth)     <- Sentinel.Config.repo.get_by(Sentinel.Config.user_model, provider: provider_atom, user_id: user_id) do
+         ueberauth     when not is_nil(ueberauth)     <- Config.repo.get_by(Config.user_model, provider: provider_atom, user_id: user_id) do
       add_error(changeset, :provider, "already exists for this user")
     else
       _ -> changeset

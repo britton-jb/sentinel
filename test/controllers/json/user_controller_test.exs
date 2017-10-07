@@ -7,7 +7,7 @@ defmodule Json.UserControllerTest do
   alias Sentinel.Changeset.PasswordResetter
   alias Sentinel.Changeset.Registrator
 
-  @password "secret"
+  @password "password"
 
   setup do
     on_exit fn ->
@@ -179,17 +179,17 @@ defmodule Json.UserControllerTest do
     assert updated_user.unconfirmed_email == nil
   end
 
-  test "sign up with missing password without the invitable module enabled", %{conn: conn, invite_params: params}  do # green
+  test "sign up with missing password without the invitable module enabled", %{conn: conn, invite_params: params} do
     Config.persist([sentinel: [invitable: false]])
 
     conn = post conn, auth_path(conn, :callback, "identity"), params
-    response = json_response(conn, 401)
+    response = json_response(conn, 422)
     assert response == %{"errors" => [%{"password" => "A password is required to login"}]}
   end
 
   test "sign up with missing email", %{conn: conn} do # green
     conn = post conn, auth_path(conn, :callback, "identity"), %{"user" => %{"password" => @password}}
-    response = json_response(conn, 401)
+    response = json_response(conn, 422)
     assert response == %{"errors" =>
       [
         %{"email" => "An email is required to login"},
@@ -206,7 +206,7 @@ defmodule Json.UserControllerTest do
     end)
 
     conn = post conn, auth_path(conn, :callback, "identity"), params
-    response = json_response(conn, 401)
+    response = json_response(conn, 422)
     assert response == %{"errors" => [%{"password" => "too short"}]}
   end
 

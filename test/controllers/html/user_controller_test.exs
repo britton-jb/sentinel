@@ -2,13 +2,15 @@ defmodule Html.UserControllerTest do
   use Sentinel.ConnCase
 
   alias Mix.Config
-  alias Sentinel.Changeset.AccountUpdater
-  alias Sentinel.Changeset.Confirmator
-  alias Sentinel.Changeset.PasswordResetter
-  alias Sentinel.Changeset.Registrator
+  alias Sentinel.Changeset.{
+    AccountUpdater,
+    Confirmator,
+    PasswordResetter,
+    Registrator
+  }
   alias GuardianDb.Token
 
-  @password "secret"
+  @password "password"
 
   setup do
     on_exit fn ->
@@ -74,7 +76,6 @@ defmodule Html.UserControllerTest do
   test "confirmable :required sign up", %{conn: conn, params: params, welcome_email: mocked_mail} do # green
     Config.persist([sentinel: [confirmable: :required]])
     Config.persist([sentinel: [invitable: false]])
-
 
     with_mock Sentinel.Mailer, [:passthrough], [send_welcome_email: fn(_, _) -> mocked_mail end] do
       conn = post conn, auth_path(conn, :callback, "identity"), params

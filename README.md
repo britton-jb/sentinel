@@ -146,7 +146,7 @@ provider credentials.
 
 Ensure that you include `Sentinel.Changeset.Schema.changeset/1` in your
 schema's generated changeset to ensure emails are required, unique, and
-downcased upon insertion. Also ensure you remove the 
+downcased upon insertion. Also ensure you remove the
 `unconfirmed_email`, `confirmed_at`, and `hashed_confirmation_token` from
 the `validate_required/2` list.
 
@@ -328,6 +328,18 @@ def custom_changeset(changeset, attrs \\ %{}) do
   |> validate_inclusion(:my_attr, ["foo", "bar"])
 end
 ```
+
+### Custom password validation
+If you'd like more password validation than just ensuring each password
+is at least 8 characters, you can specify a custom changeset:
+
+```elixir
+config :sentinel, password_validation: {MyApp.Passwords, :custom_changeset}
+```
+
+This function must accept 2 arguments consisting of a changeset and a map of
+params and *must* return a changeset. The params in the second argument will be
+the ueberauth callback params
 
 ## Contributing/Want something new?
 Create an issue. Preferably with a PR. If you're super awesome
