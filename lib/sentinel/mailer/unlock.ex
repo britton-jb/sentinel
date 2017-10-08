@@ -22,4 +22,3 @@ defmodule Sentinel.Mailer.Unlock do
     |> render(:unlock)
   end
 end
-

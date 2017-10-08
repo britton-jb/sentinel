@@ -107,7 +107,7 @@ defmodule Sentinel.Ueberauth do
   defp validates_provider_doesnt_already_exist_for_user(changeset) do
     with provider_atom when not is_nil(provider_atom) <- get_change(changeset, :provider),
          user_id       when not is_nil(user_id)       <- get_change(changeset, :user_id),
-         ueberauth     when not is_nil(ueberauth)     <- Config.repo.get_by(Config.user_model, provider: provider_atom, user_id: user_id) do
+         ueberauth     when not is_nil(ueberauth)     <- Config.repo.get_by(Sentinel.Ueberauth, provider: provider_atom, user_id: user_id) do
       add_error(changeset, :provider, "already exists for this user")
     else
       _ -> changeset

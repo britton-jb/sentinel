@@ -4,4 +4,3 @@ defmodule Sentinel.SharedView do
 
   alias Sentinel.Config
 end
-

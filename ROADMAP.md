@@ -4,7 +4,7 @@ This is more notes about things that I'd like to change.
 ## Features
 Dialyzer - run it
 
-Password custom password validation, including a few vanilla password validation settings
+Ueberauthenticator `create_user_and_auth` registerable AND invitable fix on line 111 (FIXME)
 https://github.com/britton-jb/sentinel/issues/55
 https://github.com/britton-jb/sentinel/issues/37
 https://github.com/britton-jb/sentinel/issues/48

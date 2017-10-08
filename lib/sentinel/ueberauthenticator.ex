@@ -8,15 +8,15 @@ defmodule Sentinel.Ueberauthenticator do
   @unknown_error {:error, [base: {"Unknown email or password", []}]}
   @locked_error {:error, [lockable: {"Your account is currently locked. Please follow the instructions we sent you by email to unlock it.", []}]}
 
+  def ueberauthenticate(%Auth{provider: :identity, uid: email}) when is_nil(email) or email == "" do
+    {:error, [email: {"can't be blank", []}]}
+  end
   def ueberauthenticate(auth = %Auth{provider: :identity, credentials: %Auth.Credentials{other: %{password: password}}}) when is_nil(password) or password == "" do
     if invitable?() do
       create_user_and_auth(auth)
     else
       {:error, [password: {"A password is required to login", []}]}
     end
-  end
-  def ueberauthenticate(%Auth{provider: :identity, uid: email}) when is_nil(email) or email == "" do
-    {:error, [email: {"An email is required to login", []}]}
   end
   def ueberauthenticate(%Auth{provider: :identity, uid: uid, credentials: %Auth.Credentials{other: %{password: password, password_confirmation: password_confirmation}}}) when is_nil(password_confirmation) or password_confirmation == "" do
     Config.user_model
@@ -49,19 +49,22 @@ defmodule Sentinel.Ueberauthenticator do
     |> find_auth_and_authenticate(password)
   end
   def ueberauthenticate(%Auth{uid: uid} = auth_params) do
+    string_uid = coerce_to_string(uid)
+
     auth =
       Sentinel.Ueberauth
-      |> Config.repo.get_by(uid: uid)
+      |> Config.repo.get_by(uid: string_uid)
       |> Config.repo.preload([:user])
 
+    # FIXME/note can I turn this nasty nesting into a with statement?
     if is_nil(auth) do
-      user = Config.repo.get_by(Config.user_model, email: auth.info.email)
+      user = Config.repo.get_by(Config.user_model, email: auth_params.info.email)
       if is_nil(user) do
-        create_user_and_auth(auth_params)
+        create_user_and_auth(auth_params, string_uid)
       else
         updated_auth = auth_params |> Map.put(:provider, Atom.to_string(auth_params.provider))
         auth_changeset =
-          %Sentinel.Ueberauth{uid: user.id, user_id: user.id}
+          %Sentinel.Ueberauth{uid: string_uid, user_id: user.id}
           |> Sentinel.Ueberauth.changeset(Map.from_struct(updated_auth))
 
         case Config.repo.insert(auth_changeset) do
@@ -98,8 +101,8 @@ defmodule Sentinel.Ueberauthenticator do
     |> Authenticator.authenticate(password)
   end
 
-  defp create_user_and_auth(auth) do
-    if Config.registerable?() do
+  defp create_user_and_auth(auth, provided_uid \\ nil) do
+    if Config.registerable?() do # FIXME does this actually work the way I'm intending? Do we still want invitable to be a thing?
       updated_auth = auth |> Map.put(:provider, Atom.to_string(auth.provider))
 
       Config.repo.transaction(fn ->
@@ -109,18 +112,13 @@ defmodule Sentinel.Ueberauthenticator do
           |> Registrator.changeset(updated_auth.extra.raw_info)
           |> Confirmator.confirmation_needed_changeset
 
-        user =
-          case Config.repo.insert(changeset) do
-            {:ok, user} -> user
-            _ -> Config.repo.rollback(changeset.errors)
-          end
-
-        auth_changeset =
-          %Sentinel.Ueberauth{uid: user.id, user_id: user.id}
-          |> Sentinel.Ueberauth.changeset(Map.from_struct(updated_auth))
-
-        case Config.repo.insert(auth_changeset) do
-          {:ok, _auth} -> %{user: user, confirmation_token: confirmation_token}
+        with {:ok, user} <- Config.repo.insert(changeset),
+             uid = set_uid(provided_uid, user),
+             updated_auth = Map.merge(Map.from_struct(updated_auth), %{uid: uid, user_id: user.id}),
+             auth_changeset <- Sentinel.Ueberauth.changeset(%Sentinel.Ueberauth{}, updated_auth),
+             {:ok, _auth} <- Config.repo.insert(auth_changeset) do
+          %{user: user, confirmation_token: confirmation_token}
+        else
           {:error, changeset} -> Config.repo.rollback(changeset.errors)
         end
       end)
@@ -129,8 +127,13 @@ defmodule Sentinel.Ueberauthenticator do
     end
   end
 
+  defp set_uid(nil, user), do: coerce_to_string(user.id)
+  defp set_uid(provided_uid, _user), do: coerce_to_string(provided_uid)
+
+  defp coerce_to_string(var) when is_bitstring(var), do: var
+  defp coerce_to_string(var) when is_integer(var), do: Integer.to_string(var)
+
   defp invitable? do
     Config.invitable
   end
 end
-

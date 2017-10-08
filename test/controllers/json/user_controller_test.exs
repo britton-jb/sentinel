@@ -192,7 +192,7 @@ defmodule Json.UserControllerTest do
     response = json_response(conn, 422)
     assert response == %{"errors" =>
       [
-        %{"email" => "An email is required to login"},
+        %{"email" => "can't be blank"},
       ]
     }
   end

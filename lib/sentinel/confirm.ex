@@ -31,4 +31,3 @@ defmodule Sentinel.Confirm do
   end
   def do_confirm(_), do: {:error, :bad_request}
 end
-
