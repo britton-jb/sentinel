@@ -41,7 +41,7 @@ Example config:
 ``` elixir
 # config/config.exs
 
-config :sentinel, Sentinel.Guardian,
+config :my_app, Sentinel.Guardian,
   issuer: "MyApp",
   secret_key: "`use mix guardian.gen.secret to obtain`",
 ```

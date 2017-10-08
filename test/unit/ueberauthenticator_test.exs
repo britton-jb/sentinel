@@ -25,7 +25,7 @@ defmodule UeberauthenticatorTest do
   end
 
   test "identity provider without user or passsword" do
-    assert {:error, [email: {"can't be blank", [validation: :required]}]} = Ueberauthenticator.ueberauthenticate(%Auth{
+    assert {:error, [email: {"can't be blank", []}]} = Ueberauthenticator.ueberauthenticate(%Auth{
       provider: :identity,
       credentials: %Auth.Credentials{
         other: %{
@@ -68,7 +68,7 @@ defmodule UeberauthenticatorTest do
   end
 
   test "identity provider without email", %{auth: auth} do
-    assert {:error, [email: {"An email is required to login", []}]} = Ueberauthenticator.ueberauthenticate(%Auth{
+    assert {:error, [email: {"can't be blank", []}]} = Ueberauthenticator.ueberauthenticate(%Auth{
       provider: :identity,
       credentials: %Auth.Credentials{
         other: %{

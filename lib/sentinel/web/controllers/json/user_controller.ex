@@ -46,4 +46,3 @@ defmodule Sentinel.Controllers.Json.UserController do
     end
   end
 end
-

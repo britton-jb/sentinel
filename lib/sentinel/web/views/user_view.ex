@@ -27,4 +27,3 @@ defmodule Sentinel.UserView do
     Config.views.user
   end
 end
-
