@@ -44,14 +44,14 @@ defmodule HashPasswordTest do
 
   test "it should return a valid changeset with a hashed password when password and confirmation are present and match", %{matching: params} do
     assert %Sentinel.Ueberauth{}
-      |> Ecto.Changeset.cast(%{}, [:provider, :uid, :expires_at, :hashed_password, :hashed_password_reset_token, :user_id])
+      |> Ecto.Changeset.cast(%{}, [:provider, :uid, :hashed_password, :hashed_password_reset_token, :user_id])
       |> HashPassword.changeset(params)
       |> Map.get(:valid?)
   end
 
   test "it should return an invalid changeset without a hashed password when password and confirmation are present and match, and errors are already present", %{matching: params} do
     refute %Sentinel.Ueberauth{}
-      |> Ecto.Changeset.cast(%{}, [:provider, :uid, :expires_at, :hashed_password, :hashed_password_reset_token, :user_id])
+      |> Ecto.Changeset.cast(%{}, [:provider, :uid, :hashed_password, :hashed_password_reset_token, :user_id])
       |> Ecto.Changeset.add_error(:misc, "doesn't matter what this is")
       |> HashPassword.changeset(params)
       |> Map.get(:changes)
@@ -62,14 +62,14 @@ defmodule HashPasswordTest do
     Config.persist([sentinel: [invitable: false ]])
 
     refute %Sentinel.Ueberauth{}
-      |> Ecto.Changeset.cast(%{}, [:provider, :uid, :expires_at, :hashed_password, :hashed_password_reset_token, :user_id])
+      |> Ecto.Changeset.cast(%{}, [:provider, :uid, :hashed_password, :hashed_password_reset_token, :user_id])
       |> HashPassword.changeset(params)
       |> Map.get(:valid?)
   end
 
   test "on update it should return a valid changeset when password and password confirmation do not match", %{mismatch: params} do
     assert %Sentinel.Ueberauth{id: 1}
-      |> Ecto.Changeset.cast(%{}, [:provider, :uid, :expires_at, :hashed_password, :hashed_password_reset_token, :user_id])
+      |> Ecto.Changeset.cast(%{}, [:provider, :uid, :hashed_password, :hashed_password_reset_token, :user_id])
       |> HashPassword.changeset(params)
       |> Map.get(:valid?)
   end
@@ -78,7 +78,7 @@ defmodule HashPasswordTest do
     Config.persist([sentinel: [invitable: true]])
 
     assert %Sentinel.Ueberauth{}
-      |> Ecto.Changeset.cast(%{}, [:provider, :uid, :expires_at, :hashed_password, :hashed_password_reset_token, :user_id])
+      |> Ecto.Changeset.cast(%{}, [:provider, :uid, :hashed_password, :hashed_password_reset_token, :user_id])
       |> HashPassword.changeset(params)
       |> Map.get(:valid?)
   end
@@ -87,21 +87,21 @@ defmodule HashPasswordTest do
     Config.persist([sentinel: [invitable: false]])
 
     refute %Sentinel.Ueberauth{}
-      |> Ecto.Changeset.cast(%{}, [:provider, :uid, :expires_at, :hashed_password, :hashed_password_reset_token, :user_id])
+      |> Ecto.Changeset.cast(%{}, [:provider, :uid, :hashed_password, :hashed_password_reset_token, :user_id])
       |> HashPassword.changeset(params)
       |> Map.get(:valid?)
   end
 
   test "on update it should return an invalid changest when password is absent an ueberauth struct", %{no_confirmation: params} do
     refute %Sentinel.Ueberauth{id: 1}
-      |> Ecto.Changeset.cast(%{}, [:provider, :uid, :expires_at, :hashed_password, :hashed_password_reset_token, :user_id])
+      |> Ecto.Changeset.cast(%{}, [:provider, :uid, :hashed_password, :hashed_password_reset_token, :user_id])
       |> HashPassword.changeset(params)
       |> Map.get(:valid?)
   end
 
   test "it should return a valid changeset if changes are unrelated to password", %{no_password: params} do
     assert %Sentinel.Ueberauth{id: 1}
-      |> Ecto.Changeset.cast(%{}, [:provider, :uid, :expires_at, :hashed_password, :hashed_password_reset_token, :user_id])
+      |> Ecto.Changeset.cast(%{}, [:provider, :uid, :hashed_password, :hashed_password_reset_token, :user_id])
       |> HashPassword.changeset(params)
       |> Map.get(:valid?)
   end

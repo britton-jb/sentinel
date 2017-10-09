@@ -50,22 +50,21 @@ defmodule Sentinel.Ueberauthenticator do
   end
   def ueberauthenticate(%Auth{uid: uid} = auth_params) do
     string_uid = coerce_to_string(uid)
+    updated_auth_params = auth_params |> Map.put(:provider, Atom.to_string(auth_params.provider))
 
     auth =
       Sentinel.Ueberauth
       |> Config.repo.get_by(uid: string_uid)
       |> Config.repo.preload([:user])
 
-    # FIXME/note can I turn this nasty nesting into a with statement?
     if is_nil(auth) do
       user = Config.repo.get_by(Config.user_model, email: auth_params.info.email)
       if is_nil(user) do
         create_user_and_auth(auth_params, string_uid)
       else
-        updated_auth = auth_params |> Map.put(:provider, Atom.to_string(auth_params.provider))
         auth_changeset =
           %Sentinel.Ueberauth{uid: string_uid, user_id: user.id}
-          |> Sentinel.Ueberauth.changeset(Map.from_struct(updated_auth))
+          |> Sentinel.Ueberauth.changeset(Map.from_struct(updated_auth_params))
 
         case Config.repo.insert(auth_changeset) do
           {:ok, _auth} -> {:ok, user}
@@ -73,7 +72,8 @@ defmodule Sentinel.Ueberauthenticator do
         end
       end
     else
-      {:ok, auth.user}
+      auth_changeset = Sentinel.Ueberauth.changeset(auth, Map.from_struct(updated_auth_params))
+      Config.repo.insert(auth_changeset)
     end
   end
 
@@ -106,20 +106,20 @@ defmodule Sentinel.Ueberauthenticator do
       updated_auth = auth |> Map.put(:provider, Atom.to_string(auth.provider))
 
       Config.repo.transaction(fn ->
-        {confirmation_token, changeset} =
+        {confirmation_token, user_changeset} =
           updated_auth.info
           |> Map.from_struct
           |> Registrator.changeset(updated_auth.extra.raw_info)
           |> Confirmator.confirmation_needed_changeset
 
-        with {:ok, user} <- Config.repo.insert(changeset),
+        with {:ok, user} <- Config.repo.insert(user_changeset),
              uid = set_uid(provided_uid, user),
              updated_auth = Map.merge(Map.from_struct(updated_auth), %{uid: uid, user_id: user.id}),
              auth_changeset <- Sentinel.Ueberauth.changeset(%Sentinel.Ueberauth{}, updated_auth),
              {:ok, _auth} <- Config.repo.insert(auth_changeset) do
           %{user: user, confirmation_token: confirmation_token}
         else
-          {:error, changeset} -> Config.repo.rollback(changeset.errors)
+          {:error, error_changeset} -> Config.repo.rollback(error_changeset.errors)
         end
       end)
     else
