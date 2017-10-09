@@ -15,15 +15,28 @@ defmodule Sentinel.Ueberauth do
   end
 
   schema "ueberauths" do
-    field :provider, :string
-    field :uid, :string
-    field :expires_at, :utc_datetime
+    # both
+    field :provider, :string, null: false
+    field :uid, :string, null: false
+    belongs_to :user, Config.user_model
+
+    # other
+    embeds_one :credentials, Credentials do
+      field :token, :string
+      field :refresh_token, :string
+      field :token_type, :string
+      field :secret, :string
+      field :expires, :boolean
+      field :expires_at, :utc_datetime
+      field :scopes, {:array, :string}
+    end
+
+    # identity
     field :hashed_password, :string
     field :hashed_password_reset_token, :string
     field :failed_attempts, :integer
     field :locked_at, :utc_datetime
     field :unlock_token, :string
-    belongs_to :user, Config.user_model
 
     timestamps()
   end
@@ -46,10 +59,21 @@ defmodule Sentinel.Ueberauth do
     updated_params = coerce_provider_to_string(params)
 
     struct
-    |> cast(updated_params, [:provider, :uid, :expires_at, :user_id])
+    |> cast(updated_params, [:provider, :uid, :user_id])
     |> validate_required([:provider, :uid, :user_id])
     |> validates_provider_doesnt_already_exist_for_user
     |> assoc_constraint(:user)
+    |> cast_embed(:credentials, with: &credentials_changeset/2)
+  end
+
+  defp credentials_changeset(struct, params) do
+    if params == %{} || is_nil(params.credentials) do
+      %Ecto.Changeset{}
+    else
+      struct
+      |> cast(params, [:token, :refresh_token, :token_type, :secret, :expires, :expires_at, :scopes])
+      |> validate_required([:token, :token_type])
+    end
   end
 
   @spec increment_failed_attempts(%Sentinel.Ueberauth{}) :: %Sentinel.Ueberauth{}
@@ -89,7 +113,7 @@ defmodule Sentinel.Ueberauth do
 
   defp identity_changeset(struct, params) do
     struct
-    |> cast(params, [:provider, :uid, :expires_at, :hashed_password, :hashed_password_reset_token, :user_id, :failed_attempts, :locked_at, :unlock_token])
+    |> cast(params, [:provider, :uid, :hashed_password, :hashed_password_reset_token, :user_id, :failed_attempts, :locked_at, :unlock_token])
     |> validate_required([:provider, :uid, :user_id])
     |> assoc_constraint(:user)
     |> validates_provider_doesnt_already_exist_for_user

@@ -67,7 +67,6 @@ defmodule PasswordResetterTest do
     hashed_password = "$2b$04$zx78eyMSingslyg5Q8Ay4.1qkrWkIFVKT8XUFBDJPpu2WH.2uBaGq"
 
     auth = %Sentinel.Ueberauth{
-      expires_at: nil,
       hashed_password: hashed_password,
       hashed_password_reset_token: "$2b$04$89K4euxPq3T3eYPLPZN7luYIf9jx4iwGvevEKLt17IGuSy4EvtKvK",
       id: 2421,
