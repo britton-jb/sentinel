@@ -141,6 +141,7 @@ defmodule UeberauthenticatorTest do
 
   test "identity provider with password and confirmation, user DOESN'T exist, auth DOESN'T, REGISTERABLE false - doesn't create a new user" do
     Config.persist([sentinel: [registerable: :false]])
+    Config.persist([sentinel: [invitable: :false]])
 
     assert {:error, [base: {"New user registration is not permitted", []}]} = Ueberauthenticator.ueberauthenticate(%Auth{
       provider: :identity,

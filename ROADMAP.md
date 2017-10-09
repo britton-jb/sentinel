@@ -6,7 +6,6 @@ Dialyzer - run it
 
 - allow users to persist random stuff to user or auth record from the ueberauth struct
   via a custom injected method? (like the avatar etc from github)
-- Ueberauthenticator `create_user_and_auth` registerable AND invitable fix on line 105 (FIXME)
 - https://github.com/britton-jb/sentinel/issues/55
 - https://github.com/britton-jb/sentinel/issues/37
 - https://github.com/britton-jb/sentinel/issues/48

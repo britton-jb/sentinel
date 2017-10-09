@@ -102,7 +102,7 @@ defmodule Sentinel.Ueberauthenticator do
   end
 
   defp create_user_and_auth(auth, provided_uid \\ nil) do
-    if Config.registerable?() do # FIXME does this actually work the way I'm intending? Do we still want invitable to be a thing?
+    if Config.registerable?() || invitable? do
       updated_auth = auth |> Map.put(:provider, Atom.to_string(auth.provider))
 
       Config.repo.transaction(fn ->
