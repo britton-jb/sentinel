@@ -5,7 +5,7 @@ defmodule Sentinel.PasswordValidator do
   """
 
   def changeset(changeset, %{credentials: %{other: %{password: password}}}) when password != "" and password != nil do
-    apply_password_validation(
+    Sentinel.Helpers.InjectedChangesetHelper.apply(
       Sentinel.Config.password_validation,
       changeset,
       password
@@ -13,7 +13,11 @@ defmodule Sentinel.PasswordValidator do
   end
   def changeset(changeset, _params), do: changeset
 
-  defp apply_password_validation(nil, changeset, password) do
+  @doc """
+  The default password validation provided by Sentinel.
+  Ensures password is 8 characters or greater.
+  """
+  def default_sentinel_password_validation(changeset, password) do
     if String.length(password) >= 8 do
       changeset
     else
@@ -23,8 +27,5 @@ defmodule Sentinel.PasswordValidator do
         "Password must be at least 8 characters"
       )
     end
-  end
-  defp apply_password_validation({module, function}, changeset, password) do
-    Kernel.apply(module, function, [changeset, password])
   end
 end

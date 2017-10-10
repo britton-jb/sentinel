@@ -85,7 +85,14 @@ defmodule Sentinel.Config do
   password validation changeset
   """
   def password_validation do
-    Application.get_env(:sentinel, :password_validation)
+    Application.get_env(
+      :sentinel,
+      :password_validation,
+      {
+        Sentinel.PasswordValidator,
+        :default_sentinel_password_validation
+      }
+    )
   end
 
   @doc """

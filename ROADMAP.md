@@ -4,8 +4,6 @@ This is more notes about things that I'd like to change.
 ## Features
 Dialyzer - run it
 
-- allow users to persist random stuff to user or auth record from the ueberauth struct
-  via a custom injected method? (like the avatar etc from github)
 - https://github.com/britton-jb/sentinel/issues/55
 - https://github.com/britton-jb/sentinel/issues/37
 - https://github.com/britton-jb/sentinel/issues/48

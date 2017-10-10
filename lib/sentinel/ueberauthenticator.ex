@@ -73,7 +73,7 @@ defmodule Sentinel.Ueberauthenticator do
       end
     else
       auth_changeset = Sentinel.Ueberauth.changeset(auth, Map.from_struct(updated_auth_params))
-      Config.repo.insert(auth_changeset)
+      Config.repo.update(auth_changeset)
     end
   end
 
@@ -102,7 +102,7 @@ defmodule Sentinel.Ueberauthenticator do
   end
 
   defp create_user_and_auth(auth, provided_uid \\ nil) do
-    if Config.registerable?() || invitable? do
+    if Config.registerable?() || invitable?() do
       updated_auth = auth |> Map.put(:provider, Atom.to_string(auth.provider))
 
       Config.repo.transaction(fn ->
