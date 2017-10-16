@@ -58,6 +58,6 @@ defmodule Sentinel.Changeset.Registrator do
     end
   end
 
-  defp changeset_helper(changeset, %{"user" => user_info}), do: changeset_helper(changeset, user_info)
+  defp changeset_helper(changeset, %{user: user_info}), do: changeset_helper(changeset, user_info)
   defp changeset_helper(changeset, user_info), do: UserHelper.validator(changeset, user_info)
 end
