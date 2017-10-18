@@ -50,7 +50,11 @@ defmodule Sentinel.Ueberauthenticator do
   end
   def ueberauthenticate(%Auth{uid: uid} = auth_params) do
     string_uid = coerce_to_string(uid)
-    updated_auth_params = auth_params |> Map.put(:provider, Atom.to_string(auth_params.provider))
+
+    updated_auth_params =
+      auth_params
+      |> Map.put(:provider, coerce_to_string(auth_params.provider))
+      |> Map.put(:uid, string_uid)
 
     auth =
       Sentinel.Ueberauth
@@ -58,9 +62,9 @@ defmodule Sentinel.Ueberauthenticator do
       |> Config.repo.preload([:user])
 
     if is_nil(auth) do
-      user = Config.repo.get_by(Config.user_model, email: auth_params.info.email)
+      user = Config.repo.get_by(Config.user_model, email: updated_auth_params.info.email)
       if is_nil(user) do
-        create_user_and_auth(auth_params, string_uid)
+        create_user_and_auth(updated_auth_params, string_uid)
       else
         auth_changeset =
           %Sentinel.Ueberauth{uid: string_uid, user_id: user.id}
@@ -103,7 +107,7 @@ defmodule Sentinel.Ueberauthenticator do
 
   defp create_user_and_auth(auth, provided_uid \\ nil) do
     if Config.registerable?() || invitable?() do
-      updated_auth = auth |> Map.put(:provider, Atom.to_string(auth.provider))
+      updated_auth = auth |> Map.put(:provider, coerce_to_string(auth.provider))
 
       Config.repo.transaction(fn ->
         {confirmation_token, user_changeset} =
@@ -132,6 +136,7 @@ defmodule Sentinel.Ueberauthenticator do
 
   defp coerce_to_string(var) when is_bitstring(var), do: var
   defp coerce_to_string(var) when is_integer(var), do: Integer.to_string(var)
+  defp coerce_to_string(var) when is_atom(var), do: Atom.to_string(var)
 
   defp invitable? do
     Config.invitable

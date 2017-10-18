@@ -67,11 +67,18 @@ defmodule Sentinel.Ueberauth do
   end
 
   defp credentials_changeset(struct, params) do
-    if params == %{} || is_nil(params.credentials) do
+    updated_params =
+      case params do
+        %{credentials: credentials} -> credentials
+        %Ueberauth.Auth.Credentials{} -> Map.from_struct(params)
+        _ -> %{}
+      end
+
+    if updated_params == %{} do
       %Ecto.Changeset{}
     else
       struct
-      |> cast(params, [:token, :refresh_token, :token_type, :secret, :expires, :expires_at, :scopes])
+      |> cast(updated_params, [:token, :refresh_token, :token_type, :secret, :expires, :expires_at, :scopes])
       |> validate_required([:token, :token_type])
     end
   end
