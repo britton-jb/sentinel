@@ -120,8 +120,9 @@ defmodule Sentinel.Ueberauthenticator do
              uid = set_uid(provided_uid, user),
              updated_auth = Map.merge(Map.from_struct(updated_auth), %{uid: uid, user_id: user.id}),
              auth_changeset <- Sentinel.Ueberauth.changeset(%Sentinel.Ueberauth{}, updated_auth),
-             {:ok, _auth} <- Config.repo.insert(auth_changeset) do
-          %{user: user, confirmation_token: confirmation_token}
+             {:ok, _auth} <- Config.repo.insert(auth_changeset),
+             preloaded_user <- Config.repo.preload(user, :ueberauths) do
+          %{user: preloaded_user, confirmation_token: confirmation_token}
         else
           {:error, error_changeset} -> Config.repo.rollback(error_changeset.errors)
         end

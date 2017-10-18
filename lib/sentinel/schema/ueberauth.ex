@@ -45,17 +45,7 @@ defmodule Sentinel.Ueberauth do
   Builds a changeset based on the `struct` and `params`.
   """
   def changeset(struct, params \\ %{})
-  def changeset(%{provider: provider} = struct, %{provider: :identity} = params) when provider == :identity or provider == "identity" or provider == nil do
-    updated_params = coerce_provider_to_string(params)
-    identity_changeset(struct, updated_params)
-  end
-  def changeset(%{provider: provider} = struct, %{provider: "identity"} = params) when provider == :identity or provider == "identity" or provider == nil do
-    identity_changeset(struct, params)
-  end
-  def changeset(%{provider: provider} = struct, params) when provider == :identity or provider == "identity" or provider == nil do
-    identity_changeset(struct, params)
-  end
-  def changeset(struct, params) do
+  def changeset(%{provider: initial_provider} = struct, %{provider: params_provider} = params) when not (initial_provider == :identity or initial_provider == "identity") and not (params_provider == :identity or params_provider == "identity" or params_provider == nil) do
     updated_params = coerce_provider_to_string(params)
 
     struct
@@ -64,6 +54,10 @@ defmodule Sentinel.Ueberauth do
     |> validates_provider_doesnt_already_exist_for_user
     |> assoc_constraint(:user)
     |> cast_embed(:credentials, with: &credentials_changeset/2)
+  end
+  def changeset(struct, params) do
+    updated_params = coerce_provider_to_string(params)
+    identity_changeset(struct, updated_params)
   end
 
   defp credentials_changeset(struct, params) do
