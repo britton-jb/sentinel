@@ -10,12 +10,6 @@ defmodule Sentinel.Changeset.Registrator do
   Returns a changeset setting email and hashed_password on a new user.
   Validates that email and password are present and that email is unique.
   """
-  def changeset(params = %{"username" => username}) when username != "" and username != nil do
-    username_changeset(params)
-  end
-  def changeset(params = %{username: username}) when username != "" and username != nil do
-    username_changeset(params)
-  end
   def changeset(params, raw_info \\ %{}) do
     updated_params = params |> atomize_params |> downcase_email
 
@@ -26,18 +20,6 @@ defmodule Sentinel.Changeset.Registrator do
     |> Changeset.validate_required([:email])
     |> Changeset.validate_change(:email, &Util.presence_validator/2)
     |> Changeset.unique_constraint(:email)
-    |> changeset_helper(raw_info)
-  end
-
-  defp username_changeset(params, raw_info \\ %{}) do
-    UserHelper.model
-    |> struct
-    |> UserHelper.model.changeset(params)
-    |> Changeset.cast(params, [:username])
-    |> Changeset.validate_change(:username, &Util.presence_validator/2)
-    |> Changeset.unique_constraint(:username)
-    |> Changeset.put_change(:hashed_confirmation_token, nil)
-    |> Changeset.put_change(:confirmed_at, DateTime.utc_now)
     |> changeset_helper(raw_info)
   end
 
