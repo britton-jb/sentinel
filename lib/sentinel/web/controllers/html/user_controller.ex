@@ -58,7 +58,8 @@ defmodule Sentinel.Controllers.Html.UserController do
       changeset: changeset,
       user_id: id,
       password_reset_token: password_reset_token,
-      confirmation_token: confirmation_token
+      confirmation_token: confirmation_token,
+      providers: Config.ueberauth_providers
     })
   end
   def invitation_registration(conn, _params) do

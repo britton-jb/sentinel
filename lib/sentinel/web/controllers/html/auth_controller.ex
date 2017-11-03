@@ -8,11 +8,20 @@ defmodule Sentinel.Controllers.Html.AuthController do
 
   plug Ueberauth
   plug :put_layout, {Config.layout_view, Config.layout}
+  plug Sentinel.Pipeline when action in [:request, :callback, :create]
   plug Sentinel.AuthenticatedPipeline when action in [:delete]
 
   def request(conn, _params) do
-    changeset = Session.changeset(%Session{})
-    render(conn, Config.views.session, "new.html", %{conn: conn, changeset: changeset, providers: Config.ueberauth_providers})
+    current_user = Sentinel.Guardian.Plug.current_resource(conn)
+
+    if is_nil(current_user) do
+      changeset = Session.changeset(%Session{})
+      render(conn, Config.views.session, "new.html", %{conn: conn, changeset: changeset, providers: Config.ueberauth_providers})
+    else
+      conn
+      |> put_flash(:info, "Already logged in")
+      |> RedirectHelper.redirect_from(:session_create)
+    end
   end
 
   def callback(%{assigns: %{ueberauth_failure: _fails}} = conn, _params) do
