@@ -7,7 +7,7 @@ defmodule Sentinel.Session do
   import Ecto.Changeset
   alias Sentinel.Session
 
-  schema "virtual_session_table" do
+  embedded_schema do
     field :username, :string
     field :email, :string
     field :password, :string

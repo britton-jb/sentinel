@@ -21,6 +21,8 @@ Can I remove the permissions stuff?
 
 - Easy socket auth handling
 
+- Swap guardian db backing from postgres to mnesia/dets?
+
 ## Cleanup
 - Credo strict
 - typespecs

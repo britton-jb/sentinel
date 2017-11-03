@@ -23,5 +23,10 @@ defmodule UeberauthMigration do
     create index(:ueberauths, [:user_id])
     create index(:ueberauths, [:uid])
     create index(:ueberauths, [:user_id, :provider], unique: true)
+    create constraint(
+      :ueberauths,
+      "ueberauths_credentials_properly_structured",
+      check: "credentials = null OR (credentials::jsonb ?& array['token', 'refresh_token', 'token_type', 'secret', 'expires', 'expires_at', 'scopes'])"
+    )
   end
 end
