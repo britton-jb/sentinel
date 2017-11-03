@@ -35,15 +35,44 @@ defmodule Sentinel.Ueberauthenticator do
       authenticate(user, db_auth, password)
     end
   end
-  def ueberauthenticate(%Auth{provider: :identity, uid: uid, credentials: %Auth.Credentials{other: %{password: password, password_confirmation: password}}}) do
+  def ueberauthenticate(
+    %Auth{
+      provider: :identity,
+      uid: uid,
+      credentials: %Auth.Credentials{
+        other: %{
+          password: password,
+          password_confirmation: password
+        }
+      }
+    }) do
     Config.user_model
     |> Config.repo.get_by(email: String.downcase(uid))
     |> find_auth_and_authenticate(password)
   end
-  def ueberauthenticate(%Auth{provider: :identity, uid: _uid, credentials: %Auth.Credentials{other: %{password: _password, password_confirmation: _password_confirmation}}}) do
+  def ueberauthenticate(
+    %Auth{
+      provider: :identity,
+      uid: _uid,
+      credentials: %Auth.Credentials{
+        other: %{
+          password: _password,
+          password_confirmation: _password_confirmatio
+        }
+      }
+    }) do
     {:error, [%{password: "Password must match password confirmation"}]}
   end
-  def ueberauthenticate(%Auth{provider: :identity, uid: uid, credentials: %Auth.Credentials{other: %{password: password}}}) do
+  def ueberauthenticate(
+    %Auth{
+      provider: :identity,
+      uid: uid,
+      credentials: %Auth.Credentials{
+        other: %{
+          password: password
+        }
+      }
+    }) do
     Config.user_model
     |> Config.repo.get_by(email: String.downcase(uid))
     |> find_auth_and_authenticate(password)
