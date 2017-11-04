@@ -2,12 +2,12 @@ defmodule Sentinel.Guardian do
   @moduledoc """
   Implements Sentinel's specific implementaiton of guardian, and guardianDb hooks
   """
-  alias Sentinel.{Config, UserHelper}
+  alias Sentinel.Config
 
   use Guardian, otp_app: Sentinel.Config.otp_app()
 
   def subject_for_token(resource, _claims) do
-    struct_type = Sentinel.Config.user_model().__struct__
+    struct_type = Config.user_model().__struct__
 
     if struct_type = resource.__struct__ do
       {:ok, to_string(resource.id)}
@@ -17,7 +17,7 @@ defmodule Sentinel.Guardian do
   end
 
   def resource_from_claims(claims) do
-    resource = Config.repo.get(UserHelper.model, String.to_integer(claims["sub"]))
+    resource = Config.repo.get(Config.user_model, String.to_integer(claims["sub"]))
 
     if is_nil(resource) do
       {:error, :unknown_resource_type}

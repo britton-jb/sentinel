@@ -15,7 +15,7 @@ defmodule Sentinel.Changeset.Registrator do
 
     Sentinel.Config.user_model
     |> struct
-    |> UserHelper.model.changeset(updated_params)
+    |> Sentinel.Config.user_model.changeset(updated_params)
     |> Changeset.cast(updated_params, [:email])
     |> Changeset.validate_required([:email])
     |> Changeset.validate_change(:email, &Util.presence_validator/2)

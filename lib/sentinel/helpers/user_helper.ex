@@ -5,13 +5,6 @@ defmodule Sentinel.UserHelper do
   alias Sentinel.Config
 
   @doc """
-  Wrapper for the user model passed in via sentinel configuration
-  """
-  def model do
-    Config.user_model
-  end
-
-  @doc """
   Adds extra validator specified in configuration
   """
   def validator(changeset, params \\ %{}) do
