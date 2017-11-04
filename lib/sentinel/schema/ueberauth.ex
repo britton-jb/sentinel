@@ -77,7 +77,7 @@ defmodule Sentinel.Ueberauth do
     end
   end
 
-  @spec increment_failed_attempts(%Sentinel.Ueberauth{}) :: %Sentinel.Ueberauth{}
+  @spec increment_failed_attempts(%Sentinel.Ueberauth{}) :: {:ok, %Sentinel.Ueberauth{}} | {:error, Ecto.Changeset.t}
   def increment_failed_attempts(auth) do
     {:ok, _updated_auth} =
       auth
@@ -85,7 +85,7 @@ defmodule Sentinel.Ueberauth do
       |> Config.repo.update()
   end
 
-  @spec lock(%Sentinel.Ueberauth{}) :: %Sentinel.Ueberauth{}
+  @spec lock(%Sentinel.Ueberauth{}) :: {:ok, %Sentinel.Ueberauth{}}
   def lock(auth) do
     {:ok, updated_auth} =
       auth
@@ -101,7 +101,7 @@ defmodule Sentinel.Ueberauth do
     {:ok, preloaded_auth}
   end
 
-  @spec unlock(String.t()) :: %Sentinel.Ueberauth{}
+  @spec unlock(String.t()) :: {:ok, %Sentinel.Ueberauth{}} | {:error, Ecto.Changeset.t}
   def unlock(unlock_token) do
     Sentinel.Ueberauth
     |> Config.repo.get_by(unlock_token: unlock_token)

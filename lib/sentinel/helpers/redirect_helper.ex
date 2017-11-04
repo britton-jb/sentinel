@@ -15,15 +15,11 @@ defmodule Sentinel.RedirectHelper do
   defp mapped_params(params) do
     param_string =
       params
-      |> Enum.map_join("&", fn(key, value) ->
+      |> Enum.map_join("&", fn({key, value}) ->
         "#{key}=#{value}"
       end)
 
-    if is_nil(param_string) do
-      param_string
-    else
-      "?#{param_string}"
-    end
+    "?#{param_string}"
   end
 
   @doc """
