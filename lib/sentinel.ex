@@ -133,6 +133,28 @@ defmodule Sentinel do
     end
   end
 
+  def invite(attrs) do
+    with auth                                                         <- coerce_to_auth(attrs),
+         {:ok, %{user: user, confirmation_token: confirmation_token}} <- Sentinel.Ueberauthenticator.ueberauthenticate(auth),
+         {:ok, user}                                                  <- Sentinel.AfterRegistrator.confirmable_and_invitable(user, confirmation_token),
+         {:ok, user}                                                  <- Sentinel.RegistratorHelper.callback(user),
+         ueberauth when not is_nil(ueberauth)                         <- Sentinel.Config.repo.get_by(Sentinel.Ueberauth, user_id: user.id),
+         true                                                         <- is_nil(ueberauth.hashed_password) do
+    else
+      _ -> {:error, "Unable to invite user"}
+    end
+  end
+
+  defp coerce_to_auth(attrs) do
+    %Ueberauth.Auth{
+      provider: :identity,
+      credentials: %Ueberauth.Auth.Credentials{other: %{password: nil}},
+      extra: %{
+        raw_info: attrs
+      }
+    }
+  end
+
   def invitable? do
     Sentinel.Config.invitable
   end
