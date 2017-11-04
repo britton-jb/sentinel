@@ -1,11 +1,11 @@
 defmodule Sentinel.Helpers.InjectedChangesetHelper do
   @moduledoc false
 
-  def apply(nil, changeset, _params), do: changeset
-  def apply({module, function}, changeset, params) do
+  def apply(changeset, nil,  _params), do: changeset
+  def apply(changeset, {module, function}, params) do
     Kernel.apply(module, function, [changeset, params])
   end
-  def apply(anon_function, changeset, params) do
+  def apply(changeset, anon_function, params) do
     anon_function.(changeset, params)
   end
 end

@@ -6,8 +6,8 @@ defmodule Sentinel.PasswordValidator do
 
   def changeset(changeset, %{credentials: %{other: %{password: password}}}) when password != "" and password != nil do
     Sentinel.Helpers.InjectedChangesetHelper.apply(
-      Sentinel.Config.password_validation,
       changeset,
+      Sentinel.Config.password_validation,
       password
     )
   end

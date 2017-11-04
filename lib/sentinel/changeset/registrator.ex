@@ -1,6 +1,6 @@
 defmodule Sentinel.Changeset.Registrator do
   alias Ecto.Changeset
-  alias Sentinel.{Util, UserHelper}
+  alias Sentinel.Util
 
   @moduledoc """
   Handles registration changeset logic
@@ -41,5 +41,7 @@ defmodule Sentinel.Changeset.Registrator do
   end
 
   defp changeset_helper(changeset, %{user: user_info}), do: changeset_helper(changeset, user_info)
-  defp changeset_helper(changeset, user_info), do: UserHelper.validator(changeset, user_info)
+  defp changeset_helper(changeset, user_info) do
+      Sentinel.Helpers.InjectedChangesetHelper.apply(changeset, Sentinel.Config.user_model_validator, user_info)
+  end
 end

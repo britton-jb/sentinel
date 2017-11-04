@@ -35,3 +35,14 @@
     <%= submit "Submit", class: "sentinel btn btn-primary" %>
   </div>
 <% end %>
+
+<%= if Enum.any?(@providers) do %>
+  <p>Or login with one of the following</p>
+  <ul>
+    <%= for %{provider: provider, url: request_path} <- @providers do %>
+      <li>
+        <a href="<%= request_path %>"><%= String.capitalize(provider) %></a>
+      </li>
+    <% end %>
+  </ul>
+<% end %>
