@@ -21,7 +21,7 @@ defmodule Sentinel.Ueberauth do
     belongs_to :user, Config.user_model
 
     # other
-    embeds_one :credentials, Credentials do
+    embeds_one :credentials, Credentials, on_replace: :update do
       field :token, :string
       field :refresh_token, :string
       field :token_type, :string
